@@ -111,7 +111,7 @@
 
 <body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
 
-    <!-- <!-- STREAMING_CHUNK: Rendering navigation header --> -->
+    <!-- STREAMING_CHUNK: Rendering navigation header -->
     <header class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
             
@@ -161,7 +161,7 @@
         </div>
     </header>
 
-    <!-- <!-- STREAMING_CHUNK: Hero Section --> -->
+    <!-- STREAMING_CHUNK: Hero Section -->
     <section id="hero" class="pt-24 pb-16 min-h-screen bg-brandDark text-white relative flex items-center w-full overflow-hidden">
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#0D2971_1px,transparent_1px),linear-gradient(to_bottom,#0D2971_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20"></div>
         <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-brandPoint/10 rounded-full blur-[120px] pointer-events-none"></div>
@@ -216,7 +216,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Intro / Story Section --> -->
+    <!-- STREAMING_CHUNK: Intro / Story Section -->
     <section id="intro" class="py-24 bg-white relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -279,7 +279,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Process Simulator Section --> -->
+    <!-- STREAMING_CHUNK: Process Simulator Section -->
     <section id="simulator" class="py-24 bg-brandDark text-white relative w-full overflow-hidden border-t border-brandMain/30">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -334,7 +334,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Technical Pillars Section --> -->
+    <!-- STREAMING_CHUNK: Technical Pillars Section -->
     <section id="strengths" class="py-24 bg-brandSub relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -388,7 +388,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Contact Form Section --> -->
+    <!-- STREAMING_CHUNK: Contact Form Section -->
     <section id="contact" class="py-24 bg-brandMain text-white relative w-full text-center px-6">
         <div class="max-w-3xl mx-auto">
             <h2 class="font-head text-3xl sm:text-4xl font-bold mb-6 leading-tight break-keep">
@@ -423,7 +423,7 @@
         <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이 복사되었습니다!
     </div>
 
-    <!-- <!-- STREAMING_CHUNK: Dynamic EN/KO Resume Modal --> -->
+    <!-- STREAMING_CHUNK: Dynamic EN/KO Resume Modal -->
     <div id="resume-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-[#040D2D]/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white text-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-200">
             
@@ -566,25 +566,30 @@
             const spinner = document.getElementById('resume-loading-spinner');
             if(spinner) spinner.classList.remove('hidden');
 
+            const githubRawPrefix = "https://raw.githubusercontent.com/JunnyCoder/JunnyCoder.github.io/main/assets/resume/";
+
             try {
-                // Try fetching Korean Resume
-                const resKo = await fetch('./assets/resume/resume_ko.json');
-                if (resKo.ok) {
-                    window.resumeData.ko = await resKo.json();
-                } else {
-                    throw new Error("Korean resume fetch failed");
+                // [Step 1] Attempt Local/Domain relative path fetch
+                let resKo = await fetch('./assets/resume/resume_ko.json');
+                let resEn = await fetch('./assets/resume/resume_en.json');
+
+                // [Step 2] If domain fetch fails (e.g. 404), attempt direct Github Raw API Fetch
+                if (!resKo.ok || !resEn.ok) {
+                    console.warn("Relative path fetch failed. Attempting Direct GitHub Raw CDN fallback...");
+                    resKo = await fetch(githubRawPrefix + "resume_ko.json");
+                    resEn = await fetch(githubRawPrefix + "resume_en.json");
                 }
 
-                // Try fetching English Resume
-                const resEn = await fetch('./assets/resume/resume_en.json');
-                if (resEn.ok) {
+                if (resKo.ok && resEn.ok) {
+                    window.resumeData.ko = await resKo.json();
                     window.resumeData.en = await resEn.json();
+                    console.log("Resume successfully fetched from Live Data Sources!");
                 } else {
-                    throw new Error("English resume fetch failed");
+                    throw new Error("Both Relative and Raw GitHub fetches failed.");
                 }
-                console.log("Resume successfully fetched from assets/resume/");
             } catch (err) {
-                console.warn("Fetching JSON files failed. Engaging robust embedded fallback cache to avoid page crash.", err);
+                console.warn("Network fetch failed completely. Engaging high-fidelity local memory fallback.", err);
+                // Safe absolute fallback without "(Fallback Cache)" labels
                 window.resumeData.ko = fallbackKo;
                 window.resumeData.en = fallbackEn;
             } finally {
@@ -634,7 +639,7 @@
                         <h1 class="text-3xl sm:text-4xl font-head font-bold text-brandMain mb-2">${data.name}</h1>
                         <p class="text-brandPoint font-bold text-lg font-code">${data.title}</p>
                     </div>
-                    <div class="mt-4 md:mt-0 text-right text-sm text-gray-600 font-code space-y-1">
+                    <div class="mt-4 md:mt-0 text-left text-sm text-gray-600 font-code space-y-1">
                         <div><i class="fa-solid fa-envelope mr-1.5 text-brandMain"></i> ${data.contact.email}</div>
                         <div><i class="fa-solid fa-mobile-screen mr-1.5 text-brandMain"></i> ${data.contact.phone}</div>
                         <div><i class="fa-brands fa-github mr-1.5 text-brandMain"></i> ${data.contact.github}</div>
