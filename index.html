@@ -78,7 +78,7 @@
             background-color: rgba(239, 68, 68, 0.1) !important;
         }
         .conveyor-module {
-            transition: left 0.1s linear;
+            transition: left 0.1s linear, top 0.1s linear;
         }
 
         /* Language Toggle Animation */
@@ -98,12 +98,20 @@
             #resume-modal { position: absolute; left: 0; top: 0; width: 100%; height: auto; overflow: visible; background: white; }
             .no-print { display: none !important; }
         }
+
+        /* Conveyor Track Path Styling (Responsive) */
+        .track-path-line {
+            position: absolute;
+            background: #1e293b;
+            border-radius: 9999px;
+            z-index: 10;
+        }
     </style>
 </head>
 
 <body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
 
-    <!-- <!-- STREAMING_CHUNK: Rendering navigation header with Resume CTA --> -->
+    <!-- STREAMING_CHUNK: Header Navigation GNB -->
     <header class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
             
@@ -153,8 +161,7 @@
         </div>
     </header>
 
-    <!-- <!-- STREAMING_CHUNK: Hero Section and Dynamic Terminal Simulator --> -->
-    <!-- Hero Section -->
+    <!-- STREAMING_CHUNK: Hero Section -->
     <section id="hero" class="pt-24 pb-16 min-h-screen bg-brandDark text-white relative flex items-center w-full overflow-hidden">
         <!-- Tech Background Pattern -->
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#0D2971_1px,transparent_1px),linear-gradient(to_bottom,#0D2971_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20"></div>
@@ -214,8 +221,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Intro & Story Section --> -->
-    <!-- Intro / Story Section -->
+    <!-- STREAMING_CHUNK: Intro Section -->
     <section id="intro" class="py-24 bg-white relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -271,7 +277,7 @@
                     
                     <div class="p-4 bg-brandSub border-l-4 border-brandPoint rounded-r-lg mt-6">
                         <p class="font-medium text-brandMain text-sm break-keep">
-                            💡 "단순 소프트웨어 개발자를 넘어, 공장 설비 전체를 유기적인 하나의 소프트웨어로 바라볼 줄 아는 진정한 파트너입니다."
+                            💡 "준호님은 단순 소프트웨어 개발자를 넘어, 공장 설비 전체를 유기적인 하나의 소프트웨어로 바라볼 줄 아는 진정한 파트너입니다."
                         </p>
                     </div>
                 </div>
@@ -279,7 +285,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Process Simulator Section --> -->
+    <!-- STREAMING_CHUNK: Responsive Process Simulator Section with 2-Tier Path Integration -->
     <!-- Process Simulator Section -->
     <section id="simulator" class="py-24 bg-brandDark text-white relative w-full overflow-hidden border-t border-brandMain/30">
         <div class="max-w-7xl mx-auto px-6">
@@ -302,35 +308,36 @@
                     </div>
                 </div>
 
-                <!-- Horizontal Scroll Wrapper for Mobile -->
-                <div class="w-full overflow-x-auto pb-4">
-                    <div class="min-w-[700px]">
-                        <!-- Process Grid (Tables) -->
-                        <div id="sim-tables" class="grid grid-cols-5 gap-4 mb-8">
-                            <!-- Tables rendered by JS -->
-                        </div>
+                <!-- Process Grid (Tables) - Always full width on mobile grid -->
+                <div id="sim-tables" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+                    <!-- Tables rendered by JS -->
+                </div>
 
-                        <!-- Conveyor Line -->
-                        <div class="relative h-24 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 flex items-center overflow-hidden shadow-inner">
-                            <!-- Base Track Line -->
-                            <div class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0"></div>
-                            
-                            <!-- Red Warning Line for Bottleneck -->
-                            <div id="sim-warning-line" class="absolute left-[40%] right-[40%] h-[2px] bg-red-500 top-1/2 -translate-y-1/2 z-0 opacity-0 shadow-[0_0_10px_red] transition-all duration-700"></div>
+                <!-- Dynamic Conveyor Line (Perfect Adaptive 2-Tier Layout) -->
+                <div class="relative h-48 md:h-28 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 overflow-hidden shadow-inner flex items-center">
+                    
+                    <!-- [Desktop Track Path] Single horizontal line -->
+                    <div id="track-line-desktop" class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0 hidden md:block"></div>
+                    
+                    <!-- [Mobile Track Path] Dual horizontal line with connecting link -->
+                    <div id="track-line-mobile-1" class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[25%] -translate-y-1/2 z-0 block md:hidden"></div>
+                    <div id="track-line-mobile-2" class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[75%] -translate-y-1/2 z-0 block md:hidden"></div>
+                    <div id="track-line-mobile-link" class="absolute right-[10%] w-[2px] top-[25%] bottom-[25%] bg-gray-700 z-0 block md:hidden"></div>
 
-                            <!-- Factory Nodes (Visual Markers) -->
-                            <div class="absolute inset-0 flex justify-between items-center px-8 z-10 pointer-events-none w-full">
-                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P1</span></div>
-                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P2</span></div>
-                                <div id="sim-node-3" class="w-5 h-5 rounded-full border-2 border-brandMain bg-[#020817] relative transition-colors duration-500"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P3</span></div>
-                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P4</span></div>
-                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P5</span></div>
-                            </div>
+                    <!-- Red Warning Line for Bottleneck (Toggled dynamically) -->
+                    <div id="sim-warning-line" class="absolute h-[2px] bg-red-500 top-1/2 -translate-y-1/2 z-10 opacity-0 shadow-[0_0_10px_red] transition-all duration-700 pointer-events-none"></div>
 
-                            <!-- Modules Container -->
-                            <div id="sim-track" class="absolute inset-0 z-20 w-full"></div>
-                        </div>
+                    <!-- Factory Nodes (Positions are dynamically assigned via CSS/JS) -->
+                    <div id="conveyor-node-container" class="absolute inset-0 z-10 pointer-events-none w-full h-full">
+                        <div id="node-p1" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P1</span></div>
+                        <div id="node-p2" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P2</span></div>
+                        <div id="node-p3" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P3</span></div>
+                        <div id="node-p4" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P4</span></div>
+                        <div id="node-p5" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P5</span></div>
                     </div>
+
+                    <!-- Floating Modules Container -->
+                    <div id="sim-track" class="absolute inset-0 z-20 w-full h-full pointer-events-none"></div>
                 </div>
 
                 <!-- Action Button -->
@@ -346,8 +353,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Strengths & Tech Pillars Section --> -->
-    <!-- Strengths Section -->
+    <!-- STREAMING_CHUNK: Technical Pillars Section -->
     <section id="strengths" class="py-24 bg-brandSub relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -408,8 +414,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: CTA Section & Contact Form --> -->
-    <!-- CTA Section -->
+    <!-- STREAMING_CHUNK: Contact Form Section -->
     <section id="contact" class="py-24 bg-brandMain text-white relative w-full text-center px-6">
         <div class="max-w-3xl mx-auto">
             <h2 class="font-head text-3xl sm:text-4xl font-bold mb-6 leading-tight break-keep">
@@ -447,7 +452,7 @@
         <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이 복사되었습니다!
     </div>
 
-    <!-- <!-- STREAMING_CHUNK: English/Korean Dynamic Resume Modal Structure --> -->
+    <!-- STREAMING_CHUNK: Resume Modal Element -->
     <!-- Dynamic EN/KO Resume Modal -->
     <div id="resume-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-[#040D2D]/80 backdrop-blur-md flex items-center justify-center p-4">
         <!-- Modal Card Wrapper -->
@@ -516,9 +521,9 @@
                             <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                                 <h3 class="font-head font-bold text-base text-gray-900">현대모비스 미국 조지아 법인 (Hyundai Mobis Georgia, USA)</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">2023.01 - 2025.12</span>
+                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">2023.01 - 2025.12 (재직 중)</span>
                             </div>
-                            <p class="text-xs text-brandPoint font-bold">MES / IT 시스템 운영 엔지니어</p>
+                            <p class="text-xs text-brandPoint font-bold">스마트팩토리 MES / IT 시스템 운영 엔지니어</p>
                             <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
                                 <li><strong>핵심 공정 가동률 99.9% 유지:</strong> 공장 조립 라인 및 자동 분류 창고(WMS) 실시간 로그 모니터링 시스템을 설계하여 누적 1,400여 건의 오작동 및 설비 에러를 선제적으로 조치.</li>
                                 <li><strong>하드웨어-소프트웨어 인터페이스 최적화:</strong> PLC 제어 패널, 스마트 RFID, 하니웰 바코드 스캐너 간 소켓 통신 모듈 커스터마이징을 수행하여 데이터 유실율 0.01% 미만으로 개선.</li>
@@ -531,13 +536,13 @@
                         <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
                             <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">K-Brain (Weven) </h3>
+                                <h3 class="font-head font-bold text-base text-gray-900">(주)케이브레인 컴퍼니</h3>
                                 <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">2022.01 - 2022.06</span>
                             </div>
                             <p class="text-xs text-brandPoint font-bold">웹빌더 서비스 기획자</p>
                             <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <!-- <li><strong>제조 실행 시스템(MES) 신규 모듈 개발:</strong> C# WinForms 및 ASP.NET MVC 기반으로 공정 실시간 모니터링 대시보드 대형 모니터 뷰 시스템 구축.</li>
-                                <li><strong>소켓 통신 데이터 수집 엔진 개발:</strong> 생산 현장 PLC와 MES 데이터베이스(Oracle / MS SQL) 간의 다중 스레드 통신 데몬을 설계하여 가동 시간 실시간 시각화 성공.</li>
+                                <li><strong>웹빌더 서비스(WEVEN) 기획:</strong> 프로젝트 생애 주기 기반 관리 및 계획</li>
+                                <!-- <li><strong>소켓 통신 데이터 수집 엔진 개발:</strong> 생산 현장 PLC와 MES 데이터베이스(Oracle / MS SQL) 간의 다중 스레드 통신 데몬을 설계하여 가동 시간 실시간 시각화 성공.</li>
                                 <li><strong>비전 카메라 이미지 파싱 서버 연동:</strong> 공정 끝단의 불량 검사용 인공지능 비전 카메라 로그 수집 연동 및 분류 작업 처리.</li> -->
                             </ul>
                         </div>
@@ -605,7 +610,7 @@
                             <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
                                 <h3 class="font-head font-bold text-base text-gray-900">Hyundai Mobis Georgia, USA</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Jan 2023 - Dec 2025</span>
+                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Jan 2023 - Present</span>
                             </div>
                             <p class="text-xs text-brandPoint font-bold">Smart Factory MES & IT Operations Engineer</p>
                             <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
@@ -620,13 +625,13 @@
                         <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
                             <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
                             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">K-Brain Company</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Jan 2022 - Jun 2022</span>
+                                <h3 class="font-head font-bold text-base text-gray-900">K-Brain Company Corp (WEVEN)</h3>
+                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Mar 2020 - Dec 2022</span>
                             </div>
-                            <p class="text-xs text-brandPoint font-bold">Web builder service planner</p>
+                            <p class="text-xs text-brandPoint font-bold">Web Builder Service Planner</p>
                             <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <!-- <li><strong>MES Modules Deployment:</strong> Developed and integrated graphical status dashboards using C# WinForms and ASP.NET MVC for floor-wide monitor views.</li>
-                                <li><strong>Data Ingestion Engine Development:</strong> Programmed high-speed server daemons bridging manufacturing equipment to relational SQL databases via TCP/IP sockets and OPC UA protocols.</li>
+                                <li><strong>Service Planning:</strong> Planned web service along with the project life cycle.</li>
+                                <!-- <li><strong>Data Ingestion Engine Development:</strong> Programmed high-speed server daemons bridging manufacturing equipment to relational SQL databases via TCP/IP sockets and OPC UA protocols.</li>
                                 <li><strong>Visual Inspections Integration:</strong> Managed API mapping between digital inspection vision-camera loggers and high-level inventory servers for real-time fault categorization.</li> -->
                             </ul>
                         </div>
@@ -673,7 +678,7 @@
         </div>
     </div>
 
-    <!-- <!-- STREAMING_CHUNK: Script Engine initializing event bindings --> -->
+    <!-- STREAMING_CHUNK: Initialization and Event Binding Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             
@@ -730,7 +735,6 @@
             }, 2500); // Add a log every 2.5 seconds
 
 
-            // <!-- STREAMING_CHUNK: Binding Resume Modal Events -->
             // 3. Resume Modal Toggle Logic
             const resumeModal = document.getElementById('resume-modal');
             const resumeOpenBtnHeader = document.getElementById('resume-open-btn-header');
@@ -809,7 +813,6 @@
             }, 3000);
         }
 
-        // <!-- STREAMING_CHUNK: Adding Dynamic Language Swapper Logic -->
         // 6. Resume Language Switcher Logic
         function switchLanguage(lang) {
             const koContainer = document.getElementById('lang-ko-container');
@@ -820,23 +823,19 @@
             if (lang === 'ko') {
                 koContainer.classList.remove('lang-hidden');
                 enContainer.classList.add('lang-hidden');
-                
-                // Styling Button Selected states
                 btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
                 btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
             } else {
                 enContainer.classList.remove('lang-hidden');
                 koContainer.classList.add('lang-hidden');
-                
-                // Styling Button Selected states
                 btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
                 btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
             }
         }
 
 
-        // <!-- STREAMING_CHUNK: Running Factory Process Simulator Logic -->
-        // 7. Factory Process Simulator Logic
+        // <!-- STREAMING_CHUNK: Re-engineering Factory Simulator Loop for Adaptive 2-Tier Path Routing -->
+        // 7. Factory Process Simulator Logic (Adaptive Progress-based Routing)
         const Simulator = {
             state: 'WAITING', // WAITING, NORMAL, BOTTLENECK, OPTIMIZED
             trackEl: document.getElementById('sim-track'),
@@ -845,7 +844,7 @@
             modules: [],
             lastSpawnTime: 0,
             animationFrame: null,
-            trackWidth: 0,
+            isMobileView: false,
             
             // Task Datasets
             dataBad: [
@@ -866,13 +865,13 @@
             init() {
                 if(!this.tablesEl) return;
                 this.renderTables(this.dataBad);
-                this.btnOpt.disabled = true; // Disable until bottleneck occurs
+                this.btnOpt.disabled = true;
 
-                // Handle Resize
+                // Check Layout size on initialization
+                this.checkLayout();
                 window.addEventListener('resize', () => {
-                    if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
+                    this.checkLayout();
                 });
-                if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
 
                 // Bind Button
                 this.btnOpt.addEventListener('click', () => this.optimize());
@@ -888,6 +887,61 @@
                 if(simSection) observer.observe(simSection);
             },
 
+            checkLayout() {
+                const prevMobile = this.isMobileView;
+                this.isMobileView = window.innerWidth < 768; // Tailwind md breakpoint (768px)
+                
+                this.positionNodes();
+
+                // If orientation/layout changes, update the warning line positioning context
+                const warningLine = document.getElementById('sim-warning-line');
+                if (warningLine) {
+                    if (this.isMobileView) {
+                        warningLine.style.left = '10%';
+                        warningLine.style.right = '10%';
+                        warningLine.style.top = '25%'; // Concentrated on top row (Process 3)
+                    } else {
+                        warningLine.style.left = '40%';
+                        warningLine.style.right = '40%';
+                        warningLine.style.top = '50%';
+                    }
+                }
+            },
+
+            // Set node locations cleanly using percentage so it acts like a vector map
+            positionNodes() {
+                const nodes = {
+                    p1: document.getElementById('node-p1'),
+                    p2: document.getElementById('node-p2'),
+                    p3: document.getElementById('node-p3'),
+                    p4: document.getElementById('node-p4'),
+                    p5: document.getElementById('node-p5')
+                };
+
+                if (this.isMobileView) {
+                    // Mobile (2-tier layout): Row 1 (P1->P2->P3) at top (25%), Row 2 (P4->P5) at bottom (75%)
+                    this.setNodePos(nodes.p1, 15, 25);
+                    this.setNodePos(nodes.p2, 50, 25);
+                    this.setNodePos(nodes.p3, 85, 25);
+                    this.setNodePos(nodes.p4, 75, 75);
+                    this.setNodePos(nodes.p5, 25, 75);
+                } else {
+                    // Desktop (Linear Layout)
+                    this.setNodePos(nodes.p1, 10, 50);
+                    this.setNodePos(nodes.p2, 30, 50);
+                    this.setNodePos(nodes.p3, 50, 50);
+                    this.setNodePos(nodes.p4, 70, 50);
+                    this.setNodePos(nodes.p5, 90, 50);
+                }
+            },
+
+            setNodePos(el, leftPct, topPct) {
+                if(!el) return;
+                el.style.left = leftPct + '%';
+                el.style.top = topPct + '%';
+                el.style.transform = 'translate(-50%, -50%)';
+            },
+
             renderTables(dataset, isOptimized = false) {
                 this.tablesEl.innerHTML = '';
                 dataset.forEach((process, idx) => {
@@ -898,7 +952,7 @@
                         if (t.opt) color = "text-green-400 font-bold";
                         
                         return `
-                            <div class="flex justify-between items-center py-1 border-b border-gray-700/50 last:border-0 text-xs sm:text-sm">
+                            <div class="flex justify-between items-center py-1 border-b border-gray-700/50 last:border-0 text-[11px] sm:text-xs">
                                 <span class="${color}">${t.n}</span>
                                 <span class="font-code text-gray-500">${t.t}</span>
                             </div>
@@ -932,7 +986,6 @@
 
             start() {
                 this.state = 'NORMAL';
-                if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
                 requestAnimationFrame((t) => this.loop(t));
 
                 // Auto trigger bottleneck after 4 seconds
@@ -942,15 +995,16 @@
             spawn() {
                 if(!this.trackEl) return;
                 const el = document.createElement('div');
-                el.className = 'absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 bg-white border-2 border-brandMain rounded shadow-[0_0_10px_rgba(255,255,255,0.5)] z-20 conveyor-module';
+                el.className = 'absolute w-4 h-4 sm:w-5 sm:h-5 bg-white border-2 border-brandMain rounded shadow-[0_0_10px_rgba(255,255,255,0.5)] z-20 conveyor-module';
                 this.trackEl.appendChild(el);
-                this.modules.push({ el, x: 0 });
+                // Core change: track progress percentage (0 to 100) instead of absolute pixel position
+                this.modules.push({ el, progress: 0 });
             },
 
+            // <!-- STREAMING_CHUNK: Processing Module Loop Positions Based on Layout Vectors -->
             loop(timestamp) {
                 if (!this.lastSpawnTime) this.lastSpawnTime = timestamp;
                 
-                // Spawn interval based on state
                 let spawnInterval = this.state === 'BOTTLENECK' ? 1200 : 1800; 
 
                 if (timestamp - this.lastSpawnTime > spawnInterval) {
@@ -958,36 +1012,65 @@
                     this.lastSpawnTime = timestamp;
                 }
 
-                const zoneWidth = this.trackWidth / 5;
-                const bottleneckStart = zoneWidth * 1.8; // Before process 3 (index 2)
-
                 for (let i = 0; i < this.modules.length; i++) {
                     let mod = this.modules[i];
-                    let speed = 2.5; // Base pixel per frame (~150px/sec at 60fps)
+                    let step = 0.5; // Default progress increase percentage per frame
 
                     if (this.state === 'BOTTLENECK') {
-                        // If module is entering or in Zone 3
-                        if (mod.x > bottleneckStart && mod.x < zoneWidth * 3) {
-                            speed = 0.2; // Massive slow down
+                        // Bottleneck occurs at P3 (around progress 45% ~ 55% of overall route)
+                        if (mod.progress >= 44 && mod.progress < 55) {
+                            step = 0.03; // Drastically slows down progress
                         }
                     } else if (this.state === 'OPTIMIZED') {
-                        speed = 4; // Clear out fast
+                        step = 1.2; // Quick sweep
                     }
 
-                    // Collision (Piling up)
+                    // Separation constraint to prevent overlapping
                     if (i > 0) {
                         let frontMod = this.modules[i-1];
-                        if (frontMod.x - mod.x < 24) { // Gap distance
-                            speed = 0; 
-                            mod.x = frontMod.x - 24; // Stick behind
+                        if (frontMod.progress - mod.progress < 6) { // Progress gap threshold
+                            step = Math.min(step, frontMod.progress - mod.progress - 5.5);
+                            if(step < 0) step = 0; // Stick right behind
                         }
                     }
 
-                    mod.x += speed;
-                    mod.el.style.left = mod.x + 'px';
+                    mod.progress += step;
 
-                    // Remove if finished
-                    if (mod.x > this.trackWidth + 20) {
+                    // Convert progress (0-100) into 2D Left/Top percentages based on viewport mode
+                    let leftPercent = 0;
+                    let topPercent = 50;
+
+                    if (this.isMobileView) {
+                        // S-Curve loop calculation (0 to 100 total progress)
+                        if (mod.progress <= 45) {
+                            // Row 1: Left to right along the 25% height level.
+                            // Maps progress (0~45) to left% (15% to 85%)
+                            leftPercent = 15 + (mod.progress / 45) * 70;
+                            topPercent = 25;
+                        } else if (mod.progress > 45 && mod.progress <= 55) {
+                            // Loop connection curve going down from 25% height to 75% height.
+                            leftPercent = 85;
+                            // Map progress (45~55) to top% (25% to 75%)
+                            topPercent = 25 + ((mod.progress - 45) / 10) * 50;
+                        } else {
+                            // Row 2: Right to left along the 75% height level.
+                            // Maps progress (55~100) to left% (85% back to 15%)
+                            leftPercent = 85 - ((mod.progress - 55) / 45) * 70;
+                            topPercent = 75;
+                        }
+                    } else {
+                        // Desktop Linear Path (Left to right horizontally at 50% height)
+                        // Maps progress (0~100) to left% (10% to 90%)
+                        leftPercent = 10 + (mod.progress / 100) * 80;
+                        topPercent = 50;
+                    }
+
+                    mod.el.style.left = leftPercent + '%';
+                    mod.el.style.top = topPercent + '%';
+                    mod.el.style.transform = 'translate(-50%, -50%)';
+
+                    // Clean up complete modules
+                    if (mod.progress >= 100) {
                         mod.el.remove();
                         this.modules.splice(i, 1);
                         i--;
@@ -1003,21 +1086,25 @@
                 this.renderTables(this.dataBad);
                 this.btnOpt.disabled = false;
                 
-                // Visual cues
-                document.getElementById('sim-warning-line').style.opacity = '1';
-                document.getElementById('sim-node-3').classList.replace('border-brandMain', 'border-red-500');
+                // Active visual warning cue
+                const warningLine = document.getElementById('sim-warning-line');
+                if (warningLine) {
+                    warningLine.style.opacity = '1';
+                }
+                document.getElementById('node-p3').classList.replace('border-brandMain', 'border-red-500');
             },
 
             optimize() {
                 this.state = 'OPTIMIZED';
                 this.btnOpt.disabled = true;
                 
-                // Change Data and render
                 this.renderTables(this.dataGood, true);
                 
-                // Clear warning visuals
-                document.getElementById('sim-warning-line').style.opacity = '0';
-                document.getElementById('sim-node-3').classList.replace('border-red-500', 'border-green-400');
+                const warningLine = document.getElementById('sim-warning-line');
+                if (warningLine) {
+                    warningLine.style.opacity = '0';
+                }
+                document.getElementById('node-p3').classList.replace('border-red-500', 'border-green-400');
                 
                 // Show Success Overlay
                 const overlay = document.getElementById('sim-success-overlay');
@@ -1029,12 +1116,10 @@
                     box.classList.add('scale-100');
                 }, 50);
 
-                // Change button text and color
                 this.btnOpt.innerHTML = `<span class="relative z-10 flex items-center font-head"><i class="fa-solid fa-check mr-2"></i> 라인 정상화 완료</span>`;
                 this.btnOpt.classList.replace('border-brandPoint/50', 'border-green-400');
                 this.btnOpt.classList.replace('text-brandPoint', 'text-green-400');
 
-                // Return to normal speed after clearing
                 setTimeout(() => {
                     this.state = 'NORMAL';
                     overlay.classList.add('opacity-0');
