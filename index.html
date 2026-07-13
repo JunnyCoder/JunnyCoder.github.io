@@ -111,7 +111,7 @@
 
 <body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
 
-    <!-- <!-- STREAMING_CHUNK: Header Navigation GNB --> -->
+    <!-- <!-- STREAMING_CHUNK: Rendering navigation header --> -->
     <header class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
             
@@ -168,6 +168,7 @@
         
         <div class="max-w-7xl mx-auto px-6 w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
+            <!-- Hero Text -->
             <div class="lg:col-span-6 space-y-8">
                 <div class="inline-flex items-center space-x-2 bg-brandMain/40 border border-brandPoint/30 px-3 py-1.5 rounded-full text-xs text-brandPoint font-code">
                     <span class="w-2 h-2 rounded-full bg-brandPoint animate-pulse"></span>
@@ -194,6 +195,7 @@
                 </div>
             </div>
 
+            <!-- Hero Visual (Terminal Simulator) -->
             <div class="lg:col-span-6 w-full mt-10 lg:mt-0">
                 <div class="bg-[#020817] rounded-lg border border-brandMain shadow-2xl overflow-hidden w-full max-w-xl mx-auto">
                     <div class="bg-[#0B1529] px-4 py-2 border-b border-brandMain flex items-center justify-between">
@@ -214,7 +216,7 @@
         </div>
     </section>
 
-    <!-- <!-- STREAMING_CHUNK: Intro Section --> -->
+    <!-- <!-- STREAMING_CHUNK: Intro / Story Section --> -->
     <section id="intro" class="py-24 bg-white relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -225,6 +227,7 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Visual Dashboard Card -->
                 <div class="bg-brandSub p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xl relative order-2 lg:order-1">
                     <div class="absolute -top-4 -right-4 bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm flex items-center">
                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span> LIVE
@@ -242,6 +245,7 @@
                         </div>
                     </div>
 
+                    <!-- Flow Visualization -->
                     <div class="bg-brandDark rounded-lg p-4 h-32 flex items-end space-x-2 overflow-hidden relative">
                         <div class="w-full absolute top-2 left-4 font-code text-[10px] text-gray-500">REALTIME DATA THROUGHPUT</div>
                         <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
@@ -253,6 +257,7 @@
                     </div>
                 </div>
 
+                <!-- Story Text -->
                 <div class="space-y-6 order-1 lg:order-2">
                     <h3 class="text-xl sm:text-2xl font-bold text-brandMain leading-snug break-keep">
                         "거대한 제조 벨트 위에서 작은 예외 하나가 막대한 기회비용을 만듭니다."
@@ -287,6 +292,7 @@
                 </p>
             </div>
 
+            <!-- Simulator UI -->
             <div class="bg-[#020817] border border-brandMain/50 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
                 <div id="sim-success-overlay" class="absolute inset-0 bg-brandMain/20 z-30 hidden flex items-center justify-center backdrop-blur-sm transition-opacity duration-1000 opacity-0">
                     <div class="bg-brandDark border border-brandPoint text-brandPoint px-8 py-4 rounded-xl font-head font-bold text-xl sm:text-2xl flex items-center shadow-[0_0_30px_rgba(88,200,240,0.4)] transform scale-90 transition-transform duration-500" id="sim-success-box">
@@ -296,6 +302,7 @@
 
                 <div id="sim-tables" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
 
+                <!-- Dynamic Conveyor Line -->
                 <div class="relative h-48 md:h-28 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 overflow-hidden shadow-inner flex items-center">
                     <div id="track-line-desktop" class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0 hidden md:block"></div>
                     <div id="track-line-mobile-1" class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[25%] -translate-y-1/2 z-0 block md:hidden"></div>
@@ -314,6 +321,7 @@
                     <div id="sim-track" class="absolute inset-0 z-20 w-full h-full pointer-events-none"></div>
                 </div>
 
+                <!-- Action Button -->
                 <div class="mt-8 flex justify-center relative z-40">
                     <button id="btn-optimize" class="group relative px-6 py-3 sm:px-8 sm:py-4 bg-[#0B1529] border border-brandPoint/50 text-brandPoint font-bold rounded-lg overflow-hidden transition-all hover:border-brandPoint hover:shadow-[0_0_20px_rgba(88,200,240,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
                         <div class="absolute inset-0 bg-brandPoint/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
@@ -415,8 +423,7 @@
         <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이 복사되었습니다!
     </div>
 
-    <!-- <!-- STREAMING_CHUNK: Resume Modal Element --> -->
-    <!-- Dynamic EN/KO Resume Modal -->
+    <!-- <!-- STREAMING_CHUNK: Dynamic EN/KO Resume Modal --> -->
     <div id="resume-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-[#040D2D]/80 backdrop-blur-md flex items-center justify-center p-4">
         <div class="bg-white text-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-200">
             
@@ -465,22 +472,27 @@
         </div>
     </div>
 
-    <!-- <!-- STREAMING_CHUNK: Main Javascript Execution Block --> -->
     <script>
         // Global variables to store cache
         window.resumeData = { ko: null, en: null };
 
-        // Robust Embedded Fallback Data System
-        // This acts as a protective shield if Git Push is not yet complete, or if local preview fails.
+        // Robust Embedded Fallback Data System (Updated to 100% exact match of high-fidelity data)
         const fallbackKo = {
             "name": "김준호",
-            "title": "Smart Factory & MES Operations Engineer (Fallback Cache)",
-            "contact": { "email": "junny.coder@gmail.com", "phone": "+82 (010) 7701-8414", "github": "github.com/JunnyCoder" },
-            "summary": { "title": "프로필 요약", "description": "글로벌 완성차 Tier-1 업체인 현대모비스 미국 조지아 법인에서 생산 제어 및 MES 운영을 전담해 온 스마트팩토리 전문가입니다. 하드웨어 설비(PLC, RFID, 스캐너)와 중앙 MES 데이터베이스를 유기적으로 연결하고, 대용량 실시간 트랜잭션을 중단 없이 처리하는 아키텍처 설계를 지향합니다." },
+            "title": "Smart Factory & MES Operations Engineer",
+            "contact": { 
+                "email": "junny.coder@gmail.com", 
+                "phone": "+82 (010) 7701-8414", 
+                "github": "github.com/JunnyCoder" 
+            },
+            "summary": { 
+                "title": "프로필 요약", 
+                "description": "글로벌 완성차 Tier-1 업체인 현대모비스 미국 조지아 법인에서 생산 제어 및 MES 운영을 전담해 온 스마트팩토리 전문가입니다. 하드웨어 설비(PLC, RFID, 스캐너)와 중앙 MES 데이터베이스를 유기적으로 연결하고, 대용량 실시간 트랜잭션을 중단 없이 처리하는 아키텍처 설계를 지향합니다. 현장과의 직관적인 소통을 바탕으로 연간 시스템 가동률 99.9%를 유지하는 안정성 중심의 엔지니어입니다." 
+            },
             "experience": [
                 {
                     "company": "현대모비스 미국 조지아 법인 (Hyundai Mobis Georgia, USA)",
-                    "period": "2023.01 - 현재 (재직 중)",
+                    "period": "2023.01 - 2025.12",
                     "role": "스마트팩토리 MES / IT 시스템 운영 엔지니어",
                     "achievements": [
                         "핵심 공정 가동률 99.9% 유지: 공장 조립 라인 및 자동 분류 창고(WMS) 실시간 로그 모니터링 시스템을 설계하여 누적 1,400여 건의 오작동 및 설비 에러를 선제적으로 조치.",
@@ -488,20 +500,37 @@
                         "대용량 트랜잭션 DB 튜닝: 공정 실시간 데이터 입출력 부하를 완화하기 위해 SQL 쿼리 튜닝 및 인덱스 최적화를 담당, 실시간 쿼리 처리 속도를 평균 35% 단축.",
                         "현장 밀착 요구사항 분석: 기계 오작동 발생 시 생산 조장 및 작업자들과의 적극적인 커뮤니케이션을 통해 에러 패턴을 규명하고 UI/UX 조작 직관성 개선."
                     ]
+                },
+                {
+                    "company": "(주)케이브레인 컴퍼니",
+                    "period": "2022.01 - 2022.06",
+                    "role": "웹빌더 서비스 기획자",
+                    "achievements": [
+                        "웹빌더 서비스(WEVEN) 기획: 프로젝트 생애 주기 기반 요구사항 정의 및 일정 관리 수립.",
+                        "사용자 행동 데이터 수집 설계: 가입 및 빌더 내 이탈 구간 개선을 위한 이벤트 태깅 파이프라인 기획."
+                    ]
                 }
             ],
             "skills": [
                 { "category": "Languages & Frameworks", "items": "C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++" },
                 { "category": "Databases & Protocols", "items": "Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA" },
-                { "category": "Industrial & Tools", "items": "PLC Connection (Mitsubishi, Rockwell), RFID/Barcode Scanners, Linux, Docker, Git, SVN" }
+                { "category": "Industrial & Tools", "items": "PLC Connection (Mitsubishi, Rockwell), RFID/Barcode Scanners, Linux, Docker, Git, SVN" },
+                { "category": "Certifications & Education", "items": "정보처리기사 (Engineer Information Processing), SQLD (SQL Developer), Georgia Tech MicroMasters Analytics (학습 중)" }
             ]
         };
 
         const fallbackEn = {
             "name": "Junho Kim",
-            "title": "Smart Factory & MES Operations Engineer (Fallback Cache)",
-            "contact": { "email": "junny.coder@gmail.com", "phone": "+1 (770) 589-4307", "github": "github.com/JunnyCoder" },
-            "summary": { "title": "Professional Summary", "description": "A highly-skilled Smart Factory Expert specializing in Manufacturing Execution Systems (MES) and production line automation. Built substantial hands-on experience at Hyundai Mobis Georgia (USA)." },
+            "title": "Smart Factory & MES Operations Engineer",
+            "contact": { 
+                "email": "junny.coder@gmail.com", 
+                "phone": "+1 (770) 589-4307", 
+                "github": "github.com/JunnyCoder" 
+            },
+            "summary": { 
+                "title": "Professional Summary", 
+                "description": "A highly-skilled Smart Factory Expert specializing in Manufacturing Execution Systems (MES) and production line automation. Built substantial hands-on experience at Hyundai Mobis Georgia (USA), supply chain lead for major automotive plants. Dedicated to bridging shop-floor hardware (PLCs, smart RFIDs, automated scanners) with enterprise-scale databases. Prides in maintaining a 99.9% uptime record through proactive data monitoring and cross-functional team collaborations." 
+            },
             "experience": [
                 {
                     "company": "Hyundai Mobis Georgia, USA",
@@ -510,19 +539,29 @@
                     "achievements": [
                         "99.9% System Uptime Shield: Designed and operated a unified real-time alert system monitoring the assembly lines and automated warehouse systems (WMS). Resolved 1,400+ potential bottlenecks before causing downstream failures.",
                         "HW-SW Interface Optimization: Standardized socket-based multi-thread communications connecting Mitsubishi/Rockwell PLCs, Honeywell barcode devices, and high-frequency RFIDs. Reduced packet loss to < 0.01%.",
-                        "High-Throughput DB Tuning: Led database optimization for high-speed manufacturing transactions. Rewrote complex Oracle/MSSQL queries and restructured partition indices, achieving a 35% faster response rate during peak hours."
+                        "High-Throughput DB Tuning: Led database optimization for high-speed manufacturing transactions. Rewrote complex Oracle/MSSQL queries and restructured partition indices, achieving a 35% faster response rate during peak hours.",
+                        "Cross-functional Problem Solving: Walked the production floor daily. Interviewed technicians and line leaders to map operational failure patterns into concrete UX updates for easier line troubleshooting."
+                    ]
+                },
+                {
+                    "company": "K-Brain Company Corp (WEVEN)",
+                    "period": "Jan 2022 - Jun 2022",
+                    "role": "Web Builder Service Planner",
+                    "achievements": [
+                        "Service Planning: Analyzed user feedback and planned structured modular layouts along the project software life cycle.",
+                        "User Analytics Ingestion: Defined tracking funnels and mapped interaction patterns to optimize builder navigation paths."
                     ]
                 }
             ],
             "skills": [
                 { "category": "Languages & Frameworks", "items": "C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++" },
                 { "category": "Databases & Protocols", "items": "Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA" },
-                { "category": "Industrial & Tools", "items": "PLC Integration (Rockwell, Mitsubishi), Barcode Systems, RFID, Docker, Linux, Git" }
+                { "category": "Industrial & Tools", "items": "PLC Integration (Rockwell, Mitsubishi), Barcode Systems, RFID, Docker, Linux, Git" },
+                { "category": "Certifications & Education", "items": "Engineer Information Processing (Korea), SQLD (SQL Developer), Georgia Tech MicroMasters Analytics (In Progress)" }
             ]
         };
 
-        // <!-- STREAMING_CHUNK: Dynamic JSON Fetch and Render Functions -->
-        // Dynamic Parser & Renderer
+        // <!-- STREAMING_CHUNK: Dynamic Parser & Renderer -->
         async function fetchResumeData() {
             const spinner = document.getElementById('resume-loading-spinner');
             if(spinner) spinner.classList.remove('hidden');
@@ -560,7 +599,6 @@
             const container = document.getElementById(`lang-${lang}-container`);
             if (!data || !container) return;
 
-            // Generate Experience HTML
             let expHtml = "";
             data.experience.forEach(exp => {
                 let achievementsList = exp.achievements.map(ach => `<li>${ach}</li>`).join('');
@@ -579,7 +617,6 @@
                 `;
             });
 
-            // Generate Skills HTML
             let skillsHtml = "";
             data.skills.forEach(skill => {
                 skillsHtml += `
@@ -590,7 +627,6 @@
                 `;
             });
 
-            // Construct Full Printable Markup
             container.innerHTML = `
                 <!-- Header -->
                 <div class="border-b-2 border-brandMain pb-6 flex flex-col md:flex-row justify-between items-start md:items-end">
@@ -598,7 +634,7 @@
                         <h1 class="text-3xl sm:text-4xl font-head font-bold text-brandMain mb-2">${data.name}</h1>
                         <p class="text-brandPoint font-bold text-lg font-code">${data.title}</p>
                     </div>
-                    <div class="mt-4 md:mt-0 text-left text-sm text-gray-600 font-code space-y-1">
+                    <div class="mt-4 md:mt-0 text-right text-sm text-gray-600 font-code space-y-1">
                         <div><i class="fa-solid fa-envelope mr-1.5 text-brandMain"></i> ${data.contact.email}</div>
                         <div><i class="fa-solid fa-mobile-screen mr-1.5 text-brandMain"></i> ${data.contact.phone}</div>
                         <div><i class="fa-brands fa-github mr-1.5 text-brandMain"></i> ${data.contact.github}</div>
@@ -674,15 +710,14 @@
 
             setInterval(() => {
                 const newLog = createLogElement(logs[logIndex]);
-                terminalContent.appendChild(newLog);
-                
-                if(terminalContent.children.length > 8) {
-                    terminalContent.removeChild(terminalContent.firstChild);
+                if(terminalContent) {
+                    terminalContent.appendChild(newLog);
+                    if(terminalContent.children.length > 8) {
+                        terminalContent.removeChild(terminalContent.firstChild);
+                    }
                 }
-                
                 logIndex = (logIndex + 1) % logs.length;
             }, 2500);
-
 
             // 3. Resume Modal Toggle Logic & Async Loader trigger
             const resumeModal = document.getElementById('resume-modal');
@@ -693,38 +728,43 @@
             const resumeCloseBtnBottom = document.getElementById('resume-close-btn-bottom');
 
             function openResume() {
-                resumeModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; 
-                // Dynamically fetch when opened if not cached yet
-                if (!window.resumeData.ko) {
-                    fetchResumeData();
+                if(resumeModal) {
+                    resumeModal.classList.remove('hidden');
+                    document.body.style.overflow = 'hidden'; 
+                    if (!window.resumeData.ko) {
+                        fetchResumeData();
+                    }
                 }
             }
 
             function closeResume() {
-                resumeModal.classList.add('hidden');
-                document.body.style.overflow = ''; 
+                if(resumeModal) {
+                    resumeModal.classList.add('hidden');
+                    document.body.style.overflow = ''; 
+                }
             }
 
             if(resumeOpenBtnHeader) resumeOpenBtnHeader.addEventListener('click', openResume);
             if(resumeOpenBtnMobile) {
                 resumeOpenBtnMobile.addEventListener('click', () => {
                     openResume();
-                    mobileMenu.classList.add('hidden'); 
+                    if(mobileMenu) mobileMenu.classList.add('hidden'); 
                 });
             }
             if(resumeOpenBtnHero) resumeOpenBtnHero.addEventListener('click', openResume);
             if(resumeCloseBtn) resumeCloseBtn.addEventListener('click', closeResume);
             if(resumeCloseBtnBottom) resumeCloseBtnBottom.addEventListener('click', closeResume);
 
-            resumeModal.addEventListener('click', (e) => {
-                if(e.target === resumeModal) {
-                    closeResume();
-                }
-            });
+            if(resumeModal) {
+                resumeModal.addEventListener('click', (e) => {
+                    if(e.target === resumeModal) {
+                        closeResume();
+                    }
+                });
+            }
 
             window.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !resumeModal.classList.contains('hidden')) {
+                if (e.key === 'Escape' && resumeModal && !resumeModal.classList.contains('hidden')) {
                     closeResume();
                 }
             });
@@ -756,11 +796,12 @@
         // 5. Toast UI Function
         function showToast() {
             const toast = document.getElementById('toast');
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
+            if(toast) {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000);
+            }
         }
 
         // 6. Resume Language Switcher Logic
@@ -771,20 +812,18 @@
             const btnEn = document.getElementById('btn-lang-en');
 
             if (lang === 'ko') {
-                koContainer.classList.remove('lang-hidden');
-                enContainer.classList.add('lang-hidden');
-                btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
-                btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
+                if(koContainer) koContainer.classList.remove('lang-hidden');
+                if(enContainer) enContainer.classList.add('lang-hidden');
+                if(btnKo) btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
+                if(btnEn) btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
             } else {
-                enContainer.classList.remove('lang-hidden');
-                koContainer.classList.add('lang-hidden');
-                btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
-                btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
+                if(enContainer) enContainer.classList.remove('lang-hidden');
+                if(koContainer) koContainer.classList.add('lang-hidden');
+                if(btnEn) btnEn.className = "px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark";
+                if(btnKo) btnKo.className = "px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white";
             }
         }
 
-
-        // <!-- STREAMING_CHUNK: Factory Process Simulator Layout Mapping -->
         // 7. Factory Process Simulator Logic (Adaptive Progress-based Routing)
         const Simulator = {
             state: 'WAITING', 
@@ -814,14 +853,14 @@
             init() {
                 if(!this.tablesEl) return;
                 this.renderTables(this.dataBad);
-                this.btnOpt.disabled = true;
+                if(this.btnOpt) this.btnOpt.disabled = true;
 
                 this.checkLayout();
                 window.addEventListener('resize', () => {
                     this.checkLayout();
                 });
 
-                this.btnOpt.addEventListener('click', () => this.optimize());
+                if(this.btnOpt) this.btnOpt.addEventListener('click', () => this.optimize());
 
                 const observer = new IntersectionObserver((entries) => {
                     if (entries[0].isIntersecting && this.state === 'WAITING') {
@@ -938,7 +977,6 @@
                 this.modules.push({ el, progress: 0 });
             },
 
-            // <!-- STREAMING_CHUNK: Dynamic Math Engine for Simulator Pathing -->
             loop(timestamp) {
                 if (!this.lastSpawnTime) this.lastSpawnTime = timestamp;
                 
@@ -1008,18 +1046,19 @@
                 if (this.state === 'OPTIMIZED') return;
                 this.state = 'BOTTLENECK';
                 this.renderTables(this.dataBad);
-                this.btnOpt.disabled = false;
+                if(this.btnOpt) this.btnOpt.disabled = false;
                 
                 const warningLine = document.getElementById('sim-warning-line');
                 if (warningLine) {
                     warningLine.style.opacity = '1';
                 }
-                document.getElementById('node-p3').classList.replace('border-brandMain', 'border-red-500');
+                const p3 = document.getElementById('node-p3');
+                if(p3) p3.classList.replace('border-brandMain', 'border-red-500');
             },
 
             optimize() {
                 this.state = 'OPTIMIZED';
-                this.btnOpt.disabled = true;
+                if(this.btnOpt) this.btnOpt.disabled = true;
                 
                 this.renderTables(this.dataGood, true);
                 
@@ -1027,25 +1066,32 @@
                 if (warningLine) {
                     warningLine.style.opacity = '0';
                 }
-                document.getElementById('node-p3').classList.replace('border-red-500', 'border-green-400');
+                const p3 = document.getElementById('node-p3');
+                if(p3) p3.classList.replace('border-red-500', 'border-green-400');
                 
                 const overlay = document.getElementById('sim-success-overlay');
                 const box = document.getElementById('sim-success-box');
-                overlay.classList.remove('hidden');
+                if(overlay) overlay.classList.remove('hidden');
                 setTimeout(() => {
-                    overlay.classList.remove('opacity-0');
-                    box.classList.remove('scale-90');
-                    box.classList.add('scale-100');
+                    if(overlay) overlay.classList.remove('opacity-0');
+                    if(box) {
+                        box.classList.remove('scale-90');
+                        box.classList.add('scale-100');
+                    }
                 }, 50);
 
-                this.btnOpt.innerHTML = `<span class="relative z-10 flex items-center font-head"><i class="fa-solid fa-check mr-2"></i> 라인 정상화 완료</span>`;
-                this.btnOpt.classList.replace('border-brandPoint/50', 'border-green-400');
-                this.btnOpt.classList.replace('text-brandPoint', 'text-green-400');
+                if(this.btnOpt) {
+                    this.btnOpt.innerHTML = `<span class="relative z-10 flex items-center font-head"><i class="fa-solid fa-check mr-2"></i> 라인 정상화 완료</span>`;
+                    this.btnOpt.classList.replace('border-brandPoint/50', 'border-green-400');
+                    this.btnOpt.classList.replace('text-brandPoint', 'text-green-400');
+                }
 
                 setTimeout(() => {
                     this.state = 'NORMAL';
-                    overlay.classList.add('opacity-0');
-                    setTimeout(() => overlay.classList.add('hidden'), 1000);
+                    if(overlay) overlay.classList.add('opacity-0');
+                    setTimeout(() => {
+                        if(overlay) overlay.classList.add('hidden');
+                    }, 1000);
                 }, 3000);
             }
         };
