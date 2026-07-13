@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스마트팩토리 개발자 김준호 포트폴리오</title>
+    
+    <!-- 1. Fonts Load -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 2. Tailwind CSS Engine Load (Must be loaded BEFORE config) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- 3. Tailwind Configuration (Safe Binding) -->
+    <script>
+        // Ensure tailwind object exists before configuring
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            brandMain: '#0D2971',       // Deep Corporate Blue
+                            brandPoint: '#58C8F0',      // Vibrant Sky Blue
+                            brandSub: '#F1F5F9',        // Cool Grey background
+                            brandDark: '#040D2D',       // Dark Navy for backgrounds
+                            brandText: '#1E293B',       // Slate 800
+                        },
+                        fontFamily: {
+                            sans: ['Pretendard', 'system-ui', 'sans-serif'],
+                            head: ['IBM Plex Sans KR', 'sans-serif'],
+                            mono: ['JetBrains Mono', 'monospace']
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* CSS Reset & Baseline */
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            color: #1E293B;
+            background-color: #F1F5F9;
+            margin: 0;
+            padding: 0;
+            word-break: keep-all;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Font Utility Classes */
+        .font-head { font-family: 'IBM Plex Sans KR', sans-serif; }
+        .font-code { font-family: 'JetBrains Mono', monospace; }
+
+        /* Media Responsiveness Fix */
+        img, video, iframe, canvas { max-width: 100%; height: auto; }
+
+        /* Custom Tech Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #040D2D; }
+        ::-webkit-scrollbar-thumb { background: #0D2971; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #58C8F0; }
+
+        /* Smooth reveal animation for terminal */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .log-entry { animation: fadeIn 0.3s ease-out forwards; }
+    </style>
+</head>
+
+<body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
+
+    <!-- GNB (Global Navigation Bar) -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
+            
+            <!-- Logo -->
+            <a href="#hero" class="flex items-center space-x-3 group">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-brandMain flex items-center justify-center border border-brandPoint/40 group-hover:border-brandPoint transition duration-300 shadow-[0_0_10px_rgba(88,200,240,0.2)]">
+                    <i class="fa-solid fa-microchip text-brandPoint text-sm sm:text-base"></i>
+                </div>
+                <div>
+                    <span class="font-head font-bold text-base sm:text-lg tracking-wide block leading-none">KIM JUNHO</span>
+                    <span class="font-code text-[10px] sm:text-xs text-brandPoint tracking-widest block mt-1">MES_ENG::ACTIVE</span>
+                </div>
+            </a>
+            
+            <!-- Desktop Nav -->
+            <nav class="hidden md:flex space-x-8 text-sm font-medium">
+                <a href="#hero" class="text-gray-300 hover:text-brandPoint transition-colors duration-200">HOME</a>
+                <a href="#intro" class="text-gray-300 hover:text-brandPoint transition-colors duration-200">STORY</a>
+                <a href="#strengths" class="text-gray-300 hover:text-brandPoint transition-colors duration-200">TECH PILLARS</a>
+                <a href="#contact" class="text-gray-300 hover:text-brandPoint transition-colors duration-200">CONTACT</a>
+            </nav>
+            
+            <!-- CTA Button & Mobile Menu Toggle -->
+            <div class="flex items-center space-x-4">
+                <a href="#contact" class="hidden sm:flex bg-brandPoint text-brandDark font-bold text-xs sm:text-sm px-4 py-2 rounded transition duration-300 hover:bg-white shadow-[0_0_15px_rgba(88,200,240,0.4)]">
+                    협업 제안 <i class="fa-solid fa-arrow-right ml-2 mt-0.5"></i>
+                </a>
+                <button id="mobile-menu-btn" class="md:hidden text-white text-2xl focus:outline-none p-2" aria-label="메뉴 열기">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Nav Dropdown -->
+        <div id="mobile-menu" class="hidden md:hidden bg-[#040D2D] border-t border-brandMain/50">
+            <div class="flex flex-col px-6 py-4 space-y-4">
+                <a href="#hero" class="text-gray-300 hover:text-brandPoint text-sm font-medium">HOME</a>
+                <a href="#intro" class="text-gray-300 hover:text-brandPoint text-sm font-medium">STORY</a>
+                <a href="#strengths" class="text-gray-300 hover:text-brandPoint text-sm font-medium">TECH PILLARS</a>
+                <a href="#contact" class="text-gray-300 hover:text-brandPoint text-sm font-medium">CONTACT</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="pt-24 pb-16 min-h-screen bg-brandDark text-white relative flex items-center w-full overflow-hidden">
+        <!-- Tech Background Pattern -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#0D2971_1px,transparent_1px),linear-gradient(to_bottom,#0D2971_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20"></div>
+        <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-brandPoint/10 rounded-full blur-[120px] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Hero Text -->
+            <div class="lg:col-span-6 space-y-8">
+                <div class="inline-flex items-center space-x-2 bg-brandMain/40 border border-brandPoint/30 px-3 py-1.5 rounded-full text-xs text-brandPoint font-code">
+                    <span class="w-2 h-2 rounded-full bg-brandPoint animate-pulse"></span>
+                    <span>System Status: Online</span>
+                </div>
+                
+                <h1 class="font-head text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight break-keep">
+                    현장의 흐름을<br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandPoint to-blue-400">데이터로 잇다</span>
+                </h1>
+                
+                <p class="text-gray-400 text-base sm:text-lg max-w-lg leading-relaxed break-keep">
+                    안녕하세요, 스마트팩토리 개발자 김준호입니다.<br>
+                    글로벌 완성차 거점(미국 현대모비스 조지아)에서 대규모 시스템을 안정적으로 운영하며, 공장의 단 1초 멈춤도 허용하지 않는 치열한 MES 설계를 지향합니다.
+                </p>
+                
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#intro" class="bg-brandPoint text-brandDark font-bold px-6 py-3 rounded hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(88,200,240,0.3)]">
+                        핵심 스토리 보기
+                    </a>
+                    <a href="#strengths" class="border border-gray-500 text-gray-300 font-bold px-6 py-3 rounded hover:border-brandPoint hover:text-brandPoint transition-all duration-300">
+                        기술 역량 확인
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero Visual (Terminal Simulator) -->
+            <div class="lg:col-span-6 w-full mt-10 lg:mt-0">
+                <div class="bg-[#020817] rounded-lg border border-brandMain shadow-2xl overflow-hidden w-full max-w-xl mx-auto">
+                    <!-- Terminal Window Header -->
+                    <div class="bg-[#0B1529] px-4 py-2 border-b border-brandMain flex items-center justify-between">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                        </div>
+                        <span class="font-code text-[10px] text-gray-500">factory-ai-engine.sh</span>
+                    </div>
+                    <!-- Terminal Content -->
+                    <div class="p-4 sm:p-6 h-[320px] font-code text-xs sm:text-sm overflow-y-hidden relative">
+                        <div class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-[#020817] to-transparent z-10"></div>
+                        <div id="terminal-content" class="space-y-2 flex flex-col justify-end h-full w-full">
+                            <!-- Logs will be injected here via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- Intro / Story Section -->
+    <section id="intro" class="py-24 bg-white relative w-full">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <div class="mb-16">
+                <span class="font-code text-brandPoint font-bold tracking-widest text-xs">HERO STORY</span>
+                <h2 class="font-head text-3xl sm:text-4xl font-bold text-brandMain mt-2">1초의 다운타임도 허용하지 않는 치열함</h2>
+                <div class="w-16 h-1 bg-brandPoint mt-4"></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Visual Dashboard Card -->
+                <div class="bg-brandSub p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xl relative order-2 lg:order-1">
+                    <div class="absolute -top-4 -right-4 bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm flex items-center">
+                        <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span> LIVE
+                    </div>
+                    <h3 class="font-head text-sm font-bold text-brandMain mb-6">MAL-GA 공장 시스템 모니터링 뷰 (Mockup)</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                            <p class="text-gray-500 text-xs mb-1">설비 가동률</p>
+                            <p class="font-head font-bold text-2xl text-brandMain">99.9%</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                            <p class="text-gray-500 text-xs mb-1">AI 예측 방어 건수</p>
+                            <p class="font-head font-bold text-2xl text-brandPoint">1,402</p>
+                        </div>
+                    </div>
+
+                    <!-- Flow Visualization -->
+                    <div class="bg-brandDark rounded-lg p-4 h-32 flex items-end space-x-2 overflow-hidden relative">
+                        <div class="w-full absolute top-2 left-4 font-code text-[10px] text-gray-500">REALTIME DATA THROUGHPUT</div>
+                        <!-- Animated Bars -->
+                        <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
+                        <div class="flex-1 bg-brandMain rounded-t-sm h-[60%]"></div>
+                        <div class="flex-1 bg-brandMain rounded-t-sm h-[50%]"></div>
+                        <div class="flex-1 bg-brandPoint shadow-[0_0_10px_#58C8F0] rounded-t-sm h-[90%]"></div>
+                        <div class="flex-1 bg-brandMain rounded-t-sm h-[70%]"></div>
+                        <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
+                    </div>
+                </div>
+
+                <!-- Story Text -->
+                <div class="space-y-6 order-1 lg:order-2">
+                    <h3 class="text-xl sm:text-2xl font-bold text-brandMain leading-snug break-keep">
+                        "거대한 제조 벨트 위에서 작은 예외 하나가 막대한 기회비용을 만듭니다."
+                    </h3>
+                    <p class="text-gray-600 leading-relaxed text-sm sm:text-base break-keep">
+                        저는 글로벌 협력업체인 현대모비스 미국 조지아 완성차 핵심 공장에서 MES를 직접 유지보수하며, 예기치 못한 에러와 생산 지연을 방어해 냈습니다.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed text-sm sm:text-base break-keep">
+                        단순한 시스템 개발에 멈추지 않습니다. 현장의 작업자와 치열하게 소통하며 요구사항을 파악하고, 대용량 로그 분석과 지능형 에러 통제 솔루션을 통해 <strong>오작동을 선제적으로 예방</strong>하는 것을 최우선 가치로 삼습니다.
+                    </p>
+                    
+                    <div class="p-4 bg-brandSub border-l-4 border-brandPoint rounded-r-lg mt-6">
+                        <p class="font-medium text-brandMain text-sm break-keep">
+                            💡 "준호님은 단순 소프트웨어 개발자를 넘어, 공장 설비 전체를 유기적인 하나의 소프트웨어로 바라볼 줄 아는 진정한 파트너입니다."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Strengths Section -->
+    <section id="strengths" class="py-24 bg-brandSub relative w-full">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <div class="text-center mb-16">
+                <span class="font-code text-brandPoint font-bold tracking-widest text-xs">TECH PILLARS</span>
+                <h2 class="font-head text-3xl sm:text-4xl font-bold text-brandMain mt-2">공정을 혁신하는 4대 핵심 역량</h2>
+                <div class="w-16 h-1 bg-brandPoint mt-4 mx-auto"></div>
+            </div>
+
+            <!-- Grid 2x2 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                
+                <!-- Card 1 -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                    <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <h3 class="font-head text-xl font-bold text-brandMain mb-3">데이터 중심의 스마트 에러 예방</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed break-keep">
+                        실시간 모니터링과 정밀한 예외 처리를 통해 제조 공정의 다운타임을 최소화합니다. 방대한 이벤트 로그를 파싱하여 병목을 찾아내고, 생산 효율을 극대화하는 데이터 파이프라인을 설계합니다.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                    <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-users-gear"></i>
+                    </div>
+                    <h3 class="font-head text-xl font-bold text-brandMain mb-3">현장 밀착형 소통 및 문제 해결</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed break-keep">
+                        모니터 뒤에만 머물지 않습니다. 생산 라인 작업자 및 관리자들과 직접 부딪히며 소통하여 현장의 숨겨진 페인 포인트(Pain Point)를 정확히 짚어내고, 직관적인 솔루션을 제시합니다.
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                    <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h3 class="font-head text-xl font-bold text-brandMain mb-3">글로벌 완성차 대용량 MES 운영</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed break-keep">
+                        미국 거점 공장에서의 실무 경험을 바탕으로, 글로벌 수준의 대규모 제조 트랜잭션을 능숙하게 제어합니다. 복잡한 시스템에서도 안정성을 담보하는 글로벌 표준 로직을 수립합니다.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
+                    <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
+                        <i class="fa-solid fa-network-wired"></i>
+                    </div>
+                    <h3 class="font-head text-xl font-bold text-brandMain mb-3">하드웨어-소프트웨어 인터페이스</h3>
+                    <p class="text-gray-600 text-sm leading-relaxed break-keep">
+                        생산 설비(PLC), 바코드 스캐너, RFID 등 다양한 현장 디바이스와 중앙 MES 서버 간의 안정적인 매핑 및 소켓 통신을 완벽히 구현하여 현장 시그널을 유실 없이 연결합니다.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="contact" class="py-24 bg-brandMain text-white relative w-full text-center px-6">
+        <div class="max-w-3xl mx-auto">
+            <h2 class="font-head text-3xl sm:text-4xl font-bold mb-6 leading-tight break-keep">
+                귀사의 제조 경쟁력을 극대화할<br>스마트팩토리 파트너를 찾으시나요?
+            </h2>
+            <p class="text-blue-100 text-base sm:text-lg mb-10 break-keep">
+                현장의 문제를 주도적으로 해결하고, 공장 전체를 하나의 똑똑한 시스템으로 이끌어갈 준비가 되어 있습니다.
+            </p>
+            
+            <!-- Email Copy UI -->
+            <div class="bg-brandDark p-2 sm:p-3 rounded-lg inline-flex flex-col sm:flex-row items-center border border-brandPoint/30 shadow-2xl max-w-full">
+                <span id="email-text" class="font-code text-brandPoint text-sm sm:text-base px-6 py-3 font-semibold break-all">
+                    junny.coder@gmail.com
+                </span>
+                <button onclick="copyToClipboard()" class="w-full sm:w-auto mt-2 sm:mt-0 bg-brandPoint text-brandDark px-6 py-3 rounded font-bold hover:bg-white transition-colors flex items-center justify-center">
+                    <i class="fa-regular fa-copy mr-2"></i> 복사하기
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-brandDark py-8 border-t border-brandMain w-full">
+        <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+            <p>© 2026 KIM JUNHO. Smart Factory Engineer.</p>
+            <div class="flex space-x-6 mt-4 md:mt-0">
+                <a href="#" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
+                <a href="#" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 right-8 z-50 bg-brandPoint text-brandDark font-bold px-6 py-3 rounded shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center">
+        <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이 복사되었습니다!
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // 1. Mobile Menu Toggle
+            const menuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // 2. Terminal Auto-typing Simulation
+            const terminalContent = document.getElementById('terminal-content');
+            const logs = [
+                "[SYSTEM] Initializing Smart Factory MES Core...",
+                "[INFO] Connecting to Plant DB (Georgia, USA) - OK",
+                "[WARN] Anomaly detected on Assembly Line 3.",
+                "[AI] Running predictive analysis on Line 3 sensor data...",
+                "[AI] Prediction complete. Adjusting operational parameters.",
+                "[SUCCESS] Equipment downtime prevented. Flow stabilized.",
+                "[DATA] Syncing 14,024 transaction logs to main server...",
+                "[SYSTEM] All systems nominal. Awaiting next cycle."
+            ];
+            
+            let logIndex = 0;
+            
+            // Generate a log element
+            function createLogElement(text) {
+                const el = document.createElement('div');
+                const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+                
+                // Color coding based on keyword
+                let colorClass = "text-gray-400";
+                if(text.includes("[WARN]")) colorClass = "text-yellow-400";
+                if(text.includes("[SUCCESS]") || text.includes("[OK]")) colorClass = "text-green-400";
+                if(text.includes("[AI]")) colorClass = "text-brandPoint font-bold";
+                
+                el.innerHTML = `<span class="text-gray-600">[${time}]</span> <span class="${colorClass}">${text}</span>`;
+                el.className = "log-entry";
+                return el;
+            }
+
+            // Loop logic
+            setInterval(() => {
+                const newLog = createLogElement(logs[logIndex]);
+                terminalContent.appendChild(newLog);
+                
+                // Keep only last 8 logs to prevent overflow
+                if(terminalContent.children.length > 8) {
+                    terminalContent.removeChild(terminalContent.firstChild);
+                }
+                
+                logIndex = (logIndex + 1) % logs.length;
+            }, 2500); // Add a log every 2.5 seconds
+            
+        });
+
+        // 3. Safe Copy to Clipboard Function (Works in iFrames)
+        function copyToClipboard() {
+            const emailText = document.getElementById('email-text').innerText.trim();
+            const textArea = document.createElement("textarea");
+            textArea.value = emailText;
+            
+            // Move textarea out of viewport so it's invisible
+            textArea.style.position = "absolute";
+            textArea.style.left = "-999999px";
+            
+            document.body.prepend(textArea);
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                showToast();
+            } catch (error) {
+                console.error("복사 실패", error);
+            } finally {
+                textArea.remove();
+            }
+        }
+
+        // 4. Toast UI Function
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
