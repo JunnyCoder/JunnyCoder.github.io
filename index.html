@@ -69,6 +69,18 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .log-entry { animation: fadeIn 0.3s ease-out forwards; }
+
+        @keyframes blink-red {
+            0%, 100% { border-color: rgba(239, 68, 68, 0.3); box-shadow: 0 0 10px rgba(239,68,68,0.2); }
+            50% { border-color: rgba(239, 68, 68, 1); box-shadow: 0 0 20px rgba(239,68,68,0.8); }
+        }
+        .bottleneck-active {
+            animation: blink-red 1.5s infinite;
+            background-color: rgba(239, 68, 68, 0.1) !important;
+        }
+        .conveyor-module {
+            transition: left 0.1s linear;
+        }
     </style>
 </head>
 
@@ -195,7 +207,7 @@
                     <div class="absolute -top-4 -right-4 bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm flex items-center">
                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span> LIVE
                     </div>
-                    <h3 class="font-head text-sm font-bold text-brandMain mb-6">MAL-GA 공장 시스템 모니터링 뷰 (Mockup)</h3>
+                    <h3 class="font-head text-sm font-bold text-brandMain mb-6">HMA 조지아 공장 시스템 모니터링 뷰 (Mockup)</h3>
                     
                     <div class="grid grid-cols-2 gap-4 mb-6">
                         <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
@@ -235,9 +247,75 @@
                     
                     <div class="p-4 bg-brandSub border-l-4 border-brandPoint rounded-r-lg mt-6">
                         <p class="font-medium text-brandMain text-sm break-keep">
-                            💡 "단순 소프트웨어 개발자를 넘어, 공장 설비 전체를 유기적인 하나의 소프트웨어로 바라볼 줄 아는 진정한 파트너입니다."
+                            💡 "준호님은 단순 소프트웨어 개발자를 넘어, 공장 설비 전체를 유기적인 하나의 소프트웨어로 바라볼 줄 아는 진정한 파트너입니다."
                         </p>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Simulator Section -->
+    <section id="simulator" class="py-24 bg-brandDark text-white relative w-full overflow-hidden border-t border-brandMain/30">
+        <div class="max-w-7xl mx-auto px-6">
+            
+            <div class="text-center mb-16">
+                <span class="font-code text-brandPoint font-bold tracking-widest text-xs">AI PREDICTIVE CONTROL</span>
+                <h2 class="font-head text-3xl sm:text-4xl font-bold text-white mt-2">공정 병목 예측 및 자동 최적화</h2>
+                <div class="w-16 h-1 bg-brandPoint mt-4 mx-auto"></div>
+                <p class="text-gray-400 mt-4 max-w-2xl mx-auto text-sm sm:text-base break-keep">
+                    데이터 기반의 실시간 모니터링을 통해 병목(Bottleneck) 현상을 감지하고, AI 알고리즘이 작업을 재배치하여 생산 라인의 흐름을 즉각적으로 복구하는 시뮬레이션입니다.
+                </p>
+            </div>
+
+            <!-- Simulator UI -->
+            <div class="bg-[#020817] border border-brandMain/50 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                <!-- Overlay on optimized -->
+                <div id="sim-success-overlay" class="absolute inset-0 bg-brandMain/20 z-30 hidden flex items-center justify-center backdrop-blur-sm transition-opacity duration-1000 opacity-0">
+                    <div class="bg-brandDark border border-brandPoint text-brandPoint px-8 py-4 rounded-xl font-head font-bold text-xl sm:text-2xl flex items-center shadow-[0_0_30px_rgba(88,200,240,0.4)] transform scale-90 transition-transform duration-500" id="sim-success-box">
+                        <i class="fa-solid fa-check-circle mr-3"></i> AI 공정 최적화 완료
+                    </div>
+                </div>
+
+                <!-- Horizontal Scroll Wrapper for Mobile -->
+                <div class="w-full overflow-x-auto pb-4">
+                    <div class="min-w-[700px]">
+                        <!-- Process Grid (Tables) -->
+                        <div id="sim-tables" class="grid grid-cols-5 gap-4 mb-8">
+                            <!-- Tables rendered by JS -->
+                        </div>
+
+                        <!-- Conveyor Line -->
+                        <div class="relative h-24 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 flex items-center overflow-hidden shadow-inner">
+                            <!-- Base Track Line -->
+                            <div class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0"></div>
+                            
+                            <!-- Red Warning Line for Bottleneck -->
+                            <div id="sim-warning-line" class="absolute left-[40%] right-[40%] h-[2px] bg-red-500 top-1/2 -translate-y-1/2 z-0 opacity-0 shadow-[0_0_10px_red] transition-all duration-700"></div>
+
+                            <!-- Factory Nodes (Visual Markers) -->
+                            <div class="absolute inset-0 flex justify-between items-center px-8 z-10 pointer-events-none w-full">
+                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P1</span></div>
+                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P2</span></div>
+                                <div id="sim-node-3" class="w-5 h-5 rounded-full border-2 border-brandMain bg-[#020817] relative transition-colors duration-500"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P3</span></div>
+                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P4</span></div>
+                                <div class="w-4 h-4 rounded-full border-2 border-brandMain bg-[#020817] relative"><span class="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] text-gray-500 font-code">P5</span></div>
+                            </div>
+
+                            <!-- Modules Container -->
+                            <div id="sim-track" class="absolute inset-0 z-20 w-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="mt-8 flex justify-center relative z-40">
+                    <button id="btn-optimize" class="group relative px-6 py-3 sm:px-8 sm:py-4 bg-[#0B1529] border border-brandPoint/50 text-brandPoint font-bold rounded-lg overflow-hidden transition-all hover:border-brandPoint hover:shadow-[0_0_20px_rgba(88,200,240,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
+                        <div class="absolute inset-0 bg-brandPoint/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
+                        <span class="relative z-10 flex items-center font-head text-sm sm:text-base">
+                            <i class="fa-solid fa-microchip mr-2"></i> AI 공정 최적화 실행
+                        </span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -317,7 +395,7 @@
             <!-- Email Copy UI -->
             <div class="bg-brandDark p-2 sm:p-3 rounded-lg inline-flex flex-col sm:flex-row items-center border border-brandPoint/30 shadow-2xl max-w-full">
                 <span id="email-text" class="font-code text-brandPoint text-sm sm:text-base px-6 py-3 font-semibold break-all">
-                    junny.coder@gmail.com
+                    kim.junho.mes@gmail.com
                 </span>
                 <button onclick="copyToClipboard()" class="w-full sm:w-auto mt-2 sm:mt-0 bg-brandPoint text-brandDark px-6 py-3 rounded font-bold hover:bg-white transition-colors flex items-center justify-center">
                     <i class="fa-regular fa-copy mr-2"></i> 복사하기
@@ -331,8 +409,8 @@
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
             <p>© 2026 KIM JUNHO. Smart Factory Engineer.</p>
             <div class="flex space-x-6 mt-4 md:mt-0">
-                <a href="https://github.com/JunnyCoder" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
-                <a href="https://www.linkedin.com/in/junho-kim-50030b1b6/" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
+                <a href="#" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-github text-lg"></i></a>
+                <a href="#" class="hover:text-brandPoint transition-colors"><i class="fa-brands fa-linkedin text-lg"></i></a>
             </div>
         </div>
     </footer>
@@ -431,6 +509,218 @@
                 toast.classList.add('translate-y-20', 'opacity-0');
             }, 3000);
         }
+
+        // 5. Factory Process Simulator Logic
+        const Simulator = {
+            state: 'WAITING', // WAITING, NORMAL, BOTTLENECK, OPTIMIZED
+            trackEl: document.getElementById('sim-track'),
+            tablesEl: document.getElementById('sim-tables'),
+            btnOpt: document.getElementById('btn-optimize'),
+            modules: [],
+            lastSpawnTime: 0,
+            animationFrame: null,
+            trackWidth: 0,
+            
+            // Task Datasets
+            dataBad: [
+                { title: '공정 1 (투입)', tasks: [{ n: '자재 로딩', t: '2s' }, { n: '1차 검수', t: '1s' }] },
+                { title: '공정 2 (조립)', tasks: [{ n: '하부 프레임', t: '3s' }, { n: '나사 체결', t: '2s' }] },
+                { title: '공정 3 (핵심 병목)', tasks: [{ n: '정밀 용접', t: '18s', w: true }, { n: '센서 부착', t: '15s', w: true }, { n: '비전 검사', t: '12s', w: true }] },
+                { title: '공정 4 (마감)', tasks: [{ n: '표면 처리', t: '2s' }] },
+                { title: '공정 5 (출하)', tasks: [{ n: '최종 패키징', t: '3s' }] }
+            ],
+            dataGood: [
+                { title: '공정 1 (투입)', tasks: [{ n: '자재 로딩', t: '2s' }, { n: '1차 검수', t: '1s' }, { n: '사전 용접', t: '6s', new: true }] },
+                { title: '공정 2 (조립)', tasks: [{ n: '하부 프레임', t: '3s' }, { n: '나사 체결', t: '2s' }, { n: '센서 모듈화', t: '5s', new: true }] },
+                { title: '공정 3 (최적화 됨)', tasks: [{ n: '정밀 용접', t: '6s', opt: true }, { n: '비전 검사', t: '6s', opt: true }] },
+                { title: '공정 4 (마감)', tasks: [{ n: '표면 처리', t: '2s' }, { n: '잔여 용접', t: '6s', new: true }] },
+                { title: '공정 5 (출하)', tasks: [{ n: '최종 패키징', t: '3s' }, { n: '잔여 센서', t: '5s', new: true }] }
+            ],
+
+            init() {
+                if(!this.tablesEl) return;
+                this.renderTables(this.dataBad);
+                this.btnOpt.disabled = true; // Disable until bottleneck occurs
+
+                // Handle Resize
+                window.addEventListener('resize', () => {
+                    if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
+                });
+                if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
+
+                // Bind Button
+                this.btnOpt.addEventListener('click', () => this.optimize());
+
+                // Intersection Observer to start when visible
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting && this.state === 'WAITING') {
+                        this.start();
+                    }
+                }, { threshold: 0.3 });
+                
+                const simSection = document.getElementById('simulator');
+                if(simSection) observer.observe(simSection);
+            },
+
+            renderTables(dataset, isOptimized = false) {
+                this.tablesEl.innerHTML = '';
+                dataset.forEach((process, idx) => {
+                    let taskHtml = process.tasks.map(t => {
+                        let color = "text-gray-300";
+                        if (t.w) color = "text-red-400 font-bold";
+                        if (t.new) color = "text-brandPoint font-bold";
+                        if (t.opt) color = "text-green-400 font-bold";
+                        
+                        return `
+                            <div class="flex justify-between items-center py-1 border-b border-gray-700/50 last:border-0 text-xs sm:text-sm">
+                                <span class="${color}">${t.n}</span>
+                                <span class="font-code text-gray-500">${t.t}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    let boxClass = "bg-[#0B1529] border border-gray-700 rounded-lg p-3 transition-all duration-500 h-full flex flex-col";
+                    if (this.state === 'BOTTLENECK' && idx === 2) {
+                        boxClass += " bottleneck-active";
+                    } else if (isOptimized && idx !== 2 && dataset[idx].tasks.some(t => t.new)) {
+                        boxClass += " border-brandPoint/50 shadow-[0_0_10px_rgba(88,200,240,0.1)]";
+                    }
+
+                    let headerColor = (this.state === 'BOTTLENECK' && idx === 2) ? 'text-red-400' : 'text-gray-400';
+                    if(isOptimized && idx === 2) headerColor = 'text-green-400';
+
+                    const el = document.createElement('div');
+                    el.className = boxClass;
+                    el.innerHTML = `
+                        <div class="font-head text-xs font-bold ${headerColor} mb-2 pb-2 border-b border-gray-700 flex justify-between items-center">
+                            ${process.title}
+                            ${(this.state === 'BOTTLENECK' && idx === 2) ? '<i class="fa-solid fa-triangle-exclamation text-red-500 animate-pulse"></i>' : ''}
+                        </div>
+                        <div class="flex-1 flex flex-col justify-center space-y-1">
+                            ${taskHtml}
+                        </div>
+                    `;
+                    this.tablesEl.appendChild(el);
+                });
+            },
+
+            start() {
+                this.state = 'NORMAL';
+                if(this.trackEl) this.trackWidth = this.trackEl.offsetWidth;
+                requestAnimationFrame((t) => this.loop(t));
+
+                // Auto trigger bottleneck after 4 seconds
+                setTimeout(() => this.triggerBottleneck(), 4000);
+            },
+
+            spawn() {
+                if(!this.trackEl) return;
+                const el = document.createElement('div');
+                el.className = 'absolute top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 bg-white border-2 border-brandMain rounded shadow-[0_0_10px_rgba(255,255,255,0.5)] z-20 conveyor-module';
+                this.trackEl.appendChild(el);
+                this.modules.push({ el, x: 0 });
+            },
+
+            loop(timestamp) {
+                if (!this.lastSpawnTime) this.lastSpawnTime = timestamp;
+                
+                // Spawn interval based on state
+                let spawnInterval = this.state === 'BOTTLENECK' ? 1200 : 1800; 
+
+                if (timestamp - this.lastSpawnTime > spawnInterval) {
+                    this.spawn();
+                    this.lastSpawnTime = timestamp;
+                }
+
+                const zoneWidth = this.trackWidth / 5;
+                const bottleneckStart = zoneWidth * 1.8; // Before process 3 (index 2)
+
+                for (let i = 0; i < this.modules.length; i++) {
+                    let mod = this.modules[i];
+                    let speed = 2.5; // Base pixel per frame (~150px/sec at 60fps)
+
+                    if (this.state === 'BOTTLENECK') {
+                        // If module is entering or in Zone 3
+                        if (mod.x > bottleneckStart && mod.x < zoneWidth * 3) {
+                            speed = 0.2; // Massive slow down
+                        }
+                    } else if (this.state === 'OPTIMIZED') {
+                        speed = 4; // Clear out fast
+                    }
+
+                    // Collision (Piling up)
+                    if (i > 0) {
+                        let frontMod = this.modules[i-1];
+                        if (frontMod.x - mod.x < 24) { // Gap distance
+                            speed = 0; 
+                            mod.x = frontMod.x - 24; // Stick behind
+                        }
+                    }
+
+                    mod.x += speed;
+                    mod.el.style.left = mod.x + 'px';
+
+                    // Remove if finished
+                    if (mod.x > this.trackWidth + 20) {
+                        mod.el.remove();
+                        this.modules.splice(i, 1);
+                        i--;
+                    }
+                }
+
+                this.animationFrame = requestAnimationFrame((t) => this.loop(t));
+            },
+
+            triggerBottleneck() {
+                if (this.state === 'OPTIMIZED') return;
+                this.state = 'BOTTLENECK';
+                this.renderTables(this.dataBad);
+                this.btnOpt.disabled = false;
+                
+                // Visual cues
+                document.getElementById('sim-warning-line').style.opacity = '1';
+                document.getElementById('sim-node-3').classList.replace('border-brandMain', 'border-red-500');
+            },
+
+            optimize() {
+                this.state = 'OPTIMIZED';
+                this.btnOpt.disabled = true;
+                
+                // Change Data and render
+                this.renderTables(this.dataGood, true);
+                
+                // Clear warning visuals
+                document.getElementById('sim-warning-line').style.opacity = '0';
+                document.getElementById('sim-node-3').classList.replace('border-red-500', 'border-green-400');
+                
+                // Show Success Overlay
+                const overlay = document.getElementById('sim-success-overlay');
+                const box = document.getElementById('sim-success-box');
+                overlay.classList.remove('hidden');
+                setTimeout(() => {
+                    overlay.classList.remove('opacity-0');
+                    box.classList.remove('scale-90');
+                    box.classList.add('scale-100');
+                }, 50);
+
+                // Change button text and color
+                this.btnOpt.innerHTML = `<span class="relative z-10 flex items-center font-head"><i class="fa-solid fa-check mr-2"></i> 라인 정상화 완료</span>`;
+                this.btnOpt.classList.replace('border-brandPoint/50', 'border-green-400');
+                this.btnOpt.classList.replace('text-brandPoint', 'text-green-400');
+
+                // Return to normal speed after clearing
+                setTimeout(() => {
+                    this.state = 'NORMAL';
+                    overlay.classList.add('opacity-0');
+                    setTimeout(() => overlay.classList.add('hidden'), 1000);
+                }, 3000);
+            }
+        };
+
+        // Initialize Simulator when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            Simulator.init();
+        });
     </script>
 </body>
 </html>
