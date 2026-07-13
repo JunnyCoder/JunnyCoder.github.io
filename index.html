@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>스마트팩토리 개발자 김준호 포트폴리오 & 레주메</title>
+    <title>Junny's Dev world</title>
     
     <!-- 1. Fonts Load -->
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
@@ -111,7 +111,7 @@
 
 <body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
 
-    <!-- STREAMING_CHUNK: Header Navigation GNB -->
+    <!-- <!-- STREAMING_CHUNK: Header Navigation GNB --> -->
     <header class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center">
             
@@ -161,15 +161,13 @@
         </div>
     </header>
 
-    <!-- STREAMING_CHUNK: Hero Section -->
+    <!-- <!-- STREAMING_CHUNK: Hero Section --> -->
     <section id="hero" class="pt-24 pb-16 min-h-screen bg-brandDark text-white relative flex items-center w-full overflow-hidden">
-        <!-- Tech Background Pattern -->
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#0D2971_1px,transparent_1px),linear-gradient(to_bottom,#0D2971_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20"></div>
         <div class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-brandPoint/10 rounded-full blur-[120px] pointer-events-none"></div>
         
         <div class="max-w-7xl mx-auto px-6 w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             
-            <!-- Hero Text -->
             <div class="lg:col-span-6 space-y-8">
                 <div class="inline-flex items-center space-x-2 bg-brandMain/40 border border-brandPoint/30 px-3 py-1.5 rounded-full text-xs text-brandPoint font-code">
                     <span class="w-2 h-2 rounded-full bg-brandPoint animate-pulse"></span>
@@ -196,10 +194,8 @@
                 </div>
             </div>
 
-            <!-- Hero Visual (Terminal Simulator) -->
             <div class="lg:col-span-6 w-full mt-10 lg:mt-0">
                 <div class="bg-[#020817] rounded-lg border border-brandMain shadow-2xl overflow-hidden w-full max-w-xl mx-auto">
-                    <!-- Terminal Window Header -->
                     <div class="bg-[#0B1529] px-4 py-2 border-b border-brandMain flex items-center justify-between">
                         <div class="flex space-x-2">
                             <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
@@ -208,12 +204,9 @@
                         </div>
                         <span class="font-code text-[10px] text-gray-500">factory-ai-engine.sh</span>
                     </div>
-                    <!-- Terminal Content -->
                     <div class="p-4 sm:p-6 h-[320px] font-code text-xs sm:text-sm overflow-y-hidden relative">
                         <div class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-[#020817] to-transparent z-10"></div>
-                        <div id="terminal-content" class="space-y-2 flex flex-col justify-end h-full w-full">
-                            <!-- Logs will be injected here via JS -->
-                        </div>
+                        <div id="terminal-content" class="space-y-2 flex flex-col justify-end h-full w-full"></div>
                     </div>
                 </div>
             </div>
@@ -221,7 +214,7 @@
         </div>
     </section>
 
-    <!-- STREAMING_CHUNK: Intro Section -->
+    <!-- <!-- STREAMING_CHUNK: Intro Section --> -->
     <section id="intro" class="py-24 bg-white relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -232,7 +225,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-                <!-- Visual Dashboard Card -->
                 <div class="bg-brandSub p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xl relative order-2 lg:order-1">
                     <div class="absolute -top-4 -right-4 bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm flex items-center">
                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span> LIVE
@@ -250,10 +242,8 @@
                         </div>
                     </div>
 
-                    <!-- Flow Visualization -->
                     <div class="bg-brandDark rounded-lg p-4 h-32 flex items-end space-x-2 overflow-hidden relative">
                         <div class="w-full absolute top-2 left-4 font-code text-[10px] text-gray-500">REALTIME DATA THROUGHPUT</div>
-                        <!-- Animated Bars -->
                         <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
                         <div class="flex-1 bg-brandMain rounded-t-sm h-[60%]"></div>
                         <div class="flex-1 bg-brandMain rounded-t-sm h-[50%]"></div>
@@ -263,7 +253,6 @@
                     </div>
                 </div>
 
-                <!-- Story Text -->
                 <div class="space-y-6 order-1 lg:order-2">
                     <h3 class="text-xl sm:text-2xl font-bold text-brandMain leading-snug break-keep">
                         "거대한 제조 벨트 위에서 작은 예외 하나가 막대한 기회비용을 만듭니다."
@@ -285,8 +274,7 @@
         </div>
     </section>
 
-    <!-- STREAMING_CHUNK: Responsive Process Simulator Section with 2-Tier Path Integration -->
-    <!-- Process Simulator Section -->
+    <!-- <!-- STREAMING_CHUNK: Process Simulator Section --> -->
     <section id="simulator" class="py-24 bg-brandDark text-white relative w-full overflow-hidden border-t border-brandMain/30">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -299,35 +287,22 @@
                 </p>
             </div>
 
-            <!-- Simulator UI -->
             <div class="bg-[#020817] border border-brandMain/50 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-                <!-- Overlay on optimized -->
                 <div id="sim-success-overlay" class="absolute inset-0 bg-brandMain/20 z-30 hidden flex items-center justify-center backdrop-blur-sm transition-opacity duration-1000 opacity-0">
                     <div class="bg-brandDark border border-brandPoint text-brandPoint px-8 py-4 rounded-xl font-head font-bold text-xl sm:text-2xl flex items-center shadow-[0_0_30px_rgba(88,200,240,0.4)] transform scale-90 transition-transform duration-500" id="sim-success-box">
                         <i class="fa-solid fa-check-circle mr-3"></i> AI 공정 최적화 완료
                     </div>
                 </div>
 
-                <!-- Process Grid (Tables) - Always full width on mobile grid -->
-                <div id="sim-tables" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                    <!-- Tables rendered by JS -->
-                </div>
+                <div id="sim-tables" class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"></div>
 
-                <!-- Dynamic Conveyor Line (Perfect Adaptive 2-Tier Layout) -->
                 <div class="relative h-48 md:h-28 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 overflow-hidden shadow-inner flex items-center">
-                    
-                    <!-- [Desktop Track Path] Single horizontal line -->
                     <div id="track-line-desktop" class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0 hidden md:block"></div>
-                    
-                    <!-- [Mobile Track Path] Dual horizontal line with connecting link -->
                     <div id="track-line-mobile-1" class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[25%] -translate-y-1/2 z-0 block md:hidden"></div>
                     <div id="track-line-mobile-2" class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[75%] -translate-y-1/2 z-0 block md:hidden"></div>
                     <div id="track-line-mobile-link" class="absolute right-[10%] w-[2px] top-[25%] bottom-[25%] bg-gray-700 z-0 block md:hidden"></div>
-
-                    <!-- Red Warning Line for Bottleneck (Toggled dynamically) -->
                     <div id="sim-warning-line" class="absolute h-[2px] bg-red-500 top-1/2 -translate-y-1/2 z-10 opacity-0 shadow-[0_0_10px_red] transition-all duration-700 pointer-events-none"></div>
 
-                    <!-- Factory Nodes (Positions are dynamically assigned via CSS/JS) -->
                     <div id="conveyor-node-container" class="absolute inset-0 z-10 pointer-events-none w-full h-full">
                         <div id="node-p1" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P1</span></div>
                         <div id="node-p2" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P2</span></div>
@@ -336,11 +311,9 @@
                         <div id="node-p5" class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"><span class="absolute -top-6 text-[10px] text-gray-500 font-code">P5</span></div>
                     </div>
 
-                    <!-- Floating Modules Container -->
                     <div id="sim-track" class="absolute inset-0 z-20 w-full h-full pointer-events-none"></div>
                 </div>
 
-                <!-- Action Button -->
                 <div class="mt-8 flex justify-center relative z-40">
                     <button id="btn-optimize" class="group relative px-6 py-3 sm:px-8 sm:py-4 bg-[#0B1529] border border-brandPoint/50 text-brandPoint font-bold rounded-lg overflow-hidden transition-all hover:border-brandPoint hover:shadow-[0_0_20px_rgba(88,200,240,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none">
                         <div class="absolute inset-0 bg-brandPoint/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"></div>
@@ -353,7 +326,7 @@
         </div>
     </section>
 
-    <!-- STREAMING_CHUNK: Technical Pillars Section -->
+    <!-- <!-- STREAMING_CHUNK: Technical Pillars Section --> -->
     <section id="strengths" class="py-24 bg-brandSub relative w-full">
         <div class="max-w-7xl mx-auto px-6">
             
@@ -363,10 +336,7 @@
                 <div class="w-16 h-1 bg-brandPoint mt-4 mx-auto"></div>
             </div>
 
-            <!-- Grid 2x2 -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                
-                <!-- Card 1 -->
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                     <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
                         <i class="fa-solid fa-chart-line"></i>
@@ -377,7 +347,6 @@
                     </p>
                 </div>
 
-                <!-- Card 2 -->
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                     <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
                         <i class="fa-solid fa-users-gear"></i>
@@ -388,7 +357,6 @@
                     </p>
                 </div>
 
-                <!-- Card 3 -->
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                     <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
                         <i class="fa-solid fa-globe"></i>
@@ -399,7 +367,6 @@
                     </p>
                 </div>
 
-                <!-- Card 4 -->
                 <div class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group">
                     <div class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors">
                         <i class="fa-solid fa-network-wired"></i>
@@ -409,12 +376,11 @@
                         생산 설비(PLC), 바코드 스캐너, RFID 등 다양한 현장 디바이스와 중앙 MES 서버 간의 안정적인 매핑 및 소켓 통신을 완벽히 구현하여 현장 시그널을 유실 없이 연결합니다.
                     </p>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- STREAMING_CHUNK: Contact Form Section -->
+    <!-- <!-- STREAMING_CHUNK: Contact Form Section --> -->
     <section id="contact" class="py-24 bg-brandMain text-white relative w-full text-center px-6">
         <div class="max-w-3xl mx-auto">
             <h2 class="font-head text-3xl sm:text-4xl font-bold mb-6 leading-tight break-keep">
@@ -424,7 +390,6 @@
                 현장의 문제를 주도적으로 해결하고, 공장 전체를 하나의 똑똑한 시스템으로 이끌어갈 준비가 되어 있습니다.
             </p>
             
-            <!-- Email Copy UI -->
             <div class="bg-brandDark p-2 sm:p-3 rounded-lg inline-flex flex-col sm:flex-row items-center border border-brandPoint/30 shadow-2xl max-w-full">
                 <span id="email-text" class="font-code text-brandPoint text-sm sm:text-base px-6 py-3 font-semibold break-all">
                     junny.coder@gmail.com
@@ -436,7 +401,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-brandDark py-8 border-t border-brandMain w-full">
         <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
             <p>© 2026 KIM JUNHO. Smart Factory Engineer.</p>
@@ -447,23 +411,19 @@
         </div>
     </footer>
 
-    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-8 right-8 z-50 bg-brandPoint text-brandDark font-bold px-6 py-3 rounded shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center">
         <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이 복사되었습니다!
     </div>
 
-    <!-- STREAMING_CHUNK: Resume Modal Element -->
+    <!-- <!-- STREAMING_CHUNK: Resume Modal Element --> -->
     <!-- Dynamic EN/KO Resume Modal -->
     <div id="resume-modal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-[#040D2D]/80 backdrop-blur-md flex items-center justify-center p-4">
-        <!-- Modal Card Wrapper -->
         <div class="bg-white text-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-200">
             
-            <!-- Sticky Modal Control Bar -->
             <div class="sticky top-0 bg-[#040D2D] text-white px-6 py-4 flex items-center justify-between border-b border-brandMain/30 z-30 no-print">
                 <div class="flex items-center space-x-4">
                     <span class="font-head font-bold text-base sm:text-lg tracking-wide">RESUME / 이력서</span>
                     
-                    <!-- Language Toggle Buttons -->
                     <div class="inline-flex rounded-lg bg-[#0D2971] p-1 border border-brandPoint/20">
                         <button onclick="switchLanguage('ko')" id="btn-lang-ko" class="px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark">KO</button>
                         <button onclick="switchLanguage('en')" id="btn-lang-en" class="px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white">EN</button>
@@ -471,201 +431,28 @@
                 </div>
                 
                 <div class="flex items-center space-x-3">
-                    <!-- Print Button -->
                     <button onclick="window.print()" class="text-gray-400 hover:text-brandPoint p-2 transition-colors duration-200" title="이력서 인쇄 / PDF 저장">
                         <i class="fa-solid fa-print text-lg"></i>
                     </button>
-                    <!-- Close Button -->
                     <button id="resume-close-btn" class="text-gray-400 hover:text-white bg-[#0D2971] hover:bg-brandMain p-2 rounded-lg transition-colors">
                         <i class="fa-solid fa-xmark text-lg"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Printable Paper-like Core Content -->
-            <div id="resume-modal-content" class="p-6 sm:p-12 font-sans">
-                
-                <!-- KOREAN RESUME CONTENT -->
-                <div id="lang-ko-container" class="lang-content space-y-8">
-                    <!-- Header -->
-                    <div class="border-b-2 border-brandMain pb-6 flex flex-col md:flex-row justify-between items-start md:items-end">
-                        <div>
-                            <h1 class="text-3xl sm:text-4xl font-head font-bold text-brandMain mb-2">김 준 호</h1>
-                            <p class="text-brandPoint font-bold text-lg font-code">Smart Factory & MES Operations Engineer</p>
-                        </div>
-                        <div class="mt-4 md:mt-0 text-left text-sm text-gray-600 font-code space-y-1">
-                            <div><i class="fa-solid fa-envelope mr-1.5 text-brandMain"></i> junny.coder@gmail.com</div>
-                            <div><i class="fa-solid fa-mobile-screen mr-1.5 text-brandMain"></i> +82 (010) 7701-8414</div>
-                            <div><i class="fa-brands fa-github mr-1.5 text-brandMain"></i> github.com/JunnyCoder</div>
-                        </div>
-                    </div>
-
-                    <!-- Intro -->
-                    <div class="space-y-2">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center">
-                            <i class="fa-solid fa-user-check mr-2 text-brandPoint"></i> 프로필 요약
-                        </h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">
-                            글로벌 완성차 Tier-1 업체인 현대모비스 미국 조지아 법인에서 생산 제어 및 MES 운영을 전담해 온 스마트팩토리 전문가입니다. 하드웨어 설비(PLC, RFID, 스캐너)와 중앙 MES 데이터베이스를 유기적으로 연결하고, 대용량 실시간 트랜잭션을 중단 없이 처리하는 아키텍처 설계를 지향합니다. 현장과의 직관적인 소통을 바탕으로 연간 시스템 가동률 99.9%를 유지하는 안정성 중심의 엔지니어입니다.
-                        </p>
-                    </div>
-
-                    <!-- Experience -->
-                    <div class="space-y-6">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
-                            <i class="fa-solid fa-briefcase mr-2 text-brandPoint"></i> 주요 실무 경력
-                        </h2>
-                        
-                        <!-- Exp 1 -->
-                        <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
-                            <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">현대모비스 미국 조지아 법인 (Hyundai Mobis Georgia, USA)</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">2023.01 - 2025.12 (재직 중)</span>
-                            </div>
-                            <p class="text-xs text-brandPoint font-bold">스마트팩토리 MES / IT 시스템 운영 엔지니어</p>
-                            <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <li><strong>핵심 공정 가동률 99.9% 유지:</strong> 공장 조립 라인 및 자동 분류 창고(WMS) 실시간 로그 모니터링 시스템을 설계하여 누적 1,400여 건의 오작동 및 설비 에러를 선제적으로 조치.</li>
-                                <li><strong>하드웨어-소프트웨어 인터페이스 최적화:</strong> PLC 제어 패널, 스마트 RFID, 하니웰 바코드 스캐너 간 소켓 통신 모듈 커스터마이징을 수행하여 데이터 유실율 0.01% 미만으로 개선.</li>
-                                <li><strong>대용량 트랜잭션 DB 튜닝:</strong> 공정 실시간 데이터 입출력 부하를 완화하기 위해 SQL 쿼리 튜닝 및 인덱스 최적화를 담당, 실시간 쿼리 처리 속도를 평균 35% 단축.</li>
-                                <li><strong>현장 밀착 요구사항 분석:</strong> 기계 오작동 발생 시 생산 조장 및 작업자들과의 적극적인 커뮤니케이션을 통해 에러 패턴을 규명하고 UI/UX 조작 직관성 개선.</li>
-                            </ul>
-                        </div>
-
-                        <!-- Exp 2 -->
-                        <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
-                            <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">(주)케이브레인 컴퍼니</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">2022.01 - 2022.06</span>
-                            </div>
-                            <p class="text-xs text-brandPoint font-bold">웹빌더 서비스 기획자</p>
-                            <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <li><strong>웹빌더 서비스(WEVEN) 기획:</strong> 프로젝트 생애 주기 기반 관리 및 계획</li>
-                                <!-- <li><strong>소켓 통신 데이터 수집 엔진 개발:</strong> 생산 현장 PLC와 MES 데이터베이스(Oracle / MS SQL) 간의 다중 스레드 통신 데몬을 설계하여 가동 시간 실시간 시각화 성공.</li>
-                                <li><strong>비전 카메라 이미지 파싱 서버 연동:</strong> 공정 끝단의 불량 검사용 인공지능 비전 카메라 로그 수집 연동 및 분류 작업 처리.</li> -->
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Skills -->
-                    <div class="space-y-4">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
-                            <i class="fa-solid fa-gear mr-2 text-brandPoint"></i> 보유 기술 스택
-                        </h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-code">
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Languages & Frameworks</div>
-                                <div class="text-gray-600">C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Databases & Protocols</div>
-                                <div class="text-gray-600">Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Industrial & Tools</div>
-                                <div class="text-gray-600">PLC Connection (Mitsubishi, Rockwell), RFID/Barcode Scanners, Linux, Docker, Git, SVN</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Certifications</div>
-                                <!-- <div class="text-gray-600">정보처리기사 (Engineer Information Processing), SQLD (SQL Developer)</div> -->
-                            </div>
-                        </div>
-                    </div>
+            <!-- Printable Paper-like Dynamic Content Area -->
+            <div id="resume-modal-content" class="p-6 sm:p-12 font-sans relative min-h-[400px]">
+                <!-- Dynamic Loading Spinner -->
+                <div id="resume-loading-spinner" class="absolute inset-0 flex flex-col justify-center items-center bg-white/95 z-20">
+                    <i class="fa-solid fa-gear text-4xl text-brandMain animate-spin mb-4"></i>
+                    <p class="font-head text-sm text-gray-500 font-semibold">이력서 데이터를 파싱 중입니다...</p>
                 </div>
 
-                <!-- ENGLISH RESUME CONTENT -->
-                <div id="lang-en-container" class="lang-content space-y-8 lang-hidden">
-                    <!-- Header -->
-                    <div class="border-b-2 border-brandMain pb-6 flex flex-col md:flex-row justify-between items-start md:items-end">
-                        <div>
-                            <h1 class="text-3xl sm:text-4xl font-head font-bold text-brandMain mb-2">Junho Kim</h1>
-                            <p class="text-brandPoint font-bold text-lg font-code">Smart Factory & MES Operations Engineer</p>
-                        </div>
-                        <div class="mt-4 md:mt-0 text-right text-sm text-gray-600 font-code space-y-1">
-                            <div><i class="fa-solid fa-envelope mr-1.5 text-brandMain"></i> junny.coder@gmail.com</div>
-                            <div><i class="fa-solid fa-mobile-screen mr-1.5 text-brandMain"></i> +1 (770) 589-4307 (Georgia, USA)</div>
-                            <div><i class="fa-brands fa-github mr-1.5 text-brandMain"></i> github.com/JunnyCoder</div>
-                        </div>
-                    </div>
-
-                    <!-- Intro -->
-                    <div class="space-y-2">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center">
-                            <i class="fa-solid fa-user-check mr-2 text-brandPoint"></i> Professional Summary
-                        </h2>
-                        <p class="text-gray-600 text-sm leading-relaxed">
-                            A highly-skilled Smart Factory Expert specializing in Manufacturing Execution Systems (MES) and production line automation. Built substantial hands-on experience at Hyundai Mobis Georgia (USA), supply chain lead for major automotive plants. Dedicated to bridging shop-floor hardware (PLCs, smart RFIDs, automated scanners) with enterprise-scale databases. Prides in maintaining a 99.9% uptime record through proactive data monitoring and cross-functional team collaborations.
-                        </p>
-                    </div>
-
-                    <!-- Experience -->
-                    <div class="space-y-6">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
-                            <i class="fa-solid fa-briefcase mr-2 text-brandPoint"></i> Work Experience
-                        </h2>
-                        
-                        <!-- Exp 1 -->
-                        <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
-                            <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">Hyundai Mobis Georgia, USA</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Jan 2023 - Present</span>
-                            </div>
-                            <p class="text-xs text-brandPoint font-bold">Smart Factory MES & IT Operations Engineer</p>
-                            <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <li><strong>99.9% System Uptime Shield:</strong> Designed and operated a unified real-time alert system monitoring the assembly lines and automated warehouse systems (WMS). Resolved 1,400+ potential bottlenecks before causing downstream failures.</li>
-                                <li><strong>HW-SW Interface Optimization:</strong> Standardized socket-based multi-thread communications connecting Mitsubishi/Rockwell PLCs, Honeywell barcode devices, and high-frequency RFIDs. Reduced packet loss to &lt; 0.01%.</li>
-                                <li><strong>High-Throughput DB Tuning:</strong> Led database optimization for high-speed manufacturing transactions. Rewrote complex Oracle/MSSQL queries and restructured partition indices, achieving a 35% faster response rate during peak hours.</li>
-                                <li><strong>Cross-functional Problem Solving:</strong> Walked the production floor daily. Interviewed technicians and line leaders to map operational failure patterns into concrete UX updates for easier line troubleshooting.</li>
-                            </ul>
-                        </div>
-
-                        <!-- Exp 2 -->
-                        <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
-                            <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
-                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                                <h3 class="font-head font-bold text-base text-gray-900">K-Brain Company Corp (WEVEN)</h3>
-                                <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">Mar 2020 - Dec 2022</span>
-                            </div>
-                            <p class="text-xs text-brandPoint font-bold">Web Builder Service Planner</p>
-                            <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
-                                <li><strong>Service Planning:</strong> Planned web service along with the project life cycle.</li>
-                                <!-- <li><strong>Data Ingestion Engine Development:</strong> Programmed high-speed server daemons bridging manufacturing equipment to relational SQL databases via TCP/IP sockets and OPC UA protocols.</li>
-                                <li><strong>Visual Inspections Integration:</strong> Managed API mapping between digital inspection vision-camera loggers and high-level inventory servers for real-time fault categorization.</li> -->
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Skills -->
-                    <div class="space-y-4">
-                        <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
-                            <i class="fa-solid fa-gear mr-2 text-brandPoint"></i> Key Technical Skills
-                        </h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-code">
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Languages & Frameworks</div>
-                                <div class="text-gray-600">C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Databases & Protocols</div>
-                                <div class="text-gray-600">Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Industrial & Tools</div>
-                                <div class="text-gray-600">PLC Integration (Rockwell, Mitsubishi), Barcode Systems, RFID, Docker, Linux, Git</div>
-                            </div>
-                            <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
-                                <div class="font-bold text-brandMain mb-1">Certifications</div>
-                                <!-- <div class="text-gray-600">Engineer Information Processing, SQLD (SQL Developer)</div> -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                <!-- Dynamic Containers -->
+                <div id="lang-ko-container" class="lang-content space-y-8"></div>
+                <div id="lang-en-container" class="lang-content space-y-8 lang-hidden"></div>
             </div>
             
-            <!-- Sticky Footer on Screen -->
             <div class="bg-gray-50 px-6 py-4 flex justify-end space-x-3 border-t border-gray-200 no-print">
                 <button onclick="window.print()" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded text-xs">
                     <i class="fa-solid fa-file-pdf mr-1"></i> PDF/인쇄
@@ -678,8 +465,174 @@
         </div>
     </div>
 
-    <!-- STREAMING_CHUNK: Initialization and Event Binding Scripts -->
+    <!-- <!-- STREAMING_CHUNK: Main Javascript Execution Block --> -->
     <script>
+        // Global variables to store cache
+        window.resumeData = { ko: null, en: null };
+
+        // Robust Embedded Fallback Data System
+        // This acts as a protective shield if Git Push is not yet complete, or if local preview fails.
+        const fallbackKo = {
+            "name": "김준호",
+            "title": "Smart Factory & MES Operations Engineer (Fallback Cache)",
+            "contact": { "email": "junny.coder@gmail.com", "phone": "+82 (010) 7701-8414", "github": "github.com/JunnyCoder" },
+            "summary": { "title": "프로필 요약", "description": "글로벌 완성차 Tier-1 업체인 현대모비스 미국 조지아 법인에서 생산 제어 및 MES 운영을 전담해 온 스마트팩토리 전문가입니다. 하드웨어 설비(PLC, RFID, 스캐너)와 중앙 MES 데이터베이스를 유기적으로 연결하고, 대용량 실시간 트랜잭션을 중단 없이 처리하는 아키텍처 설계를 지향합니다." },
+            "experience": [
+                {
+                    "company": "현대모비스 미국 조지아 법인 (Hyundai Mobis Georgia, USA)",
+                    "period": "2023.01 - 현재 (재직 중)",
+                    "role": "스마트팩토리 MES / IT 시스템 운영 엔지니어",
+                    "achievements": [
+                        "핵심 공정 가동률 99.9% 유지: 공장 조립 라인 및 자동 분류 창고(WMS) 실시간 로그 모니터링 시스템을 설계하여 누적 1,400여 건의 오작동 및 설비 에러를 선제적으로 조치.",
+                        "하드웨어-소프트웨어 인터페이스 최적화: PLC 제어 패널, 스마트 RFID, 하니웰 바코드 스캐너 간 소켓 통신 모듈 커스터마이징을 수행하여 데이터 유실율 0.01% 미만으로 개선.",
+                        "대용량 트랜잭션 DB 튜닝: 공정 실시간 데이터 입출력 부하를 완화하기 위해 SQL 쿼리 튜닝 및 인덱스 최적화를 담당, 실시간 쿼리 처리 속도를 평균 35% 단축.",
+                        "현장 밀착 요구사항 분석: 기계 오작동 발생 시 생산 조장 및 작업자들과의 적극적인 커뮤니케이션을 통해 에러 패턴을 규명하고 UI/UX 조작 직관성 개선."
+                    ]
+                }
+            ],
+            "skills": [
+                { "category": "Languages & Frameworks", "items": "C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++" },
+                { "category": "Databases & Protocols", "items": "Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA" },
+                { "category": "Industrial & Tools", "items": "PLC Connection (Mitsubishi, Rockwell), RFID/Barcode Scanners, Linux, Docker, Git, SVN" }
+            ]
+        };
+
+        const fallbackEn = {
+            "name": "Junho Kim",
+            "title": "Smart Factory & MES Operations Engineer (Fallback Cache)",
+            "contact": { "email": "junny.coder@gmail.com", "phone": "+1 (770) 589-4307", "github": "github.com/JunnyCoder" },
+            "summary": { "title": "Professional Summary", "description": "A highly-skilled Smart Factory Expert specializing in Manufacturing Execution Systems (MES) and production line automation. Built substantial hands-on experience at Hyundai Mobis Georgia (USA)." },
+            "experience": [
+                {
+                    "company": "Hyundai Mobis Georgia, USA",
+                    "period": "Jan 2023 - Present",
+                    "role": "Smart Factory MES & IT Operations Engineer",
+                    "achievements": [
+                        "99.9% System Uptime Shield: Designed and operated a unified real-time alert system monitoring the assembly lines and automated warehouse systems (WMS). Resolved 1,400+ potential bottlenecks before causing downstream failures.",
+                        "HW-SW Interface Optimization: Standardized socket-based multi-thread communications connecting Mitsubishi/Rockwell PLCs, Honeywell barcode devices, and high-frequency RFIDs. Reduced packet loss to < 0.01%.",
+                        "High-Throughput DB Tuning: Led database optimization for high-speed manufacturing transactions. Rewrote complex Oracle/MSSQL queries and restructured partition indices, achieving a 35% faster response rate during peak hours."
+                    ]
+                }
+            ],
+            "skills": [
+                { "category": "Languages & Frameworks", "items": "C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++" },
+                { "category": "Databases & Protocols", "items": "Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA" },
+                { "category": "Industrial & Tools", "items": "PLC Integration (Rockwell, Mitsubishi), Barcode Systems, RFID, Docker, Linux, Git" }
+            ]
+        };
+
+        // <!-- STREAMING_CHUNK: Dynamic JSON Fetch and Render Functions -->
+        // Dynamic Parser & Renderer
+        async function fetchResumeData() {
+            const spinner = document.getElementById('resume-loading-spinner');
+            if(spinner) spinner.classList.remove('hidden');
+
+            try {
+                // Try fetching Korean Resume
+                const resKo = await fetch('./assets/resume/resume_ko.json');
+                if (resKo.ok) {
+                    window.resumeData.ko = await resKo.json();
+                } else {
+                    throw new Error("Korean resume fetch failed");
+                }
+
+                // Try fetching English Resume
+                const resEn = await fetch('./assets/resume/resume_en.json');
+                if (resEn.ok) {
+                    window.resumeData.en = await resEn.json();
+                } else {
+                    throw new Error("English resume fetch failed");
+                }
+                console.log("Resume successfully fetched from assets/resume/");
+            } catch (err) {
+                console.warn("Fetching JSON files failed. Engaging robust embedded fallback cache to avoid page crash.", err);
+                window.resumeData.ko = fallbackKo;
+                window.resumeData.en = fallbackEn;
+            } finally {
+                if(spinner) spinner.classList.add('hidden');
+                renderResume('ko');
+                renderResume('en');
+            }
+        }
+
+        function renderResume(lang) {
+            const data = window.resumeData[lang];
+            const container = document.getElementById(`lang-${lang}-container`);
+            if (!data || !container) return;
+
+            // Generate Experience HTML
+            let expHtml = "";
+            data.experience.forEach(exp => {
+                let achievementsList = exp.achievements.map(ach => `<li>${ach}</li>`).join('');
+                expHtml += `
+                    <div class="relative pl-6 border-l-2 border-brandMain/30 space-y-2">
+                        <div class="absolute w-3.5 h-3.5 bg-brandPoint border-2 border-brandMain rounded-full -left-[8px] top-1.5"></div>
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                            <h3 class="font-head font-bold text-base text-gray-900">${exp.company}</h3>
+                            <span class="text-xs font-code bg-brandSub text-brandMain px-2.5 py-1 rounded font-bold">${exp.period}</span>
+                        </div>
+                        <p class="text-xs text-brandPoint font-bold">${exp.role}</p>
+                        <ul class="list-disc pl-5 text-xs text-gray-600 space-y-1.5 leading-relaxed">
+                            ${achievementsList}
+                        </ul>
+                    </div>
+                `;
+            });
+
+            // Generate Skills HTML
+            let skillsHtml = "";
+            data.skills.forEach(skill => {
+                skillsHtml += `
+                    <div class="bg-brandSub p-3 rounded-lg border border-gray-200">
+                        <div class="font-bold text-brandMain mb-1">${skill.category}</div>
+                        <div class="text-gray-600">${skill.items}</div>
+                    </div>
+                `;
+            });
+
+            // Construct Full Printable Markup
+            container.innerHTML = `
+                <!-- Header -->
+                <div class="border-b-2 border-brandMain pb-6 flex flex-col md:flex-row justify-between items-start md:items-end">
+                    <div>
+                        <h1 class="text-3xl sm:text-4xl font-head font-bold text-brandMain mb-2">${data.name}</h1>
+                        <p class="text-brandPoint font-bold text-lg font-code">${data.title}</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 text-left text-sm text-gray-600 font-code space-y-1">
+                        <div><i class="fa-solid fa-envelope mr-1.5 text-brandMain"></i> ${data.contact.email}</div>
+                        <div><i class="fa-solid fa-mobile-screen mr-1.5 text-brandMain"></i> ${data.contact.phone}</div>
+                        <div><i class="fa-brands fa-github mr-1.5 text-brandMain"></i> ${data.contact.github}</div>
+                    </div>
+                </div>
+
+                <!-- Intro -->
+                <div class="space-y-2">
+                    <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center">
+                        <i class="fa-solid fa-user-check mr-2 text-brandPoint"></i> ${data.summary.title}
+                    </h2>
+                    <p class="text-gray-600 text-sm leading-relaxed">${data.summary.description}</p>
+                </div>
+
+                <!-- Experience -->
+                <div class="space-y-6">
+                    <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
+                        <i class="fa-solid fa-briefcase mr-2 text-brandPoint"></i> ${lang === 'ko' ? '주요 실무 경력' : 'Work Experience'}
+                    </h2>
+                    ${expHtml}
+                </div>
+
+                <!-- Skills -->
+                <div class="space-y-4">
+                    <h2 class="text-lg font-head font-bold text-brandMain uppercase tracking-wider flex items-center border-b border-gray-200 pb-2">
+                        <i class="fa-solid fa-gear mr-2 text-brandPoint"></i> ${lang === 'ko' ? '보유 기술 스택' : 'Key Technical Skills'}
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-code">
+                        ${skillsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             
             // 1. Mobile Menu Toggle
@@ -705,12 +658,10 @@
             
             let logIndex = 0;
             
-            // Generate a log element
             function createLogElement(text) {
                 const el = document.createElement('div');
                 const time = new Date().toLocaleTimeString('en-US', { hour12: false });
                 
-                // Color coding based on keyword
                 let colorClass = "text-gray-400";
                 if(text.includes("[WARN]")) colorClass = "text-yellow-400";
                 if(text.includes("[SUCCESS]") || text.includes("[OK]")) colorClass = "text-green-400";
@@ -721,21 +672,19 @@
                 return el;
             }
 
-            // Loop logic
             setInterval(() => {
                 const newLog = createLogElement(logs[logIndex]);
                 terminalContent.appendChild(newLog);
                 
-                // Keep only last 8 logs to prevent overflow
                 if(terminalContent.children.length > 8) {
                     terminalContent.removeChild(terminalContent.firstChild);
                 }
                 
                 logIndex = (logIndex + 1) % logs.length;
-            }, 2500); // Add a log every 2.5 seconds
+            }, 2500);
 
 
-            // 3. Resume Modal Toggle Logic
+            // 3. Resume Modal Toggle Logic & Async Loader trigger
             const resumeModal = document.getElementById('resume-modal');
             const resumeOpenBtnHeader = document.getElementById('resume-open-btn-header');
             const resumeOpenBtnMobile = document.getElementById('resume-open-btn-mobile');
@@ -745,33 +694,35 @@
 
             function openResume() {
                 resumeModal.classList.remove('hidden');
-                document.body.style.overflow = 'hidden'; // Stop background scrolling
+                document.body.style.overflow = 'hidden'; 
+                // Dynamically fetch when opened if not cached yet
+                if (!window.resumeData.ko) {
+                    fetchResumeData();
+                }
             }
 
             function closeResume() {
                 resumeModal.classList.add('hidden');
-                document.body.style.overflow = ''; // Restore background scrolling
+                document.body.style.overflow = ''; 
             }
 
             if(resumeOpenBtnHeader) resumeOpenBtnHeader.addEventListener('click', openResume);
             if(resumeOpenBtnMobile) {
                 resumeOpenBtnMobile.addEventListener('click', () => {
                     openResume();
-                    mobileMenu.classList.add('hidden'); // Close mobile menu dropdown
+                    mobileMenu.classList.add('hidden'); 
                 });
             }
             if(resumeOpenBtnHero) resumeOpenBtnHero.addEventListener('click', openResume);
             if(resumeCloseBtn) resumeCloseBtn.addEventListener('click', closeResume);
             if(resumeCloseBtnBottom) resumeCloseBtnBottom.addEventListener('click', closeResume);
 
-            // Close modal when clicking on backdrop
             resumeModal.addEventListener('click', (e) => {
                 if(e.target === resumeModal) {
                     closeResume();
                 }
             });
 
-            // Close modal on Escape key press
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape' && !resumeModal.classList.contains('hidden')) {
                     closeResume();
@@ -786,7 +737,6 @@
             const textArea = document.createElement("textarea");
             textArea.value = emailText;
             
-            // Move textarea out of viewport so it's invisible
             textArea.style.position = "absolute";
             textArea.style.left = "-999999px";
             
@@ -834,10 +784,10 @@
         }
 
 
-        // <!-- STREAMING_CHUNK: Re-engineering Factory Simulator Loop for Adaptive 2-Tier Path Routing -->
+        // <!-- STREAMING_CHUNK: Factory Process Simulator Layout Mapping -->
         // 7. Factory Process Simulator Logic (Adaptive Progress-based Routing)
         const Simulator = {
-            state: 'WAITING', // WAITING, NORMAL, BOTTLENECK, OPTIMIZED
+            state: 'WAITING', 
             trackEl: document.getElementById('sim-track'),
             tablesEl: document.getElementById('sim-tables'),
             btnOpt: document.getElementById('btn-optimize'),
@@ -846,7 +796,6 @@
             animationFrame: null,
             isMobileView: false,
             
-            // Task Datasets
             dataBad: [
                 { title: '공정 1 (투입)', tasks: [{ n: '자재 로딩', t: '2s' }, { n: '1차 검수', t: '1s' }] },
                 { title: '공정 2 (조립)', tasks: [{ n: '하부 프레임', t: '3s' }, { n: '나사 체결', t: '2s' }] },
@@ -867,16 +816,13 @@
                 this.renderTables(this.dataBad);
                 this.btnOpt.disabled = true;
 
-                // Check Layout size on initialization
                 this.checkLayout();
                 window.addEventListener('resize', () => {
                     this.checkLayout();
                 });
 
-                // Bind Button
                 this.btnOpt.addEventListener('click', () => this.optimize());
 
-                // Intersection Observer to start when visible
                 const observer = new IntersectionObserver((entries) => {
                     if (entries[0].isIntersecting && this.state === 'WAITING') {
                         this.start();
@@ -888,18 +834,15 @@
             },
 
             checkLayout() {
-                const prevMobile = this.isMobileView;
-                this.isMobileView = window.innerWidth < 768; // Tailwind md breakpoint (768px)
-                
+                this.isMobileView = window.innerWidth < 768; 
                 this.positionNodes();
 
-                // If orientation/layout changes, update the warning line positioning context
                 const warningLine = document.getElementById('sim-warning-line');
                 if (warningLine) {
                     if (this.isMobileView) {
                         warningLine.style.left = '10%';
                         warningLine.style.right = '10%';
-                        warningLine.style.top = '25%'; // Concentrated on top row (Process 3)
+                        warningLine.style.top = '25%'; 
                     } else {
                         warningLine.style.left = '40%';
                         warningLine.style.right = '40%';
@@ -908,7 +851,6 @@
                 }
             },
 
-            // Set node locations cleanly using percentage so it acts like a vector map
             positionNodes() {
                 const nodes = {
                     p1: document.getElementById('node-p1'),
@@ -919,14 +861,12 @@
                 };
 
                 if (this.isMobileView) {
-                    // Mobile (2-tier layout): Row 1 (P1->P2->P3) at top (25%), Row 2 (P4->P5) at bottom (75%)
                     this.setNodePos(nodes.p1, 15, 25);
                     this.setNodePos(nodes.p2, 50, 25);
                     this.setNodePos(nodes.p3, 85, 25);
                     this.setNodePos(nodes.p4, 75, 75);
                     this.setNodePos(nodes.p5, 25, 75);
                 } else {
-                    // Desktop (Linear Layout)
                     this.setNodePos(nodes.p1, 10, 50);
                     this.setNodePos(nodes.p2, 30, 50);
                     this.setNodePos(nodes.p3, 50, 50);
@@ -987,8 +927,6 @@
             start() {
                 this.state = 'NORMAL';
                 requestAnimationFrame((t) => this.loop(t));
-
-                // Auto trigger bottleneck after 4 seconds
                 setTimeout(() => this.triggerBottleneck(), 4000);
             },
 
@@ -997,11 +935,10 @@
                 const el = document.createElement('div');
                 el.className = 'absolute w-4 h-4 sm:w-5 sm:h-5 bg-white border-2 border-brandMain rounded shadow-[0_0_10px_rgba(255,255,255,0.5)] z-20 conveyor-module';
                 this.trackEl.appendChild(el);
-                // Core change: track progress percentage (0 to 100) instead of absolute pixel position
                 this.modules.push({ el, progress: 0 });
             },
 
-            // <!-- STREAMING_CHUNK: Processing Module Loop Positions Based on Layout Vectors -->
+            // <!-- STREAMING_CHUNK: Dynamic Math Engine for Simulator Pathing -->
             loop(timestamp) {
                 if (!this.lastSpawnTime) this.lastSpawnTime = timestamp;
                 
@@ -1014,53 +951,41 @@
 
                 for (let i = 0; i < this.modules.length; i++) {
                     let mod = this.modules[i];
-                    let step = 0.5; // Default progress increase percentage per frame
+                    let step = 0.5; 
 
                     if (this.state === 'BOTTLENECK') {
-                        // Bottleneck occurs at P3 (around progress 45% ~ 55% of overall route)
                         if (mod.progress >= 44 && mod.progress < 55) {
-                            step = 0.03; // Drastically slows down progress
+                            step = 0.03; 
                         }
                     } else if (this.state === 'OPTIMIZED') {
-                        step = 1.2; // Quick sweep
+                        step = 1.2; 
                     }
 
-                    // Separation constraint to prevent overlapping
                     if (i > 0) {
                         let frontMod = this.modules[i-1];
-                        if (frontMod.progress - mod.progress < 6) { // Progress gap threshold
+                        if (frontMod.progress - mod.progress < 6) { 
                             step = Math.min(step, frontMod.progress - mod.progress - 5.5);
-                            if(step < 0) step = 0; // Stick right behind
+                            if(step < 0) step = 0; 
                         }
                     }
 
                     mod.progress += step;
 
-                    // Convert progress (0-100) into 2D Left/Top percentages based on viewport mode
                     let leftPercent = 0;
                     let topPercent = 50;
 
                     if (this.isMobileView) {
-                        // S-Curve loop calculation (0 to 100 total progress)
                         if (mod.progress <= 45) {
-                            // Row 1: Left to right along the 25% height level.
-                            // Maps progress (0~45) to left% (15% to 85%)
                             leftPercent = 15 + (mod.progress / 45) * 70;
                             topPercent = 25;
                         } else if (mod.progress > 45 && mod.progress <= 55) {
-                            // Loop connection curve going down from 25% height to 75% height.
                             leftPercent = 85;
-                            // Map progress (45~55) to top% (25% to 75%)
                             topPercent = 25 + ((mod.progress - 45) / 10) * 50;
                         } else {
-                            // Row 2: Right to left along the 75% height level.
-                            // Maps progress (55~100) to left% (85% back to 15%)
                             leftPercent = 85 - ((mod.progress - 55) / 45) * 70;
                             topPercent = 75;
                         }
                     } else {
-                        // Desktop Linear Path (Left to right horizontally at 50% height)
-                        // Maps progress (0~100) to left% (10% to 90%)
                         leftPercent = 10 + (mod.progress / 100) * 80;
                         topPercent = 50;
                     }
@@ -1069,7 +994,6 @@
                     mod.el.style.top = topPercent + '%';
                     mod.el.style.transform = 'translate(-50%, -50%)';
 
-                    // Clean up complete modules
                     if (mod.progress >= 100) {
                         mod.el.remove();
                         this.modules.splice(i, 1);
@@ -1086,7 +1010,6 @@
                 this.renderTables(this.dataBad);
                 this.btnOpt.disabled = false;
                 
-                // Active visual warning cue
                 const warningLine = document.getElementById('sim-warning-line');
                 if (warningLine) {
                     warningLine.style.opacity = '1';
@@ -1106,7 +1029,6 @@
                 }
                 document.getElementById('node-p3').classList.replace('border-red-500', 'border-green-400');
                 
-                // Show Success Overlay
                 const overlay = document.getElementById('sim-success-overlay');
                 const box = document.getElementById('sim-success-box');
                 overlay.classList.remove('hidden');
@@ -1128,7 +1050,6 @@
             }
         };
 
-        // Initialize Simulator when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             Simulator.init();
         });

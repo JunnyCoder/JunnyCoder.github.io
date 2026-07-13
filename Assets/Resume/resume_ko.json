@@ -1,0 +1,54 @@
+{
+  "name": "김준호",
+  "title": "Smart Factory & MES Operations Engineer",
+  "contact": {
+    "email": "junny.coder@gmail.com",
+    "phone": "+82 (010) 7701-8414",
+    "github": "github.com/JunnyCoder",
+    "githubUrl": "https://github.com/JunnyCoder"
+  },
+  "summary": {
+    "title": "프로필 요약",
+    "description": "글로벌 완성차 Tier-1 업체인 현대모비스 미국 조지아 법인에서 생산 제어 및 MES 운영을 전담해 온 스마트팩토리 전문가입니다. 하드웨어 설비(PLC, RFID, 스캐너)와 중앙 MES 데이터베이스를 유기적으로 연결하고, 대용량 실시간 트랜잭션을 중단 없이 처리하는 아키텍처 설계를 지향합니다. 현장과의 직관적인 소통을 바탕으로 연간 시스템 가동률 99.9%를 유지하는 안정성 중심의 엔지니어입니다."
+  },
+  "experience": [
+    {
+      "company": "현대모비스 미국 조지아 법인 (Hyundai Mobis Georgia, USA)",
+      "period": "2023.01 - 2025.12",
+      "role": "스마트팩토리 MES / IT 시스템 운영 엔지니어",
+      "achievements": [
+        "핵심 공정 가동률 99.9% 유지: 공장 조립 라인 및 자동 분류 창고(WMS) 실시간 로그 모니터링 시스템을 설계하여 누적 1,400여 건의 오작동 및 설비 에러를 선제적으로 조치.",
+        "하드웨어-소프트웨어 인터페이스 최적화: PLC 제어 패널, 스마트 RFID, 하니웰 바코드 스캐너 간 소켓 통신 모듈 커스터마이징을 수행하여 데이터 유실율 0.01% 미만으로 개선.",
+        "대용량 트랜잭션 DB 튜닝: 공정 실시간 데이터 입출력 부하를 완화하기 위해 SQL 쿼리 튜닝 및 인덱스 최적화를 담당, 실시간 쿼리 처리 속도를 평균 35% 단축.",
+        "현장 밀착 요구사항 분석: 기계 오작동 발생 시 생산 조장 및 작업자들과의 적극적인 커뮤니케이션을 통해 에러 패턴을 규명하고 UI/UX 조작 직관성 개선."
+      ]
+    },
+    {
+      "company": "(주)케이브레인 컴퍼니",
+      "period": "2022.01 - 2022.06",
+      "role": "웹빌더 서비스 기획자",
+      "achievements": [
+        "웹빌더 서비스(WEVEN) 기획: 프로젝트 생애 주기 기반 요구사항 정의 및 일정 관리 수립.",
+        "사용자 행동 데이터 수집 설계: 가입 및 빌더 내 이탈 구간 개선을 위한 이벤트 태깅 파이프라인 기획."
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "category": "Languages & Frameworks",
+      "items": "C#, .NET Core, ASP.NET Core, Java, JavaScript, Python, C++"
+    },
+    {
+      "category": "Databases & Protocols",
+      "items": "Oracle Database, MS SQL Server, MySQL, Redis, TCP/IP Socket, MQTT, OPC UA"
+    },
+    {
+      "category": "Industrial & Tools",
+      "items": "PLC Connection (Mitsubishi, Rockwell), RFID/Barcode Scanners, Linux, Docker, Git, SVN"
+    },
+    {
+      "category": "Certifications & Education",
+      "items": "정보처리기사 (Engineer Information Processing), SQLD (SQL Developer), Georgia Tech MicroMasters Analytics (학습 중)"
+    }
+  ]
+}
