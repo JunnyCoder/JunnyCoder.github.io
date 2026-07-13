@@ -1,1 +1,1 @@
-# junnycoder.github.io
+# JunnyCoder.github.io
