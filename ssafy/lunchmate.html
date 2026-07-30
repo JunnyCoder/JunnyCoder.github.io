@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>랜덤 팀 메이커 (No DB)</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover: #45a049;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --card-bg: #fff;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        p.desc {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .count-indicator {
+            text-align: right;
+            font-size: 0.85em;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        .count-indicator.error {
+            color: red;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.secondary {
+            background-color: #6c757d;
+        }
+
+        button.secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* 결과 화면 스타일 */
+        #result-section {
+            display: none;
+        }
+
+        .teams-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .team-card {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .team-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1em;
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 5px;
+        }
+
+        .team-card ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            text-align: center;
+        }
+
+        .team-card li {
+            padding: 4px 0;
+            border-bottom: 1px dashed #ddd;
+        }
+        
+        .team-card li:last-child {
+            border-bottom: none;
+        }
+
+        .share-box {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            word-break: break-all;
+            font-size: 0.9em;
+            color: #495057;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎲 랜덤 팀 메이커</h1>
+    
+    <!-- 입력 섹션 -->
+    <div id="input-section">
+        <p class="desc">데이터베이스 없이 URL만으로 결과를 공유할 수 있습니다.</p>
+        
+        <div class="form-group">
+            <label for="namesInput">참여자 명단 (최대 24명)</label>
+            <textarea id="namesInput" placeholder="이름을 쉼표(,) 또는 줄바꿈으로 구분하여 입력하세요.&#10;예시: 홍길동, 김철수, 이영희..."></textarea>
+            <div id="countDisplay" class="count-indicator">현재 0명 / 최대 24명</div>
+        </div>
+
+        <div class="form-group">
+            <label for="teamSize">팀당 인원</label>
+            <select id="teamSize">
+                <option value="3">3명씩 짝지어주기</option>
+                <option value="4" selected>4명씩 짝지어주기</option>
+            </select>
+        </div>
+
+        <button id="generateBtn">랜덤 팀 생성하기</button>
+    </div>
+
+    <!-- 결과 섹션 -->
+    <div id="result-section">
+        <p class="desc">아래 URL을 복사해서 팀원들에게 공유하면 똑같은 결과를 볼 수 있습니다!</p>
+        
+        <div class="share-box" id="shareUrlDisplay">
+            <!-- URL이 여기에 표시됩니다 -->
+        </div>
+        
+        <button id="copyBtn" style="margin-bottom: 20px;">공유 URL 복사하기</button>
+
+        <div class="teams-grid" id="teamsContainer">
+            <!-- 팀 결과가 여기에 렌더링됩니다 -->
+        </div>
+
+        <button id="resetBtn" class="secondary">새로운 팀 짜기 (초기화)</button>
+    </div>
+</div>
+
+<script>
+    const MAX_PEOPLE = 24;
+
+    // DOM 요소
+    const inputSection = document.getElementById('input-section');
+    const resultSection = document.getElementById('result-section');
+    const namesInput = document.getElementById('namesInput');
+    const countDisplay = document.getElementById('countDisplay');
+    const generateBtn = document.getElementById('generateBtn');
+    const teamsContainer = document.getElementById('teamsContainer');
+    const shareUrlDisplay = document.getElementById('shareUrlDisplay');
+    const copyBtn = document.getElementById('copyBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // 입력값 변경 시 인원수 체크
+    namesInput.addEventListener('input', () => {
+        const names = getNamesArray();
+        countDisplay.textContent = `현재 ${names.length}명 / 최대 ${MAX_PEOPLE}명`;
+        
+        if (names.length > MAX_PEOPLE) {
+            countDisplay.classList.add('error');
+            generateBtn.disabled = true;
+            generateBtn.style.opacity = '0.5';
+        } else {
+            countDisplay.classList.remove('error');
+            generateBtn.disabled = false;
+            generateBtn.style.opacity = '1';
+        }
+    });
+
+    // 텍스트 영역에서 배열 추출
+    function getNamesArray() {
+        const raw = namesInput.value;
+        return raw.split(/[\n,]+/)
+                  .map(name => name.trim())
+                  .filter(name => name !== '');
+    }
+
+    // 배열 무작위 섞기 (피셔-예이츠 셔플)
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    // 초기화 - URL 체크
+    function init() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const data = urlParams.get('data');
+
+        if (data) {
+            try {
+                // Base64 디코딩 후 JSON 파싱
+                const decodedStr = decodeURIComponent(atob(data));
+                const teams = JSON.parse(decodedStr);
+                renderResults(teams, window.location.href);
+            } catch (e) {
+                alert('잘못된 공유 URL이거나 데이터가 손상되었습니다.');
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showInput();
+            }
+        } else {
+            showInput();
+        }
+    }
+
+    // 생성 버튼 클릭
+    generateBtn.addEventListener('click', () => {
+        const names = getNamesArray();
+        if (names.length === 0) {
+            alert('참여자를 최소 1명 이상 입력해주세요.');
+            return;
+        }
+        if (names.length > MAX_PEOPLE) {
+            alert(`최대 ${MAX_PEOPLE}명까지만 가능합니다.`);
+            return;
+        }
+
+        const teamSize = parseInt(document.getElementById('teamSize').value, 10);
+        const shuffled = shuffleArray(names);
+        
+        // 팀 분배 로직
+        const teams = [];
+        for (let i = 0; i < shuffled.length; i += teamSize) {
+            teams.push(shuffled.slice(i, i + teamSize));
+        }
+
+        // 결과 데이터를 URL 친화적인 Base64로 인코딩
+        const jsonData = JSON.stringify(teams);
+        const encodedData = btoa(encodeURIComponent(jsonData));
+        
+        // 브라우저 URL 업데이트 (페이지 새로고침 없이)
+        const newUrl = window.location.pathname + '?data=' + encodedData;
+        window.history.pushState({ path: newUrl }, '', newUrl);
+
+        renderResults(teams, window.location.href);
+    });
+
+    // 화면 전환: 입력창 보이기
+    function showInput() {
+        inputSection.style.display = 'block';
+        resultSection.style.display = 'none';
+        namesInput.value = '';
+        countDisplay.textContent = `현재 0명 / 최대 ${MAX_PEOPLE}명`;
+    }
+
+    // 화면 전환: 결과창 보이기
+    function renderResults(teams, currentUrl) {
+        inputSection.style.display = 'none';
+        resultSection.style.display = 'block';
+        shareUrlDisplay.textContent = currentUrl;
+        
+        teamsContainer.innerHTML = '';
+        
+        teams.forEach((team, index) => {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+            
+            const title = document.createElement('h3');
+            title.textContent = `${index + 1}조 (${team.length}명)`;
+            card.appendChild(title);
+
+            const ul = document.createElement('ul');
+            team.forEach(member => {
+                const li = document.createElement('li');
+                li.textContent = member;
+                ul.appendChild(li);
+            });
+            card.appendChild(ul);
+            
+            teamsContainer.appendChild(card);
+        });
+    }
+
+    // URL 복사 버튼
+    copyBtn.addEventListener('click', () => {
+        const urlToCopy = shareUrlDisplay.textContent;
+        navigator.clipboard.writeText(urlToCopy).then(() => {
+            const originalText = copyBtn.textContent;
+            copyBtn.textContent = '✅ 복사 완료!';
+            copyBtn.style.backgroundColor = '#28a745';
+            setTimeout(() => {
+                copyBtn.textContent = originalText;
+                copyBtn.style.backgroundColor = '';
+            }, 2000);
+        }).catch(err => {
+            alert('복사에 실패했습니다. URL을 직접 드래그해서 복사해주세요.');
+        });
+    });
+
+    // 초기화 버튼 (URL에서 파라미터 제거)
+    resetBtn.addEventListener('click', () => {
+        window.history.replaceState({}, document.title, window.location.pathname);
+        showInput();
+    });
+
+    // 앱 실행
+    init();
+
+</script>
+</body>
+</html>
