@@ -200,9 +200,7 @@
     <div id="result-section">
         <p class="desc">아래 URL을 복사해서 팀원들에게 공유하면 똑같은 결과를 볼 수 있습니다!</p>
         
-        <div class="share-box" id="shareUrlDisplay">
-            <!-- URL이 여기에 표시됩니다 -->
-        </div>
+        
         
         <button id="copyBtn" style="margin-bottom: 20px;">공유 URL 복사하기</button>
 
@@ -210,6 +208,10 @@
             <!-- 팀 결과가 여기에 렌더링됩니다 -->
         </div>
         <button id="resetBtn" class="secondary">인원 변경하기 (초기화)</button>
+
+        <div class="share-box" id="shareUrlDisplay" style="display: none;">
+            <!-- URL이 여기에 표시됩니다 -->
+        </div>
     </div>
 </div>
 
@@ -283,7 +285,7 @@
         }
     }
     defaultBtn.addEventListener('click', () => {
-        namesInput.value="강태욱, 곽서연, 기대상, 김동민, 김보미, 김수민, 김수현, 김준호, 김태연, 나예원, 박윤하, 박재헌, 송주영, 염예지, 이병찬, 이선우, 이진수, 조건희, 최경훈, 최종빈, 최준혁, 한윤지, 한지윤";
+        namesInput.value="강태욱, 곽서연, 기대상, 김동민, 김보미, 김수민, 김수현, 김준호, 김태연, 나예원, 박윤하, 박재헌, 성주영, 염예지, 이병찬, 이선우, 이진수, 조건희, 최경훈, 최종빈, 최준혁, 한윤지, 한지윤";
         const names = getNamesArray();
         countDisplay.textContent = `현재 ${names.length}명 / 최대 ${MAX_PEOPLE}명`;
         return;
