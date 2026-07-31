@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -132,6 +134,14 @@
             text-align: center;
             word-break: keep-all;
         }
+
+        .empty-state {
+            opacity: 0.6;
+            font-size: 0.95rem;
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px 0;
+        }
     </style>
     <!-- style 태그 내용 생략 (이전 코드와 동일) -->
 </head>
@@ -142,10 +152,15 @@
         <p class="subtitle">원하는 도구를 선택해주세요.</p>
     </div>
 
+    {% assign tools_dir = "/tools/" %}
+    {% assign found_count = 0 %}
+
     <div class="grid-container">
-        <!-- 1. 일반적인 HTML 파일들을 불러오는 루프 -->
+        <!-- 1. front matter가 없는 순수 정적 html 파일들 (site.static_files) -->
         {% for file in site.static_files %}
-            {% if file.path contains '/tools/' and file.extname == '.html' and file.name != 'index.html' %}
+            {% assign expected_path = tools_dir | append: file.name %}
+            {% if file.extname == ".html" and file.name != "index.html" and file.path == expected_path %}
+            {% assign found_count = found_count | plus: 1 %}
             <a href="{{ file.name }}" class="card-btn">
                 <div class="card-icon">🛠️</div>
                 <!-- 파일명에서 .html을 빼고 하이픈(-)을 공백으로 바꿔서 제목으로 씁니다 -->
@@ -154,15 +169,21 @@
             {% endif %}
         {% endfor %}
 
-        <!-- 2. 만약 HTML 파일 최상단에 '---'를 선언한 파일이 있다면 이 루프로 불러옵니다 -->
+        <!-- 2. front matter(--- ---)가 선언되어 site.pages로 잡히는 html 파일들 -->
         {% for page in site.pages %}
-            {% if page.url contains '/tools/' and page.name != 'index.html' and page.name contains '.html' %}
+            {% assign expected_url = tools_dir | append: page.name %}
+            {% if page.name != "index.html" and page.name contains ".html" and page.url == expected_url %}
+            {% assign found_count = found_count | plus: 1 %}
             <a href="{{ page.name }}" class="card-btn">
                 <div class="card-icon">✨</div>
                 <div class="card-title">{{ page.name | remove: ".html" | replace: "-", " " }}</div>
             </a>
             {% endif %}
         {% endfor %}
+
+        {% if found_count == 0 %}
+        <p class="empty-state">tools 폴더에 표시할 html 파일이 없습니다.</p>
+        {% endif %}
     </div>
 
 </body>
