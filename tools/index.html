@@ -1,5 +1,3 @@
----
----
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -7,6 +5,134 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tools Dashboard</title>
+    <style>
+        /* 기본 테마 (라이트 모드) */
+        :root {
+            --bg-color: #f8f9fa;
+            --text-color: #333333;
+            --card-bg: #ffffff;
+            --card-hover-bg: #fafafa;
+            --shadow: rgba(0, 0, 0, 0.08);
+            --accent: #4f46e5;
+        }
+
+        /* 다크 모드 자동 적용 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #e0e0e0;
+                --card-bg: #1e1e1e;
+                --card-hover-bg: #2a2a2a;
+                --shadow: rgba(0, 0, 0, 0.5);
+                --accent: #818cf8;
+            }
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            width: 100%;
+            max-width: 1400px;
+        }
+
+        /* 타이틀을 직접 수정할 수 있는 입력창 스타일 */
+        .title-input {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            outline: none;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px dashed transparent;
+            transition: border-color 0.3s;
+        }
+
+        .title-input:focus {
+            border-bottom: 2px dashed var(--accent);
+        }
+
+        .title-input::placeholder {
+            color: var(--text-color);
+            opacity: 0.4;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.7;
+            margin: 0;
+        }
+
+        /* 그리드 레이아웃 설정 */
+        .grid-container {
+            display: grid;
+            /* 기본적으로 2열 유지 */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            width: 100%;
+            /* 6열 이상으로 늘어나지 않도록 최대 너비 고정 */
+            max-width: 1400px; 
+        }
+
+        /* 화면이 넓어질 때 (태블릿/PC) 최대 6열까지 자동 확장 */
+        @media (min-width: 768px) {
+            .grid-container {
+                /* 각 카드의 최소 너비를 200px로 잡고 화면에 맞춰 자동으로 열을 나눔 */
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+        }
+
+        /* 카드(버튼) 디자인 */
+        .card-btn {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 35px 20px;
+            text-decoration: none;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--shadow);
+            transition: all 0.2s ease-in-out;
+            border: 2px solid transparent;
+        }
+
+        .card-btn:hover {
+            transform: translateY(-6px);
+            background-color: var(--card-hover-bg);
+            box-shadow: 0 12px 24px var(--shadow);
+            border-color: var(--accent);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-align: center;
+            word-break: keep-all;
+        }
+    </style>
     <!-- style 태그 내용 생략 (이전 코드와 동일) -->
 </head>
 <body>
