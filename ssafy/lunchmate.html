@@ -209,7 +209,6 @@
         <div class="teams-grid" id="teamsContainer">
             <!-- 팀 결과가 여기에 렌더링됩니다 -->
         </div>
-        <button id="generateBtn">같은 인원으로 다시 돌리기 </button>
         <button id="resetBtn" class="secondary">인원 변경하기 (초기화)</button>
     </div>
 </div>
@@ -302,24 +301,23 @@
             return;
         }
 
-        // 3. 다시 무작위 셔플
+        const teamSize = parseInt(document.getElementById('teamSize').value, 10);
         const shuffled = shuffleArray(names);
         
-        // 4. 팀 분배 로직
+        // 팀 분배 로직
         const teams = [];
         for (let i = 0; i < shuffled.length; i += teamSize) {
             teams.push(shuffled.slice(i, i + teamSize));
         }
 
-        // 5. 결과 데이터를 Base64로 인코딩
+        // 결과 데이터를 URL 친화적인 Base64로 인코딩
         const jsonData = JSON.stringify(teams);
         const encodedData = btoa(encodeURIComponent(jsonData));
         
-        // 6. 브라우저 URL 업데이트 (새로운 데이터로 덮어쓰기)
+        // 브라우저 URL 업데이트 (페이지 새로고침 없이)
         const newUrl = window.location.pathname + '?data=' + encodedData;
         window.history.pushState({ path: newUrl }, '', newUrl);
 
-        // 7. 결과 화면 렌더링
         renderResults(teams, window.location.href);
     });
 
