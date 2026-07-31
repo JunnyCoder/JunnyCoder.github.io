@@ -180,7 +180,7 @@
             <label for="namesInput">참여자 명단 (최대 24명)</label>
             <textarea id="namesInput" placeholder="이름을 쉼표(,) 또는 줄바꿈으로 구분하여 입력하세요.&#10;예시: 홍길동, 김철수, 이영희...">
             </textarea>
-            <div id="countDisplay" class="count-indicator">현재 0명 / 최대 24명</div>
+            <div id="countDisplay" class="count-indicator">현재 0명 / 최대 30명</div>
         </div>
         
         <button id="defaultBtn">1반 인원 불러오기</button>
@@ -188,8 +188,10 @@
         <div class="form-group" >
             <label for="teamSize">팀당 인원</label>
             <select id="teamSize">
+                <option value="2">2명씩 짝지어주기</option>
                 <option value="3">3명씩 짝지어주기</option>
                 <option value="4" selected>4명씩 짝지어주기</option>
+                <option value="5">5명씩 짝지어주기</option>
             </select>
         </div>
         
