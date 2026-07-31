@@ -178,18 +178,21 @@
         
         <div class="form-group">
             <label for="namesInput">참여자 명단 (최대 24명)</label>
-            <textarea id="namesInput" placeholder="이름을 쉼표(,) 또는 줄바꿈으로 구분하여 입력하세요.&#10;예시: 홍길동, 김철수, 이영희..."></textarea>
+            <textarea id="namesInput" placeholder="이름을 쉼표(,) 또는 줄바꿈으로 구분하여 입력하세요.&#10;예시: 홍길동, 김철수, 이영희...">
+            </textarea>
             <div id="countDisplay" class="count-indicator">현재 0명 / 최대 24명</div>
         </div>
-
-        <div class="form-group">
+        
+        <button id="defaultBtn">1반 인원 불러오기</button>
+        <p></p>
+        <div class="form-group" >
             <label for="teamSize">팀당 인원</label>
             <select id="teamSize">
                 <option value="3">3명씩 짝지어주기</option>
                 <option value="4" selected>4명씩 짝지어주기</option>
             </select>
         </div>
-
+        
         <button id="generateBtn">랜덤 팀 생성하기</button>
     </div>
 
@@ -206,13 +209,13 @@
         <div class="teams-grid" id="teamsContainer">
             <!-- 팀 결과가 여기에 렌더링됩니다 -->
         </div>
-
-        <button id="resetBtn" class="secondary">새로운 팀 짜기 (초기화)</button>
+        <button id="generateBtn">같은 인원으로 다시 돌리기 </button>
+        <button id="resetBtn" class="secondary">인원 변경하기 (초기화)</button>
     </div>
 </div>
 
 <script>
-    const MAX_PEOPLE = 24;
+    const MAX_PEOPLE = 30;
 
     // DOM 요소
     const inputSection = document.getElementById('input-section');
@@ -220,6 +223,7 @@
     const namesInput = document.getElementById('namesInput');
     const countDisplay = document.getElementById('countDisplay');
     const generateBtn = document.getElementById('generateBtn');
+    const defaultBtn = document.getElementById('defaultBtn');
     const teamsContainer = document.getElementById('teamsContainer');
     const shareUrlDisplay = document.getElementById('shareUrlDisplay');
     const copyBtn = document.getElementById('copyBtn');
@@ -279,6 +283,12 @@
             showInput();
         }
     }
+    defaultBtn.addEventListener('click', () => {
+        namesInput.value="강태욱, 곽서연, 기대상, 김동민, 김보미, 김수민, 김수현, 김준호, 김태연, 나예원, 박윤하, 박재헌, 송주영, 염예지, 이병찬, 이선우, 이진수, 조건희, 최경훈, 최종빈, 최준혁, 한윤지, 한지윤";
+        const names = getNamesArray();
+        countDisplay.textContent = `현재 ${names.length}명 / 최대 ${MAX_PEOPLE}명`;
+        return;
+    });
 
     // 생성 버튼 클릭
     generateBtn.addEventListener('click', () => {
@@ -292,23 +302,24 @@
             return;
         }
 
-        const teamSize = parseInt(document.getElementById('teamSize').value, 10);
+        // 3. 다시 무작위 셔플
         const shuffled = shuffleArray(names);
         
-        // 팀 분배 로직
+        // 4. 팀 분배 로직
         const teams = [];
         for (let i = 0; i < shuffled.length; i += teamSize) {
             teams.push(shuffled.slice(i, i + teamSize));
         }
 
-        // 결과 데이터를 URL 친화적인 Base64로 인코딩
+        // 5. 결과 데이터를 Base64로 인코딩
         const jsonData = JSON.stringify(teams);
         const encodedData = btoa(encodeURIComponent(jsonData));
         
-        // 브라우저 URL 업데이트 (페이지 새로고침 없이)
+        // 6. 브라우저 URL 업데이트 (새로운 데이터로 덮어쓰기)
         const newUrl = window.location.pathname + '?data=' + encodedData;
         window.history.pushState({ path: newUrl }, '', newUrl);
 
+        // 7. 결과 화면 렌더링
         renderResults(teams, window.location.href);
     });
 

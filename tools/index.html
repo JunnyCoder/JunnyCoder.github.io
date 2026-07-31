@@ -1,0 +1,43 @@
+---
+---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <!-- 기존 CSS 스타일은 그대로 유지하세요 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools Dashboard</title>
+    <!-- style 태그 내용 생략 (이전 코드와 동일) -->
+</head>
+<body>
+
+    <div class="header">
+        <input type="text" class="title-input" placeholder="[이곳을 클릭해 페이지 타이틀을 입력하세요]" value="My Tools">
+        <p class="subtitle">원하는 도구를 선택해주세요.</p>
+    </div>
+
+    <div class="grid-container">
+        <!-- 1. 일반적인 HTML 파일들을 불러오는 루프 -->
+        {% for file in site.static_files %}
+            {% if file.path contains '/tools/' and file.extname == '.html' and file.name != 'index.html' %}
+            <a href="{{ file.name }}" class="card-btn">
+                <div class="card-icon">🛠️</div>
+                <!-- 파일명에서 .html을 빼고 하이픈(-)을 공백으로 바꿔서 제목으로 씁니다 -->
+                <div class="card-title">{{ file.name | remove: ".html" | replace: "-", " " }}</div>
+            </a>
+            {% endif %}
+        {% endfor %}
+
+        <!-- 2. 만약 HTML 파일 최상단에 '---'를 선언한 파일이 있다면 이 루프로 불러옵니다 -->
+        {% for page in site.pages %}
+            {% if page.url contains '/tools/' and page.name != 'index.html' and page.name contains '.html' %}
+            <a href="{{ page.name }}" class="card-btn">
+                <div class="card-icon">✨</div>
+                <div class="card-title">{{ page.name | remove: ".html" | replace: "-", " " }}</div>
+            </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>Markdown 에디터</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+<style>
+  :root{
+    --bg-app:#111217;
+    --bg-toolbar:#191a1f;
+    --bg-panel:#1b1c22;
+    --bg-panel-header:#191a1f;
+    --border:#2a2b32;
+    --text:#e7e8ec;
+    --text-dim:#9a9da6;
+    --text-mute:#65686f;
+    --blue:#5aa2ef;
+    --blue-soft:rgba(90,162,239,.14);
+    --pill-active-bg:#eef1f6;
+    --pill-active-text:#15161b;
+    --radius:8px;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:"Apple SD Gothic Neo","Malgun Gothic",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    background:var(--bg-app);
+    color:var(--text);
+    font-family:var(--sans);
+    overflow:hidden;
+  }
+  #app{display:flex;flex-direction:column;height:100vh;}
+
+  /* ---------- Toolbar ---------- */
+  .toolbar{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    height:52px;
+    padding:0 14px;
+    background:var(--bg-toolbar);
+    border-bottom:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .toolbar-left,.toolbar-center,.toolbar-right{
+    display:flex;align-items:center;gap:10px;
+  }
+  .toolbar-label{
+    font-size:12px;color:var(--text-dim);white-space:nowrap;
+  }
+  .segmented{
+    display:flex;background:#101115;border:1px solid var(--border);
+    border-radius:999px;padding:3px;gap:2px;
+  }
+  .seg-btn{
+    appearance:none;border:none;background:transparent;color:var(--text-dim);
+    font-size:13px;font-family:var(--sans);padding:5px 14px;border-radius:999px;
+    cursor:pointer;transition:background .15s ease,color .15s ease;white-space:nowrap;
+  }
+  .seg-btn:hover{color:var(--text);}
+  .seg-btn.active{background:var(--pill-active-bg);color:var(--pill-active-text);font-weight:600;}
+
+  .btn-pill{
+    appearance:none;cursor:pointer;font-family:var(--mono);font-size:12.5px;font-weight:600;
+    color:var(--text);background:transparent;border:1px solid var(--border);
+    border-radius:999px;padding:6px 14px;transition:border-color .15s ease,background .15s ease;
+  }
+  .btn-pill:hover{border-color:var(--blue);background:var(--blue-soft);}
+
+  .btn-text{
+    appearance:none;cursor:pointer;background:transparent;border:none;
+    color:var(--text-dim);font-size:13px;font-family:var(--sans);padding:6px 8px;
+    border-radius:6px;display:flex;align-items:center;gap:6px;
+  }
+  .btn-text:hover{color:var(--text);background:rgba(255,255,255,.05);}
+
+  .btn-ghost{
+    appearance:none;cursor:pointer;font-family:var(--sans);font-size:12.5px;font-weight:500;
+    color:var(--text-dim);background:transparent;border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px;display:flex;align-items:center;gap:6px;
+    transition:border-color .15s ease,color .15s ease;
+  }
+  .btn-ghost:hover{border-color:var(--blue);color:var(--text);}
+  .btn-ghost.copied{border-color:#5ecb85;color:#5ecb85;}
+
+  /* ---------- Workspace ---------- */
+  .workspace{
+    flex:1 1 auto;
+    display:flex;
+    min-height:0;
+    position:relative;
+  }
+  .pane{
+    display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg-panel);
+  }
+  .pane-editor{flex:0 0 50%;}
+  .pane-preview{flex:1 1 auto;}
+  .pane-header{
+    flex:0 0 auto;height:38px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 14px;background:var(--bg-panel-header);border-bottom:1px solid var(--border);
+  }
+  .pane-title{
+    font-size:11.5px;font-weight:700;letter-spacing:.09em;color:var(--text-dim);
+  }
+  .pane-stats{font-size:11.5px;color:var(--text-mute);font-family:var(--mono);}
+  .pane-body{flex:1 1 auto;min-height:0;overflow:hidden;position:relative;}
+
+  /* ---------- Divider ---------- */
+  .divider{
+    flex:0 0 6px;background:var(--border);cursor:col-resize;position:relative;z-index:5;
+  }
+  .divider:hover,.divider.dragging{background:var(--blue);}
+  .divider-grip{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:3px;height:26px;border-radius:2px;background:rgba(255,255,255,.25);
+    pointer-events:none;
+  }
+
+  /* ---------- CodeMirror overrides ---------- */
+  .CodeMirror{
+    height:100%;background:var(--bg-panel);color:var(--text);
+    font-family:var(--mono);font-size:14px;line-height:1.65;padding:14px 16px;
+  }
+  .CodeMirror-gutters{display:none;}
+  .CodeMirror-cursor{border-left:2px solid var(--text);}
+  .CodeMirror-selected{background:rgba(255,255,255,.08)!important;}
+  .CodeMirror-line{padding:0 !important;}
+  .cm-md-syntax{color:var(--blue)!important;}
+  .CodeMirror-placeholder{color:var(--text-mute)!important;}
+  .CodeMirror ::selection{background:rgba(255,255,255,.15);}
+
+  /* ---------- Preview typography ---------- */
+  .preview-body{
+    height:100%;overflow:auto;padding:26px 30px 60px;font-size:15px;line-height:1.75;color:#d8dadf;
+  }
+  .preview-body h1,.preview-body h2,.preview-body h3,.preview-body h4{
+    color:#f4f5f7;font-weight:700;line-height:1.35;margin:1.4em 0 .6em;
+  }
+  .preview-body h1{font-size:1.9em;padding-bottom:.35em;border-bottom:1px solid var(--border);margin-top:0;}
+  .preview-body h2{font-size:1.4em;padding-bottom:.3em;border-bottom:1px solid var(--border);}
+  .preview-body h3{font-size:1.15em;}
+  .preview-body p{margin:.7em 0;}
+  .preview-body strong{color:#fff;font-weight:700;}
+  .preview-body em{color:#e6e7eb;}
+  .preview-body a{color:var(--blue);text-decoration:none;}
+  .preview-body a:hover{text-decoration:underline;}
+  .preview-body ul,.preview-body ol{padding-left:1.5em;margin:.6em 0;}
+  .preview-body li{margin:.25em 0;}
+  .preview-body li.task-list-item{list-style:none;margin-left:-1.5em;padding-left:1.5em;}
+  .preview-body input[type="checkbox"]{accent-color:var(--blue);margin-right:.5em;}
+  .preview-body blockquote{
+    margin:.9em 0;padding:.4em 1em;border-left:3px solid var(--blue);
+    background:var(--blue-soft);color:var(--text-dim);border-radius:0 6px 6px 0;
+  }
+  .preview-body hr{border:none;border-top:1px solid var(--border);margin:1.8em 0;}
+  .preview-body table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.92em;}
+  .preview-body th,.preview-body td{border:1px solid var(--border);padding:.5em .8em;text-align:left;}
+  .preview-body th{background:#212228;color:#f0f1f3;}
+  .preview-body tr:nth-child(even) td{background:rgba(255,255,255,.02);}
+  .preview-body code{
+    font-family:var(--mono);background:#26272e;color:#ffb27a;border-radius:4px;
+    padding:.15em .4em;font-size:.88em;
+  }
+  .preview-body pre{
+    background:#16171c;border:1px solid var(--border);border-radius:8px;
+    padding:14px 16px;overflow:auto;margin:1em 0;
+  }
+  .preview-body pre code{
+    background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;
+    display:block;
+  }
+  .preview-body .hljs-keyword,.preview-body .hljs-selector-tag,.preview-body .hljs-literal{color:#c792ea;}
+  .preview-body .hljs-string,.preview-body .hljs-addition{color:#c3e88d;}
+  .preview-body .hljs-number{color:#f78c6c;}
+  .preview-body .hljs-comment,.preview-body .hljs-quote{color:#6b6e76;font-style:italic;}
+  .preview-body .hljs-title,.preview-body .hljs-function,.preview-body .hljs-section{color:#82aaff;}
+  .preview-body .hljs-attr,.preview-body .hljs-attribute,.preview-body .hljs-symbol{color:#ffcb6b;}
+  .preview-body .hljs-tag,.preview-body .hljs-name,.preview-body .hljs-selector-id{color:#f07178;}
+  .preview-body .hljs-built_in,.preview-body .hljs-type,.preview-body .hljs-selector-class{color:#89ddff;}
+  .preview-body .hljs-variable,.preview-body .hljs-params,.preview-body .hljs-template-variable{color:#eeffff;}
+  .preview-body .hljs-meta,.preview-body .hljs-meta-string{color:#ff5874;}
+  .preview-body .hljs-deletion{color:#ff5874;}
+  .preview-body .hljs-emphasis{font-style:italic;}
+  .preview-body .hljs-strong{font-weight:700;}
+  .preview-body .empty-state{color:var(--text-mute);font-style:italic;}
+
+  /* scrollbars */
+  ::-webkit-scrollbar{width:10px;height:10px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:#33343c;border-radius:6px;}
+  ::-webkit-scrollbar-thumb:hover{background:#43454e;}
+
+  @media (max-width:760px){
+    .toolbar-label{display:none;}
+    .toolbar{height:auto;padding:8px 10px;}
+    .pane-editor{flex-basis:50%!important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="toolbar">
+    <div class="toolbar-left">
+      <span class="toolbar-label">보기</span>
+      <div class="segmented" id="viewSegment">
+        <button type="button" class="seg-btn active" data-mode="split">분할</button>
+        <button type="button" class="seg-btn" data-mode="editor">편집기</button>
+        <button type="button" class="seg-btn" data-mode="preview">미리보기</button>
+      </div>
+    </div>
+    <div class="toolbar-center">
+      <button type="button" class="btn-pill" id="downloadMdBtn">.md</button>
+      <button type="button" class="btn-pill" id="downloadHtmlBtn">.html</button>
+    </div>
+    <div class="toolbar-right">
+      <button type="button" class="btn-text" id="loadExampleBtn">예제 불러오기</button>
+      <button type="button" class="btn-text" id="clearBtn">지우기</button>
+    </div>
+  </header>
+
+  <main class="workspace" id="workspace">
+    <section class="pane pane-editor" id="paneEditor">
+      <div class="pane-header">
+        <span class="pane-title">MARKDOWN</span>
+        <span class="pane-stats" id="statsLabel">0줄 · 0B</span>
+      </div>
+      <div class="pane-body" id="editorHost"></div>
+    </section>
+
+    <div class="divider" id="divider">
+      <div class="divider-grip"></div>
+    </div>
+
+    <section class="pane pane-preview" id="panePreview">
+      <div class="pane-header">
+        <span class="pane-title">미리보기</span>
+        <button type="button" class="btn-ghost" id="copyHtmlBtn">HTML 복사</button>
+      </div>
+      <div class="pane-body">
+        <div class="preview-body" id="previewHost"></div>
+      </div>
+    </section>
+  </main>
+
+</div>
+
+<script>
+(function(){
+
+  /* ================= Example content ================= */
+  var exampleLines = [
+    '# Hello from Coddy',
+    '',
+    'A tiny README to **try out** the editor.',
+    '',
+    '> Tip: headers, quotes, and code fences turn blue as you type.',
+    '',
+    '## Features',
+    '',
+    '- Live preview with GitHub-flavored Markdown',
+    '- Tables, task lists, and fenced code',
+    '- Copy or download the result',
+    '',
+    '## Checklist',
+    '',
+    '- [x] Write draft',
+    '- [ ] Add screenshots',
+    '- [ ] Ship it',
+    '',
+    '## Code',
+    '',
+    '```js',
+    'function greet(name) {',
+    '  return `Hello, ${name}!`;',
+    '}',
+    '```',
+    '',
+    '```python',
+    'def greet(name):',
+    '    return f"Hello, {name}!"',
+    '```',
+    '',
+    '| Track | Lessons |',
+    '| ----- | ------- |',
+    '| Python | 220 |',
+    '| JavaScript | 180 |',
+    '| Markdown | 12 |',
+    ''
+  ];
+  var exampleMarkdown = exampleLines.join('\n');
+
+  /* ================= Export CSS =================
+     Standalone copy of the visual rules the exported .html file needs
+     (typography + code highlighting), since it has no link to this page's <style>. */
+  var EXPORT_CSS = [
+    'body{margin:0;background:#111217;color:#d8dadf;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;}',
+    '.preview-body{max-width:820px;margin:0 auto;padding:40px 24px 80px;font-size:16px;line-height:1.75;}',
+    '.preview-body h1,.preview-body h2,.preview-body h3,.preview-body h4{color:#f4f5f7;font-weight:700;line-height:1.35;margin:1.4em 0 .6em;}',
+    '.preview-body h1{font-size:2em;padding-bottom:.35em;border-bottom:1px solid #2a2b32;margin-top:0;}',
+    '.preview-body h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid #2a2b32;}',
+    '.preview-body h3{font-size:1.2em;}',
+    '.preview-body p{margin:.7em 0;}',
+    '.preview-body strong{color:#fff;}',
+    '.preview-body a{color:#5aa2ef;text-decoration:none;}',
+    '.preview-body a:hover{text-decoration:underline;}',
+    '.preview-body ul,.preview-body ol{padding-left:1.5em;margin:.6em 0;}',
+    '.preview-body li{margin:.25em 0;}',
+    '.preview-body li.task-list-item{list-style:none;margin-left:-1.5em;padding-left:1.5em;}',
+    '.preview-body input[type="checkbox"]{accent-color:#5aa2ef;margin-right:.5em;}',
+    '.preview-body blockquote{margin:.9em 0;padding:.4em 1em;border-left:3px solid #5aa2ef;background:rgba(90,162,239,.14);color:#9a9da6;border-radius:0 6px 6px 0;}',
+    '.preview-body hr{border:none;border-top:1px solid #2a2b32;margin:1.8em 0;}',
+    '.preview-body table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.92em;}',
+    '.preview-body th,.preview-body td{border:1px solid #2a2b32;padding:.5em .8em;text-align:left;}',
+    '.preview-body th{background:#212228;color:#f0f1f3;}',
+    '.preview-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#26272e;color:#ffb27a;border-radius:4px;padding:.15em .4em;font-size:.88em;}',
+    '.preview-body pre{background:#16171c;border:1px solid #2a2b32;border-radius:8px;padding:14px 16px;overflow:auto;margin:1em 0;}',
+    '.preview-body pre code{background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;display:block;}',
+    '.hljs-keyword,.hljs-selector-tag,.hljs-literal{color:#c792ea;}',
+    '.hljs-string,.hljs-addition{color:#c3e88d;}',
+    '.hljs-number{color:#f78c6c;}',
+    '.hljs-comment,.hljs-quote{color:#6b6e76;font-style:italic;}',
+    '.hljs-title,.hljs-function,.hljs-section{color:#82aaff;}',
+    '.hljs-attr,.hljs-attribute,.hljs-symbol{color:#ffcb6b;}',
+    '.hljs-tag,.hljs-name,.hljs-selector-id{color:#f07178;}',
+    '.hljs-built_in,.hljs-type,.hljs-selector-class{color:#89ddff;}',
+    '.hljs-variable,.hljs-params,.hljs-template-variable{color:#eeffff;}',
+    '.hljs-meta,.hljs-meta-string,.hljs-deletion{color:#ff5874;}',
+    '.hljs-emphasis{font-style:italic;}',
+    '.hljs-strong{font-weight:700;}'
+  ].join('\n');
+
+  /* ================= Marked + highlight.js setup ================= */
+  var renderer = new marked.Renderer();
+  renderer.link = function(href, title, text){
+    var titleAttr = title ? ' title="' + title + '"' : '';
+    return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
+  };
+
+  marked.setOptions({
+    renderer: renderer,
+    gfm: true,
+    breaks: false,
+    headerIds: false,
+    mangle: false,
+    langPrefix: 'hljs language-',
+    highlight: function(code, lang){
+      try{
+        if (lang && hljs.getLanguage(lang)){
+          return hljs.highlight(code, { language: lang }).value;
+        }
+        return hljs.highlightAuto(code).value;
+      }catch(e){
+        return code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+    }
+  });
+
+  /* ================= Elements ================= */
+  var editorHost = document.getElementById('editorHost');
+  var previewHost = document.getElementById('previewHost');
+  var statsLabel = document.getElementById('statsLabel');
+  var workspace = document.getElementById('workspace');
+  var paneEditor = document.getElementById('paneEditor');
+  var panePreview = document.getElementById('panePreview');
+  var divider = document.getElementById('divider');
+  var viewSegment = document.getElementById('viewSegment');
+  var copyHtmlBtn = document.getElementById('copyHtmlBtn');
+  var downloadMdBtn = document.getElementById('downloadMdBtn');
+  var downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+  var loadExampleBtn = document.getElementById('loadExampleBtn');
+  var clearBtn = document.getElementById('clearBtn');
+
+  /* ================= CodeMirror ================= */
+  var editor = CodeMirror(editorHost, {
+    value: exampleMarkdown,
+    mode: null,
+    lineNumbers: false,
+    lineWrapping: true,
+    tabSize: 2,
+    indentUnit: 2,
+    viewportMargin: Infinity,
+    extraKeys: {
+      Tab: function(cm){ cm.replaceSelection('  '); }
+    }
+  });
+
+  /* ---- classify each line: does it contain markdown "syntax" markers (#, ```, >, ---, tables)? ---- */
+  function refreshSyntaxHighlight(){
+    var total = editor.lineCount();
+    var inFence = false;
+    for (var i = 0; i < total; i++){
+      editor.removeLineClass(i, 'text', 'cm-md-syntax');
+      var raw = editor.getLine(i);
+      var t = raw.replace(/^\s+/, '');
+      var special = false;
+      var isFence = /^(```|~~~)/.test(t);
+
+      if (isFence){
+        special = true;
+        inFence = !inFence;
+      } else if (!inFence){
+        if (/^#{1,6}\s+\S/.test(t)) special = true;
+        else if (/^>\s?/.test(t)) special = true;
+        else if (/^(-{3,}|\*{3,}|_{3,})\s*$/.test(t)) special = true;
+        else if (t.indexOf('|') !== -1 && t.length > 1) special = true;
+      }
+
+      if (special) editor.addLineClass(i, 'text', 'cm-md-syntax');
+    }
+  }
+
+  function formatBytes(n){
+    if (n < 1024) return n + 'B';
+    return (n / 1024).toFixed(1) + 'KB';
+  }
+
+  function updateStats(){
+    var text = editor.getValue();
+    var bytes = new TextEncoder().encode(text).length;
+    statsLabel.textContent = editor.lineCount() + '줄 · ' + formatBytes(bytes);
+  }
+
+  function renderPreview(){
+    var raw = editor.getValue();
+    if (!raw.trim()){
+      previewHost.innerHTML = '<p class="empty-state">편집기에 마크다운을 입력하면 여기에 미리보기가 표시됩니다.</p>';
+      return;
+    }
+    var html = marked.parse(raw);
+    var clean = window.DOMPurify ? DOMPurify.sanitize(html) : html;
+    previewHost.innerHTML = clean;
+  }
+
+  var renderTimer = null;
+  function scheduleUpdate(){
+    refreshSyntaxHighlight();
+    updateStats();
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(renderPreview, 120);
+  }
+
+  editor.on('changes', scheduleUpdate);
+  scheduleUpdate();
+  renderPreview();
+
+  /* ================= View mode tabs ================= */
+  var currentMode = 'split';
+  var splitRatio = 50; // percentage width of editor pane while in split mode
+
+  function applyLayout(){
+    if (currentMode === 'editor'){
+      panePreview.style.display = 'none';
+      divider.style.display = 'none';
+      paneEditor.style.display = 'flex';
+      paneEditor.style.flex = '1 1 auto';
+    } else if (currentMode === 'preview'){
+      paneEditor.style.display = 'none';
+      divider.style.display = 'none';
+      panePreview.style.display = 'flex';
+      panePreview.style.flex = '1 1 auto';
+    } else {
+      paneEditor.style.display = 'flex';
+      panePreview.style.display = 'flex';
+      divider.style.display = 'block';
+      paneEditor.style.flex = '0 0 ' + splitRatio + '%';
+      panePreview.style.flex = '1 1 auto';
+    }
+    editor.refresh();
+  }
+
+  viewSegment.addEventListener('click', function(e){
+    var btn = e.target.closest('.seg-btn');
+    if (!btn) return;
+    currentMode = btn.getAttribute('data-mode');
+    Array.prototype.forEach.call(viewSegment.querySelectorAll('.seg-btn'), function(b){
+      b.classList.toggle('active', b === btn);
+    });
+    applyLayout();
+  });
+
+  applyLayout();
+
+  /* ================= Divider drag-to-resize ================= */
+  var dragging = false;
+
+  divider.addEventListener('pointerdown', function(e){
+    if (currentMode !== 'split') return;
+    dragging = true;
+    divider.classList.add('dragging');
+    divider.setPointerCapture(e.pointerId);
+  });
+
+  divider.addEventListener('pointermove', function(e){
+    if (!dragging) return;
+    var rect = workspace.getBoundingClientRect();
+    var pct = ((e.clientX - rect.left) / rect.width) * 100;
+    pct = Math.max(20, Math.min(80, pct));
+    splitRatio = pct;
+    paneEditor.style.flex = '0 0 ' + splitRatio + '%';
+  });
+
+  function endDrag(){
+    dragging = false;
+    divider.classList.remove('dragging');
+    editor.refresh();
+  }
+  divider.addEventListener('pointerup', endDrag);
+  divider.addEventListener('pointercancel', endDrag);
+
+  /* ================= Toolbar actions ================= */
+  function downloadFile(filename, content, mime){
+    var blob = new Blob([content], { type: mime });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  downloadMdBtn.addEventListener('click', function(){
+    downloadFile('document.md', editor.getValue(), 'text/markdown;charset=utf-8');
+  });
+
+  downloadHtmlBtn.addEventListener('click', function(){
+    var doc = '<!DOCTYPE html>\n' +
+      '<html lang="ko">\n<head>\n<meta charset="UTF-8">\n' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+      '<title>Markdown Export</title>\n<style>\n' + EXPORT_CSS + '\n</style>\n</head>\n<body>\n' +
+      '<article class="preview-body">\n' + previewHost.innerHTML + '\n</article>\n</body>\n</html>';
+    downloadFile('document.html', doc, 'text/html;charset=utf-8');
+  });
+
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try{ document.execCommand('copy'); }catch(e){}
+    document.body.removeChild(ta);
+  }
+
+  function showCopied(){
+    copyHtmlBtn.textContent = '복사됨';
+    copyHtmlBtn.classList.add('copied');
+    setTimeout(function(){
+      copyHtmlBtn.textContent = 'HTML 복사';
+      copyHtmlBtn.classList.remove('copied');
+    }, 1400);
+  }
+
+  copyHtmlBtn.addEventListener('click', function(){
+    var html = previewHost.innerHTML;
+    if (navigator.clipboard && window.isSecureContext){
+      navigator.clipboard.writeText(html).then(showCopied).catch(function(){
+        fallbackCopy(html);
+        showCopied();
+      });
+    } else {
+      fallbackCopy(html);
+      showCopied();
+    }
+  });
+
+  loadExampleBtn.addEventListener('click', function(){
+    editor.setValue(exampleMarkdown);
+    editor.focus();
+  });
+
+  clearBtn.addEventListener('click', function(){
+    if (!editor.getValue().trim() || confirm('편집기 내용을 모두 지울까요?')){
+      editor.setValue('');
+      editor.focus();
+    }
+  });
+
+  document.addEventListener('keydown', function(e){
+    if ((e.ctrlKey || e.metaKey) && e.key === 's'){
+      e.preventDefault();
+      downloadMdBtn.click();
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
