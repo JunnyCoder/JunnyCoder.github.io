@@ -547,6 +547,25 @@
   divider.addEventListener('pointercancel', endDrag);
 
   /* ================= Toolbar actions ================= */
+
+   function deriveTitle(text){
+    var lines = text.split('\n');
+    var firstLine = '';
+    for (var i = 0; i < lines.length; i++){
+      var t = lines[i].trim();
+      if (t){ firstLine = t; break; }
+    }
+    firstLine = firstLine.replace(/^#+\s*/, ''); // 맨 앞 # (헤딩 마커) 제거
+    firstLine = firstLine.replace(/[\\/:*?"<>|]/g, ''); // 파일명에 쓸 수 없는 문자 제거
+    firstLine = firstLine.replace(/\s+/g, ' ').trim();
+    if (firstLine.length > 80) firstLine = firstLine.slice(0, 80).trim();
+    return firstLine || 'document';
+  }
+ 
+  function deriveFilename(ext){
+    return deriveTitle(editor.getValue()) + '.' + ext;
+  }
+
   function downloadFile(filename, content, mime){
     var blob = new Blob([content], { type: mime });
     var url = URL.createObjectURL(blob);
@@ -560,7 +579,7 @@
   }
 
   downloadMdBtn.addEventListener('click', function(){
-    downloadFile('document.md', editor.getValue(), 'text/markdown;charset=utf-8');
+    downloadFile(deriveFilename('md'), editor.getValue(), 'text/markdown;charset=utf-8');
   });
 
   downloadHtmlBtn.addEventListener('click', function(){
@@ -569,7 +588,7 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
       '<title>Markdown Export</title>\n<style>\n' + EXPORT_CSS + '\n</style>\n</head>\n<body>\n' +
       '<article class="preview-body">\n' + previewHost.innerHTML + '\n</article>\n</body>\n</html>';
-    downloadFile('document.html', doc, 'text/html;charset=utf-8');
+    downloadFile(deriveFilename('html'), doc, 'text/html;charset=utf-8');
   });
 
   function fallbackCopy(text){
