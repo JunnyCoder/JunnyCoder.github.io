@@ -656,7 +656,10 @@
       Tab: function(cm){ cm.replaceSelection('  '); },
       'Ctrl-B': insertBold,
       'Ctrl-[': insertDetailsBlock,
-      'Ctrl-]':insertCodeBlock
+      'Ctrl-]':insertCodeBlock,
+      'Ctrl-`':insertHighlightBlock,
+      'Shift-Enter' : insertBRtag
+
 
     }
   });
@@ -668,10 +671,12 @@
     if (selected) {
       // 선택한 텍스트가 있으면 그 텍스트를 details 안에 감싸기
       cm.replaceSelection(s + selected + '\n'+e);
+      cm.setCursor({ line: start.line + s.split('\n').length - 1 , ch: selected.length });
+
     } else {
       // 선택한 텍스트가 없으면 빈 템플릿 삽입 후, 커서를 본문 줄로 이동
       cm.replaceSelection(s + selected + '\n'+e);
-      cm.setCursor({ line: start.line + 2, ch: 0 });
+      cm.setCursor({ line: start.line + s.split('\n').length - 1 , ch: 0 });
     }
     cm.focus();
   }
@@ -685,11 +690,24 @@
     } else {
       // 선택한 텍스트가 없으면 빈 템플릿 삽입 후, 커서를 본문 줄로 이동
       cm.replaceSelection(s + selected + e);
-      cm.setCursor({ line: start.line + 2, ch: 0 });
+      cm.setCursor({ line: start.line, ch: start.ch + (s + selected ).length });
     }
     cm.focus();
   }
-
+  function insertTag(cm, s) {
+    var selected = cm.getSelection();
+    var start = cm.getCursor('from');
+    cm.replaceSelection(s);
+    cm.setCursor({ line: start.line, ch: start.ch + (s).length });
+    cm.focus();
+  }
+  
+  function insertHighlightBlock(cm) {
+    insertBlockOneline(cm, '`','`')
+  }
+  function insertBRtag(cm) {
+    insertTag(cm, '</br>')
+  }
   function insertBold(cm) {
     insertBlockOneline(cm, '**', '**')
   }
