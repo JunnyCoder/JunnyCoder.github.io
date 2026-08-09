@@ -1,4 +1,4 @@
-{% assign display_name = target_name | default: "해당" %}
+{% assign display_name = include.target_name | default: "해당" %}
 
     <style>
         /* 기본 테마 (라이트 모드) */
@@ -142,7 +142,7 @@
         <p class="subtitle">원하는 도구를 선택해주세요.</p>
     </div>
 
-    {% assign directory_path = target_dir %}
+    {% assign directory_path = include.target_dir %}
     {% assign found_count = 0 %}
 
     <div class="grid-container">
