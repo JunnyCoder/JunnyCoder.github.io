@@ -1,0 +1,122 @@
+/* CSS Reset & Baseline */
+body {
+	font-family:
+		"Pretendard", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	color: #1e293b;
+	background-color: #f1f5f9;
+	margin: 0;
+	padding: 0;
+	word-break: keep-all;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Font Utility Classes */
+.font-head {
+	font-family: "IBM Plex Sans KR", sans-serif;
+}
+.font-code {
+	font-family: "JetBrains Mono", monospace;
+}
+
+/* Media Responsiveness Fix */
+img,
+video,
+iframe,
+canvas {
+	max-width: 100%;
+	height: auto;
+}
+
+/* Custom Tech Scrollbar */
+::-webkit-scrollbar {
+	width: 6px;
+}
+::-webkit-scrollbar-track {
+	background: #040d2d;
+}
+::-webkit-scrollbar-thumb {
+	background: #0d2971;
+	border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #58c8f0;
+}
+
+/* Smooth reveal animation for terminal */
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+.log-entry {
+	animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes blink-red {
+	0%,
+	100% {
+		border-color: rgba(239, 68, 68, 0.3);
+		box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+	}
+	50% {
+		border-color: rgba(239, 68, 68, 1);
+		box-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+	}
+}
+.bottleneck-active {
+	animation: blink-red 1.5s infinite;
+	background-color: rgba(239, 68, 68, 0.1) !important;
+}
+.conveyor-module {
+	transition:
+		left 0.1s linear,
+		top 0.1s linear;
+}
+
+/* Language Toggle Animation */
+.lang-content {
+	transition:
+		opacity 0.25s ease-in-out,
+		transform 0.25s ease-in-out;
+}
+.lang-hidden {
+	display: none;
+	opacity: 0;
+	transform: translateY(5px);
+}
+
+/* Print styling to make the resume clean */
+@media print {
+	body * {
+		visibility: hidden;
+	}
+	#resume-modal,
+	#resume-modal-content * {
+		visibility: visible;
+	}
+	#resume-modal {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: auto;
+		overflow: visible;
+		background: white;
+	}
+	.no-print {
+		display: none !important;
+	}
+}
+
+/* Conveyor Track Path Styling (Responsive) */
+.track-path-line {
+	position: absolute;
+	background: #1e293b;
+	border-radius: 9999px;
+	z-index: 10;
+}
