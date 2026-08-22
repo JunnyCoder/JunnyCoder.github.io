@@ -8,42 +8,76 @@
 :root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--accent:#4f46e5;--good:#15803d;--bad:#dc2626}
 [data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;--line:#334155;--accent:#6366f1;--good:#22c55e;--bad:#ef4444}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif; scroll-behavior: smooth; transition: background 0.3s, color 0.3s;}
-header{position:sticky;top:0;z-index:10;background:var(--card);backdrop-filter:blur(10px);border-bottom:1px solid var(--line); transition: background 0.3s, border-color 0.3s;}
-.top{max-width:1100px;margin:auto;padding:16px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between}
-.header-right { display: flex; align-items: center; gap: 12px; }
-h1{font-size:20px;margin:0}.stats{font-size:13px;color:var(--muted)}
-.wrap{max-width:1100px;margin:24px auto;padding:0 20px}
 
-/* Main Tabs */
-.tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 24px; }
-.tab-btn { background: none; border: none; font-size: 16px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 10px 16px; border-radius: 8px; transition: all 0.2s; }
+/* Sticky Top Navigation & Controls */
+.sticky-top-wrapper { position: sticky; top: 0; z-index: 100; background: var(--bg); border-bottom: 1px solid var(--line); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+header{background:var(--card); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); transition: background 0.3s, border-color 0.3s;}
+.top{max-width:1100px;margin:auto;padding:12px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.header-right { display: flex; align-items: center; gap: 12px; }
+h1{font-size:18px;margin:0}.stats{font-size:13px;color:var(--muted)}
+.wrap{max-width:1100px;margin:16px auto;padding:0 20px}
+
+/* Main Tabs inside Sticky Wrapper */
+.sticky-controls { max-width: 1100px; margin: 0 auto; padding: 12px 20px 8px 20px; background: var(--bg); }
+.tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 12px; }
+.tab-btn { background: none; border: none; font-size: 15px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 8px 14px; border-radius: 8px; transition: all 0.2s; }
 .tab-btn:hover { background: var(--line); }
-.tab-btn.active { color: var(--accent); background: var(--line); }
+.tab-btn.active { color: var(--accent); background: var(--card); border: 1px solid var(--line); }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
 /* Form & Inputs */
-.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px; align-items:center;}
-button,select,input[type="text"],input[type="number"],textarea {border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer;font-family:inherit; transition: background 0.3s, color 0.3s, border-color 0.3s;}
-button.primary{background:var(--accent);color:white;border-color:var(--accent)} button.danger{color:var(--bad); border-color:var(--bad); background:var(--card);} button.sm{padding:6px 10px; font-size:12px;}
-button.secondary{background:var(--line); border-color:var(--line); color:var(--text);}
-.upload-area { display: block; border: 2px dashed var(--muted); border-radius: 12px; padding: 40px 20px; text-align: center; background: var(--card); margin-bottom: 24px; cursor: pointer; transition: 0.2s; }
+.toolbar{display:flex;flex-wrap:wrap;gap:8px; align-items:center;}
+button,select,input[type="text"],input[type="number"],textarea {border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;font-family:inherit; transition: background 0.3s, color 0.3s, border-color 0.3s;}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)} 
+button.danger{color:var(--bad); border-color:var(--bad); background:var(--card);} 
+button.sm{padding:5px 9px; font-size:12px;}
+button.secondary{background:var(--card); border-color:var(--line); color:var(--text);}
+button.active-filter { background: var(--accent); color: white; border-color: var(--accent); }
+
+.upload-area { display: block; border: 2px dashed var(--muted); border-radius: 12px; padding: 30px 20px; text-align: center; background: var(--card); margin-bottom: 20px; cursor: pointer; transition: 0.2s; }
 .upload-area:hover { border-color: var(--accent); }
-.upload-area h3 { margin:0 0 8px 0; color:var(--accent); }
-.upload-area p { margin:0; color:var(--muted); font-size:14px; }
+.upload-area h3 { margin:0 0 8px 0; color:var(--accent); font-size: 16px;}
+.upload-area p { margin:0; color:var(--muted); font-size:13px; }
+
+/* Custom Multi-Select Dropdown Component */
+.custom-multi-select { position: relative; display: inline-block; }
+.cms-trigger { background: var(--card); border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 8px 12px; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 140px; height: 36px; user-select: none; }
+.cms-trigger:hover { border-color: var(--accent); }
+.cms-dropdown { display: none; position: absolute; top: calc(100% + 6px); left: 0; background: var(--card); border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); min-width: 200px; z-index: 1000; padding: 6px 0; max-height: 300px; overflow-y: auto; }
+.cms-dropdown.show { display: block; }
+.cms-item { padding: 8px 14px; font-size: 13px; color: var(--text); cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.cms-item:hover { background: var(--line); }
+.cms-item input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; margin: 0; }
+
+/* Filter & Group Buttons */
+.btn-group { display: inline-flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+.btn-group button { border: none; border-radius: 0; border-right: 1px solid var(--line); }
+.btn-group button:last-child { border-right: none; }
 
 /* Dataset Tabs */
-.dataset-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; align-items: center; }
-.ds-tab { padding: 8px 14px; font-size: 13px; font-weight:600; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.dataset-tabs { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; align-items: center; }
+.ds-tab { padding: 6px 12px; font-size: 12px; font-weight:600; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
 .ds-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
-.ds-tab button { background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 14px; font-weight: bold; }
-.ds-add-btn { background: var(--card); color:var(--accent); border-style: dashed; padding: 8px 14px;}
+.ds-tab button { background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 13px; font-weight: bold; }
+.ds-add-btn { background: var(--card); color:var(--accent); border-style: dashed;}
+
+/* Difficulty Badges & Topic Badges */
+.diff-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 6px; vertical-align: middle; }
+.diff-easy { background: rgba(21, 128, 61, 0.15); color: var(--good); border: 1px solid var(--good); }
+.diff-medium { background: rgba(202, 138, 4, 0.15); color: #ca8a04; border: 1px solid #ca8a04; }
+.diff-hard { background: rgba(220, 38, 38, 0.15); color: var(--bad); border: 1px solid var(--bad); }
+.topic-tag { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; background: var(--line); color: var(--text); margin-right: 6px; }
+
+/* Topic Headers in Grouped Mode */
+.topic-group-header { font-size: 16px; font-weight: bold; padding: 12px 16px; background: var(--line); border-bottom: 1px solid var(--line); border-radius: 12px 12px 0 0; margin-top: 24px; color: var(--text); }
+.topic-group-header:first-child { margin-top: 0; }
 
 /* Quiz Elements */
-.topic{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden; transition: background 0.3s, border-color 0.3s;}
-.topic h2{font-size:17px;margin:0;padding:16px 18px;border-bottom:1px solid var(--line)}
+.quiz-container { background: var(--card); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin-bottom: 20px; transition: background 0.3s, border-color 0.3s; }
 .q{padding:18px;border-bottom:1px solid var(--line)}.q:last-child{border-bottom:0}
-.meta{font-size:12px;color:var(--muted);margin-bottom:8px}.question{font-weight:600;line-height:1.65;white-space:pre-wrap; scroll-margin-top: 80px;}
+.meta{font-size:12px;color:var(--muted);margin-bottom:8px; display:flex; align-items:center; flex-wrap:wrap; gap:4px;}
+.question{font-weight:600;line-height:1.65;white-space:pre-wrap; scroll-margin-top: 180px;}
 .choices{display:grid;gap:8px;margin-top:12px}.choice{display:flex;gap:10px;align-items:flex-start;padding:11px;border:1px solid var(--line);border-radius:10px; cursor: pointer; background: var(--card);}
 .choice:hover{border-color:var(--accent)}.choice input{margin-top:4px}
 textarea{width:100%;min-height:110px;margin-top:12px;resize:vertical}
@@ -51,20 +85,21 @@ textarea{width:100%;min-height:110px;margin-top:12px;resize:vertical}
 .correct{background:rgba(21, 128, 61, 0.15);color:var(--good);border:1px solid var(--good)}
 .wrong{background:rgba(220, 38, 38, 0.15);color:var(--bad);border:1px solid var(--bad)}
 .neutral{background:var(--line);color:var(--text);border:1px solid var(--line)}
-.q-actions { margin-top:12px; display:flex; gap:8px; }
+.q-actions { margin-top:12px; display:flex; gap:8px; flex-wrap:wrap; }
 
 /* Progress */
-.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0 20px}.bar{height:100%;background:var(--accent);width:0;transition:width 0.3s;}
+.progress{height:6px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:8px;}.bar{height:100%;background:var(--accent);width:0;transition:width 0.3s;}
 
 /* Floating Menu */
-.fm-minimized { display: none; position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 50; }
-.floating-menu { position: fixed; bottom: 30px; right: 30px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 300px; z-index: 51; display: flex; flex-direction: column; overflow: hidden; }
-.fm-header { background: var(--line); padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-.fm-body { padding: 16px; max-height: 50vh; overflow-y: auto; }
-.fm-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.fm-topic-title { font-size: 12px; font-weight: 700; color: var(--text); margin: 12px 0 6px 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
-.fm-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;}
-.fm-nav a { display: inline-block; padding: 4px 8px; background: var(--bg); border-radius: 6px; font-size: 12px; text-decoration: none; color: var(--text); border: 1px solid var(--line); transition: 0.2s;}
+.fm-minimized { display: none; position: fixed; bottom: 25px; right: 25px; background: var(--accent); color: white; border: none; padding: 12px 18px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 150; }
+.floating-menu { position: fixed; bottom: 25px; right: 25px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); width: 290px; z-index: 151; display: flex; flex-direction: column; overflow: hidden; }
+.fm-header { background: var(--line); padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+.fm-body { padding: 12px; max-height: 45vh; overflow-y: auto; }
+.fm-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+.fm-nav { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px;}
+.fm-topic-group { margin-bottom: 10px; }
+.fm-topic-title { font-size: 11px; font-weight: bold; color: var(--muted); margin-bottom: 4px; padding-bottom: 2px; border-bottom: 1px solid var(--line); }
+.fm-nav a { display: inline-block; padding: 3px 7px; background: var(--bg); border-radius: 5px; font-size: 11px; text-decoration: none; color: var(--text); border: 1px solid var(--line); transition: 0.2s;}
 .fm-nav a:hover { border-color: var(--accent); }
 .fm-nav a.attempted { background: var(--line); border-color: var(--muted); }
 .fm-nav a.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--good); color: var(--good); font-weight: bold; }
@@ -80,81 +115,120 @@ input[type="radio"], input[type="checkbox"] { margin-right: 6px; }
 .url-input-group input { flex: 1; }
 .radio-group { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; align-items: center;}
 
-/* Keyword Chips & Box */
 .keyword-chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
-.kw-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
-.kw-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 14px; }
+.kw-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+.kw-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 13px; }
 .kw-input-row { display: flex; gap: 8px; margin-top: 8px; }
 .kw-input-row input { flex: 1; }
 
-/* Question Count Config */
 .count-config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 10px; }
 .count-card { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
-.count-card label { font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+.count-card label { font-size: 12px; margin-bottom: 6px; color: var(--muted); }
 .count-card input { width: 100%; text-align: center; padding: 6px; }
 
-/* File List Chips */
 .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.file-chip { display: flex; align-items: center; gap: 6px; background: var(--line); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
-.file-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 14px; }
+.file-chip { display: flex; align-items: center; gap: 6px; background: var(--line); padding: 6px 12px; border-radius: 8px; font-size: 12px; }
+.file-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 13px; }
 
 footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
-@media(max-width:700px){.top{align-items:flex-start;flex-direction:column}.wrap{padding:0 12px}.q{padding:14px}.floating-menu{bottom:15px;right:15px;width:calc(100% - 30px);}.fm-minimized{bottom:15px;right:15px;}}
+@media(max-width:700px){
+  .top{align-items:flex-start;flex-direction:column}
+  .wrap{padding:0 12px}
+  .q{padding:14px}
+  .floating-menu{bottom:15px;right:15px;width:calc(100% - 30px);}
+  .fm-minimized{bottom:15px;right:15px;}
+}
 </style>
 </head>
 <body>
-<header>
-  <div class="top">
-    <h1>Self Testing Quiz Bank</h1>
-    <div class="header-right">
-      <div class="stats" id="stats">데이터를 업로드해주세요.</div>
-      <button id="themeToggleBtn" class="secondary sm" onclick="toggleTheme()" title="다크모드 전환">🌙 다크모드</button>
+
+<!-- Always Floating/Sticky Header + Navigation Controls Wrapper -->
+<div class="sticky-top-wrapper">
+  <header>
+    <div class="top">
+      <h1>Self Testing Quiz Bank</h1>
+      <div class="header-right">
+        <div class="stats" id="stats">데이터를 업로드해주세요.</div>
+        <button id="themeToggleBtn" class="secondary sm" onclick="toggleTheme()" title="다크모드 전환">🌙 다크모드</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="sticky-controls">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('quiz')">퀴즈 풀기</button>
+      <button class="tab-btn" onclick="switchTab('prompt')">프롬프트 생성기</button>
+    </div>
+
+    <!-- Quiz Tab Control Toolbar -->
+    <div id="quizToolbarWrap" style="display:none;">
+      <div id="datasetTabsContainer">
+        <div class="dataset-tabs" id="datasetTabs">
+          <label class="ds-tab ds-add-btn">
+            + 데이터 추가
+            <input type="file" id="jsonUploadAdd" accept=".json" multiple style="display:none;">
+          </label>
+        </div>
+      </div>
+
+      <div class="toolbar" id="toolbar">
+        <div class="custom-multi-select" id="topicCustomSelect">
+          <div class="cms-trigger" onclick="toggleTopicDropdown()">
+            <span id="topicSelectLabel">전체 주제</span>
+            <span style="font-size: 10px; opacity: 0.7;">▼</span>
+          </div>
+          <div class="cms-dropdown" id="topicDropdownList">
+            <!-- Dynamic Topics -->
+          </div>
+        </div>
+
+        <select id="typeSelect">
+          <option value="all">전체 유형</option>
+          <option>객관식</option>
+          <option>주관식</option>
+          <option>연계형</option>
+          <option>서술형</option>
+        </select>
+
+        <!-- Status Filter Buttons -->
+        <div class="btn-group">
+          <button id="filterAllBtn" class="sm active-filter" onclick="setStatusFilter('all')">전체보기</button>
+          <button id="filterUnsolvedBtn" class="sm secondary" onclick="setStatusFilter('unsolved')">안푼문제만</button>
+          <button id="filterWrongBtn" class="sm secondary" onclick="setStatusFilter('wrong')">틀린문제만</button>
+        </div>
+
+        <!-- Grouping & Shuffling Buttons -->
+        <button id="groupToggleBtn" class="secondary sm" onclick="toggleGrouping()">주제별 묶어보기 📁</button>
+        <button id="shuffleBtn" class="secondary sm" onclick="shuffleCurrentQuestions()">문제 섞기 🔀</button>
+        <button id="modeToggleBtn" class="secondary sm" onclick="toggleViewMode()">한 문제씩 보기 🎯</button>
+        <button id="resetBtn" class="secondary sm">전체 초기화</button>
+        <button id="deleteDatasetBtn" class="danger sm">데이터 삭제</button>
+      </div>
+
+      <div class="progress" id="progressWrap"><div class="bar" id="bar"></div></div>
     </div>
   </div>
-</header>
+</div>
+
 <main class="wrap">
-  
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('quiz')">퀴즈 풀기</button>
-    <button class="tab-btn" onclick="switchTab('prompt')">프롬프트 생성기</button>
-  </div>
 
   <!-- Tab 1: Quiz -->
   <div id="tab-quiz" class="tab-content active">
-    
-    <div id="datasetTabsContainer" style="display:none;">
-      <div class="dataset-tabs" id="datasetTabs">
-        <label class="ds-tab ds-add-btn">
-          + 데이터 추가
-          <input type="file" id="jsonUploadAdd" accept=".json" multiple style="display:none;">
-        </label>
-      </div>
-    </div>
-
     <label class="upload-area" id="dropArea">
       <h3>JSON 문제 파일 업로드</h3>
       <p>클릭하여 여러 JSON 파일을 선택하거나 드래그 앤 드롭 하세요.</p>
       <input type="file" id="jsonUploadMain" accept=".json" multiple style="display:none;">
     </label>
-
-    <div class="toolbar" id="toolbar" style="display:none;">
-      <select id="topicSelect"><option value="all">전체 주제</option></select>
-      <select id="typeSelect"><option value="all">전체 유형</option><option>객관식</option><option>주관식</option><option>연계형</option><option>서술형</option></select>
-      <button id="resetBtn" class="secondary">현재 풀이 초기화</button>
-      <button id="deleteDatasetBtn" class="danger">현재 데이터 세트 삭제</button>
-    </div>
-    
-    <div class="progress" id="progressWrap" style="display:none;"><div class="bar" id="bar"></div></div>
     
     <div id="app"></div>
   </div>
 
   <!-- Tab 2: Prompt Generator -->
   <div id="tab-prompt" class="tab-content">
-    <div class="topic" style="padding: 24px;">
-      <h2 style="padding:0 0 16px 0; margin-bottom:20px;">AI 프롬프트 생성기</h2>
+    <div class="quiz-container" style="padding: 24px;">
+      <h2 style="font-size:18px; padding:0 0 16px 0; margin-bottom:20px; border-bottom:1px solid var(--line);">AI 프롬프트 생성기</h2>
       
-      <!-- 1. 학습 자료 (.md) -->
+      <!-- 1. Markdown Upload -->
       <div class="pg-group">
         <label>1. 학습 자료 (.md 파일) 다중 업로드</label>
         <label class="upload-area" id="mdDropArea" style="padding: 20px; margin-bottom: 10px;">
@@ -170,7 +244,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
         </div>
       </div>
 
-      <!-- 2. 키워드 지정 섹션 (분할 모드 적용) -->
+      <!-- 2. Keywords Section -->
       <div class="pg-group">
         <label>2. 키워드 지정 (다중 입력 후 변환)</label>
         
@@ -200,13 +274,13 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
         </div>
       </div>
 
-      <!-- 3. 지시사항 입력 -->
+      <!-- 3. Instructions -->
       <div class="pg-group">
         <label>3. 지시사항 입력 (선택)</label>
         <textarea id="pgInstructions" placeholder="예: 개념 설명 위주로 출제해 주세요. 난이도는 중급 이상으로 맞춰주세요."></textarea>
       </div>
 
-      <!-- 4. 외부 검색 소스 URL -->
+      <!-- 4. URLs -->
       <div class="pg-group">
         <label>4. 외부 검색 소스 URL (최대 10개)</label>
         <div id="urlContainer">
@@ -223,7 +297,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
           <input type="checkbox" id="pgWebSearch" checked> 웹 검색 허용하여 최신 정보 반영하기
         </label>
 
-        <!-- 5. 키워드별 문제 수 설정 -->
+        <!-- 5. Question Config -->
         <label>5. 키워드별 문제 수 설정 (유형별 범위)</label>
         <div class="pg-help" style="margin-bottom: 10px;">각 키워드(또는 전반적 기준)당 생성할 문제 수의 범위를 지정합니다.</div>
         <div class="count-config-grid">
@@ -252,7 +326,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
     </div>
   </div>
 
-  <footer>버전 2.7 - 키워드 변환 모드 분할 및 해시태그 제거 완료</footer>
+  <footer>버전 3.7 - 문제별 개별 초기화 및 상태 관리 지원 UI</footer>
 </main>
 
 <!-- Floating Menu Toggle Button -->
@@ -266,8 +340,8 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
   </div>
   <div class="fm-body">
     <div class="fm-buttons">
-      <button class="primary" onclick="evaluateAll(false)" style="font-size:13px; padding:8px;">전체 채점</button>
-      <button onclick="evaluateAll(true)" style="font-size:13px; padding:8px;">전체 정답보기</button>
+      <button class="primary" onclick="evaluateAll(false)" style="font-size:12px; padding:6px;">전체 채점</button>
+      <button onclick="evaluateAll(true)" style="font-size:12px; padding:6px;">전체 정답보기</button>
     </div>
     <div id="fmNavContainer"></div>
   </div>
@@ -295,17 +369,20 @@ function updateThemeButton(theme) {
   }
 }
 
-// --- Dataset & Storage Management ---
+// --- State Variables ---
 let datasets = []; 
 let currentDsId = null;
 let userAnswers = {}; 
+let userResults = {}; 
+let shuffledOrder = {}; 
+let isSingleView = false; 
+let singleViewIndex = 0; 
+let isGrouped = false; // 주제별 묶음 모드 여부
+let statusFilter = 'all'; // 'all', 'unsolved', 'wrong'
 
-function saveDatasets() {
-  localStorage.setItem('quizBank_datasets', JSON.stringify(datasets));
-}
-function saveAnswers() {
-  localStorage.setItem('quizBank_answers', JSON.stringify(userAnswers));
-}
+function saveDatasets() { localStorage.setItem('quizBank_datasets', JSON.stringify(datasets)); }
+function saveAnswers() { localStorage.setItem('quizBank_answers', JSON.stringify(userAnswers)); }
+function saveResults() { localStorage.setItem('quizBank_results', JSON.stringify(userResults)); }
 
 window.onload = () => {
   const savedTheme = localStorage.getItem('quizBank_theme') || 'light';
@@ -314,22 +391,29 @@ window.onload = () => {
 
   const savedDatasets = localStorage.getItem('quizBank_datasets');
   const savedAnswers = localStorage.getItem('quizBank_answers');
+  const savedResults = localStorage.getItem('quizBank_results');
   
   if (savedAnswers) userAnswers = JSON.parse(savedAnswers);
+  if (savedResults) userResults = JSON.parse(savedResults);
   
   if (savedDatasets) {
     datasets = JSON.parse(savedDatasets);
     if (datasets.length > 0) {
       $('#dropArea').style.display = 'none';
-      $('#datasetTabsContainer').style.display = 'block';
-      $('#toolbar').style.display = 'flex';
-      $('#progressWrap').style.display = 'block';
+      $('#quizToolbarWrap').style.display = 'block';
       $('#fmToggleBtn').style.display = 'block';
       renderDatasetTabs();
       switchDataset(datasets[0].id);
     }
   }
 };
+
+window.addEventListener('click', function(e) {
+  const customSelect = $('#topicCustomSelect');
+  if (customSelect && !customSelect.contains(e.target)) {
+    $('#topicDropdownList').classList.remove('show');
+  }
+});
 
 function handleJsonFiles(files) {
   Array.from(files).forEach(file => {
@@ -356,7 +440,7 @@ function processJSON(data, fileName) {
   }
   
   const flattenedQs = data.topics.flatMap(t => 
-    t.questions.map(q => ({ ...q, topicId: t.id, topic: t.topic }))
+    t.questions.map(q => ({ ...q, topicId: t.id, topic: t.topic, difficulty: q.difficulty || 'medium' }))
   );
 
   const newDsId = 'ds_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
@@ -364,9 +448,7 @@ function processJSON(data, fileName) {
   saveDatasets(); 
   
   $('#dropArea').style.display = 'none';
-  $('#datasetTabsContainer').style.display = 'block';
-  $('#toolbar').style.display = 'flex';
-  $('#progressWrap').style.display = 'block';
+  $('#quizToolbarWrap').style.display = 'block';
   $('#fmToggleBtn').style.display = 'block';
   toggleFloatingMenu(true);
   
@@ -408,9 +490,7 @@ function removeDataset(dsId, event) {
   } else {
     currentDsId = null;
     $('#dropArea').style.display = 'block';
-    $('#datasetTabsContainer').style.display = 'none';
-    $('#toolbar').style.display = 'none';
-    $('#progressWrap').style.display = 'none';
+    $('#quizToolbarWrap').style.display = 'none';
     $('#fmToggleBtn').style.display = 'none';
     $("#app").innerHTML = "";
     $("#fmNavContainer").innerHTML = "";
@@ -421,16 +501,68 @@ function removeDataset(dsId, event) {
 
 function switchDataset(dsId) {
   currentDsId = dsId;
+  singleViewIndex = 0;
   renderDatasetTabs(); 
   
   const currentQs = datasets.find(ds => ds.id === dsId).questions;
-  
   const ts = [...new Map(currentQs.map(q => [q.topicId, q.topic])).entries()];
-  $('#topicSelect').innerHTML = '<option value="all">전체 주제</option>';
-  ts.forEach(([id, name]) => $('#topicSelect').insertAdjacentHTML("beforeend", `<option value="${id}">${id}. ${name}</option>`));
-  $('#typeSelect').value = "all";
+  const dropdownList = $('#topicDropdownList');
   
+  let html = `
+    <label class="cms-item">
+      <input type="checkbox" id="topicSelectAll" onchange="handleTopicSelectAll(this)" checked> 
+      <strong>전체 선택</strong>
+    </label>
+    <div style="height: 1px; background: var(--line); margin: 4px 0;"></div>
+  `;
+  
+  ts.forEach(([id, name]) => {
+    html += `
+      <label class="cms-item">
+        <input type="checkbox" class="topic-chk" value="${id}" onchange="handleTopicItemChange()" checked> 
+        ${id}. ${name}
+      </label>
+    `;
+  });
+  dropdownList.innerHTML = html;
+  updateTopicSelectLabel();
+
+  $('#typeSelect').value = "all";
   render();
+}
+
+function toggleTopicDropdown() {
+  $('#topicDropdownList').classList.toggle('show');
+}
+
+function handleTopicSelectAll(master) {
+  const checkboxes = document.querySelectorAll('.topic-chk');
+  checkboxes.forEach(chk => chk.checked = master.checked);
+  updateTopicSelectLabel();
+  render();
+}
+
+function handleTopicItemChange() {
+  const checkboxes = document.querySelectorAll('.topic-chk');
+  const master = document.getElementById('topicSelectAll');
+  const allChecked = Array.from(checkboxes).every(chk => chk.checked);
+  if (master) master.checked = allChecked;
+  updateTopicSelectLabel();
+  render();
+}
+
+function updateTopicSelectLabel() {
+  const checkboxes = document.querySelectorAll('.topic-chk');
+  const checkedItems = Array.from(checkboxes).filter(chk => chk.checked);
+  const label = $('#topicSelectLabel');
+
+  if (checkedItems.length === 0) {
+    label.textContent = "주제 선택";
+  } else if (checkedItems.length === checkboxes.length) {
+    label.textContent = "전체 주제";
+  } else {
+    label.textContent = `${checkedItems.length}개 주제 선택`;
+  }
 }
 
 $('#jsonUploadMain').addEventListener('change', e => {
@@ -452,69 +584,254 @@ dropArea.addEventListener('drop', e => {
   if(e.dataTransfer.files.length) handleJsonFiles(e.dataTransfer.files);
 });
 
-// --- Quiz Rendering & Evaluation ---
+function getDifficultyBadge(diff) {
+  if(!diff) return '';
+  const d = diff.toLowerCase();
+  if(d === 'easy') return `<span class="diff-badge diff-easy">easy</span>`;
+  if(d === 'medium') return `<span class="diff-badge diff-medium">medium</span>`;
+  if(d === 'hard') return `<span class="diff-badge diff-hard">hard</span>`;
+  return `<span class="diff-badge diff-medium">${diff}</span>`;
+}
+
+// --- Status Filter & Grouping Actions ---
+function setStatusFilter(filter) {
+  statusFilter = filter;
+  $('#filterAllBtn').className = filter === 'all' ? 'sm active-filter' : 'sm secondary';
+  $('#filterUnsolvedBtn').className = filter === 'unsolved' ? 'sm active-filter' : 'sm secondary';
+  $('#filterWrongBtn').className = filter === 'wrong' ? 'sm active-filter' : 'sm secondary';
+  singleViewIndex = 0;
+  render();
+}
+
+function toggleGrouping() {
+  isGrouped = !isGrouped;
+  const btn = $('#groupToggleBtn');
+  btn.textContent = isGrouped ? '그룹 해제 (셔플 순서) 🔀' : '주제별 묶어보기 📁';
+  render();
+}
+
+// --- Quiz Filtering Logic ---
 function filtered() {
   if (!currentDsId) return [];
   const currentDs = datasets.find(ds => ds.id === currentDsId);
   if (!currentDs) return [];
-  const currentQs = currentDs.questions;
-  const t = $("#topicSelect").value, ty = $("#typeSelect").value;
-  return currentQs.filter(q => (t === "all" || String(q.topicId) === t) && (ty === "all" || q.type === ty));
+  
+  let currentQs = [...currentDs.questions];
+  
+  if (!isGrouped && shuffledOrder[currentDsId]) {
+    currentQs.sort((a, b) => {
+      const idxA = shuffledOrder[currentDsId].indexOf(a.id);
+      const idxB = shuffledOrder[currentDsId].indexOf(b.id);
+      return (idxA === -1 ? 9999 : idxA) - (idxB === -1 ? 9999 : idxB);
+    });
+  }
+
+  const checkboxes = document.querySelectorAll('.topic-chk');
+  const selectedTopics = Array.from(checkboxes).filter(chk => chk.checked).map(chk => chk.value);
+  const ty = $("#typeSelect").value;
+
+  return currentQs.filter(q => {
+    const matchTopic = selectedTopics.length === 0 || selectedTopics.includes(String(q.topicId));
+    const matchType = (ty === "all" || q.type === ty);
+    
+    let matchStatus = true;
+    const isAnswered = userAnswers[q.id] && userAnswers[q.id].trim() !== "";
+    const isWrong = userResults[q.id] && userResults[q.id].className.includes('wrong');
+
+    if (statusFilter === 'unsolved') {
+      matchStatus = !isAnswered;
+    } else if (statusFilter === 'wrong') {
+      matchStatus = isWrong;
+    }
+
+    return matchTopic && matchType && matchStatus;
+  });
 }
 
+function shuffleCurrentQuestions() {
+  if (!currentDsId) return;
+  const currentDs = datasets.find(ds => ds.id === currentDsId);
+  if (!currentDs) return;
+  
+  let ids = currentDs.questions.map(q => q.id);
+  for (let i = ids.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [ids[i], ids[j]] = [ids[j], ids[i]];
+  }
+  shuffledOrder[currentDsId] = ids;
+  isGrouped = false; 
+  $('#groupToggleBtn').textContent = '주제별 묶어보기 📁';
+  singleViewIndex = 0;
+  render();
+}
+
+function toggleViewMode() {
+  isSingleView = !isSingleView;
+  const btn = $('#modeToggleBtn');
+  btn.textContent = isSingleView ? '📋 전체 목록 보기' : '🎯 한 문제씩 보기';
+  singleViewIndex = 0;
+  render();
+}
+
+// --- Render Helper ---
+function createQuestionHTML(q) {
+  let input = "";
+  let savedAns = userAnswers[q.id]; 
+  
+  if (q.type === "객관식") {
+    input = `<div class="choices">${q.choices.map((c, i) => {
+      let val = ["1","2","3","4","5"][i];
+      let isChecked = (savedAns === val) ? "checked" : "";
+      return `<label class="choice"><input type="radio" name="${q.id}" value="${val}" ${isChecked}><span>${c}</span></label>`;
+    }).join("")}</div>`;
+  } else {
+    input = `<textarea id="answer-${q.id}" placeholder="답안을 작성하세요.">${savedAns || ""}</textarea>`;
+  }
+
+  return `
+    <div class="q" id="q-${q.id}">
+      <div class="meta">
+        <span class="topic-tag">${q.topic}</span>
+        <span>${q.id} · ${q.type}</span>
+        ${getDifficultyBadge(q.difficulty)}
+      </div>
+      <div class="question">${q.question}</div>
+      ${input}
+      <div class="q-actions">
+        <button class="sm" onclick="evalSingle('${q.id}', false)">채점</button>
+        <button class="sm secondary" onclick="evalSingle('${q.id}', true)">정답 및 해설 보기</button>
+        <button class="sm secondary" onclick="resetSingle('${q.id}')" title="이 문제 기록 초기화">🔄 초기화</button>
+      </div>
+      <div class="result" id="result-${q.id}"></div>
+    </div>
+  `;
+}
+
+// --- Main Quiz Renderer ---
 function render() {
   const qs = filtered(); 
-  const groups = new Map();
-  qs.forEach(q => { if (!groups.has(q.topic)) groups.set(q.topic, []); groups.get(q.topic).push(q); });
-  
   $("#app").innerHTML = "";
   $("#fmNavContainer").innerHTML = ""; 
+
+  if (qs.length === 0) {
+    $("#app").innerHTML = `<div style="text-align:center; padding:40px; color:var(--muted); background:var(--card); border-radius:16px; border:1px solid var(--line);">조건에 맞는 문제가 없습니다.</div>`;
+    $("#stats").textContent = `현재 탭: 총 0문항`;
+    return;
+  }
+
+  // Floating Nav Update
+  const navContainer = $("#fmNavContainer");
   
-  for (const [topic, arr] of groups) {
-    const sec = document.createElement("section"); sec.className = "topic";
-    sec.innerHTML = `<h2>${topic}</h2>`;
-    
-    const navGroup = document.createElement("div");
-    navGroup.innerHTML = `<div class="fm-topic-title">${topic}</div><div class="fm-nav" id="nav-group-${topic.replace(/\s/g,'')}"></div>`;
-    $("#fmNavContainer").appendChild(navGroup);
-    const navInner = navGroup.querySelector('.fm-nav');
-
-    arr.forEach(q => {
-      navInner.insertAdjacentHTML("beforeend", `<a href="#q-${q.id}" id="nav-${q.id}">${q.id}</a>`);
-
-      const el = document.createElement("div"); 
-      el.className = "q";
-      el.id = `q-${q.id}`; 
-
-      let input = "";
-      let savedAns = userAnswers[q.id]; 
-      
-      if (q.type === "객관식") {
-        input = `<div class="choices">${q.choices.map((c, i) => {
-          let val = ["①","②","③","④","⑤"][i];
-          let isChecked = (savedAns === val) ? "checked" : "";
-          return `<label class="choice"><input type="radio" name="${q.id}" value="${val}" ${isChecked}><span>${c}</span></label>`;
-        }).join("")}</div>`;
-      } else {
-        input = `<textarea id="answer-${q.id}" placeholder="답안을 작성하세요.">${savedAns || ""}</textarea>`;
-      }
-
-      el.innerHTML = `
-        <div class="meta">${q.id} · ${q.type}</div>
-        <div class="question">${q.question}</div>
-        ${input}
-        <div class="q-actions">
-          <button class="sm" onclick="evalSingle('${q.id}', false)">채점</button>
-          <button class="sm secondary" onclick="evalSingle('${q.id}', true)">정답 및 해설 보기</button>
-        </div>
-        <div class="result" id="result-${q.id}"></div>
-      `;
-      sec.appendChild(el);
+  if (isGrouped) {
+    const navGroups = new Map();
+    qs.forEach(q => {
+      if (!navGroups.has(q.topic)) navGroups.set(q.topic, []);
+      navGroups.get(q.topic).push(q);
     });
+
+    for (const [topic, topicQs] of navGroups) {
+      const groupDiv = document.createElement("div");
+      groupDiv.className = "fm-topic-group";
+      
+      const titleDiv = document.createElement("div");
+      titleDiv.className = "fm-topic-title";
+      titleDiv.textContent = topic;
+      groupDiv.appendChild(titleDiv);
+
+      const navBox = document.createElement("div");
+      navBox.className = "fm-nav";
+      topicQs.forEach(q => {
+        navBox.insertAdjacentHTML("beforeend", `<a href="#q-${q.id}" id="nav-${q.id}" onclick="jumpToQuestion('${q.id}')">${q.id}</a>`);
+      });
+      groupDiv.appendChild(navBox);
+      navContainer.appendChild(groupDiv);
+    }
+  } else {
+    const navBox = document.createElement("div");
+    navBox.className = "fm-nav";
+    qs.forEach(q => {
+      navBox.insertAdjacentHTML("beforeend", `<a href="#q-${q.id}" id="nav-${q.id}" onclick="jumpToQuestion('${q.id}')">${q.id}</a>`);
+    });
+    navContainer.appendChild(navBox);
+  }
+
+  // Quiz Main Body Render
+  if (isSingleView) {
+    if (singleViewIndex >= qs.length) singleViewIndex = qs.length - 1;
+    if (singleViewIndex < 0) singleViewIndex = 0;
+    const q = qs[singleViewIndex];
+
+    const sec = document.createElement("section"); 
+    sec.className = "quiz-container";
+    sec.innerHTML = createQuestionHTML(q) + `
+      <div style="display:flex; justify-content:space-between; padding:16px; background:var(--bg); border-top:1px solid var(--line);">
+        <button class="secondary sm" onclick="changeSingleView(-1)" ${singleViewIndex === 0 ? 'disabled' : ''}>⬅️ 이전 문제</button>
+        <button class="primary sm" onclick="changeSingleView(1)" ${singleViewIndex === qs.length - 1 ? 'disabled' : ''}>다음 문제 ➡️</button>
+      </div>
+    `;
+    $("#app").appendChild(sec);
+
+  } else if (isGrouped) {
+    const groups = new Map();
+    qs.forEach(q => {
+      if (!groups.has(q.topic)) groups.set(q.topic, []);
+      groups.get(q.topic).push(q);
+    });
+
+    for (const [topic, topicQs] of groups) {
+      const header = document.createElement("div");
+      header.className = "topic-group-header";
+      header.textContent = `📌 ${topic} (${topicQs.length}문항)`;
+      $("#app").appendChild(header);
+
+      const sec = document.createElement("section");
+      sec.className = "quiz-container";
+      sec.style.borderRadius = "0 0 16px 16px";
+      
+      let html = "";
+      topicQs.forEach(q => { html += createQuestionHTML(q); });
+      sec.innerHTML = html;
+      $("#app").appendChild(sec);
+    }
+  } else {
+    const sec = document.createElement("section"); 
+    sec.className = "quiz-container";
+    let html = "";
+    qs.forEach(q => { html += createQuestionHTML(q); });
+    sec.innerHTML = html;
     $("#app").appendChild(sec);
   }
+
+  // 채점 결과 복원
+  qs.forEach(q => {
+    if (userResults[q.id]) {
+      const resEl = $(`#result-${q.id}`);
+      if (resEl) {
+        resEl.className = userResults[q.id].className;
+        resEl.innerHTML = userResults[q.id].html;
+        resEl.style.display = userResults[q.id].display;
+      }
+    }
+  });
+
   $("#stats").textContent = `현재 탭: 총 ${qs.length}문항`;
   updateProgressAndNav();
+}
+
+function changeSingleView(dir) {
+  singleViewIndex += dir;
+  render();
+}
+
+function jumpToQuestion(qId) {
+  if (isSingleView) {
+    const qs = filtered();
+    const idx = qs.findIndex(q => q.id === qId);
+    if (idx !== -1) {
+      singleViewIndex = idx;
+      render();
+    }
+  }
 }
 
 function evalSingle(qId, showOnly) {
@@ -522,7 +839,11 @@ function evalSingle(qId, showOnly) {
   if(!currentDs) return;
   const q = currentDs.questions.find(x => x.id === qId);
   const r = $(`#result-${qId}`);
+  if(!r) return;
   
+  let resClass = "";
+  let resHtml = "";
+
   if (q.type === "객관식") {
     const selected = document.querySelector(`input[name="${qId}"]:checked`);
     if (!showOnly && !selected) {
@@ -530,19 +851,53 @@ function evalSingle(qId, showOnly) {
     }
     
     if (showOnly) {
-      r.className = "result neutral";
-      r.innerHTML = `<strong>정답:</strong> ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || '해설이 없습니다.'}`;
+      resClass = "result neutral";
+      resHtml = `<strong>정답:</strong> ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || '해설이 없습니다.'}`;
     } else {
       const ok = selected.value === q.answer;
-      r.className = "result " + (ok ? "correct" : "wrong");
-      r.innerHTML = ok ? `<strong>정답입니다! (${q.answer})</strong><br><br><strong>해설:</strong> ${q.explanation || ''}` 
-                       : `<strong>오답입니다.</strong><br>내가 고른 답: ${selected.value} <br>정답: ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || ''}`;
+      resClass = "result " + (ok ? "correct" : "wrong");
+      resHtml = ok ? `<strong>정답입니다! (${q.answer})</strong><br><br><strong>해설:</strong> ${q.explanation || ''}` 
+                   : `<strong>오답입니다.</strong><br>내가 고른 답: ${selected.value} <br>정답: ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || ''}`;
     }
   } else {
-    r.className = "result neutral";
-    r.innerHTML = `<strong>예시 답안 (정답):</strong><br>${q.answer}<br><br><strong>해설:</strong><br>${q.explanation || '해설이 없습니다.'}`;
+    resClass = "result neutral";
+    resHtml = `<strong>예시 답안 (정답):</strong><br>${q.answer}<br><br><strong>해설:</strong><br>${q.explanation || '해설이 없습니다.'}`;
   }
+
+  r.className = resClass;
+  r.innerHTML = resHtml;
   r.style.display = "block";
+
+  userResults[qId] = { className: resClass, html: resHtml, display: "block" };
+  saveResults();
+
+  updateProgressAndNav();
+}
+
+// --- 개별 문제 초기화 기능 ---
+function resetSingle(qId) {
+  // 1. 선택 데이터 및 결과 저장소 제거
+  delete userAnswers[qId];
+  delete userResults[qId];
+  saveAnswers();
+  saveResults();
+
+  // 2. UI 요소 초기화 (객관식 라디오 / 주관식 텍스트)
+  const radios = document.querySelectorAll(`input[name="${qId}"]`);
+  radios.forEach(radio => radio.checked = false);
+
+  const textarea = $(`#answer-${qId}`);
+  if (textarea) textarea.value = "";
+
+  // 3. 채점 결과 박스 숨기기
+  const resEl = $(`#result-${qId}`);
+  if (resEl) {
+    resEl.style.display = "none";
+    resEl.className = "result";
+    resEl.innerHTML = "";
+  }
+
+  // 4. 진행도 및 내비게이션 바 상태 갱신
   updateProgressAndNav();
 }
 
@@ -575,13 +930,12 @@ function updateProgressAndNav() {
     }
 
     const navBtn = $(`#nav-${q.id}`);
-    const resEl = $(`#result-${q.id}`);
     
     if (navBtn) {
         navBtn.className = ''; 
-        if (resEl && resEl.style.display === 'block') {
-            if (resEl.classList.contains('correct')) navBtn.classList.add('correct');
-            else if (resEl.classList.contains('wrong')) navBtn.classList.add('wrong');
+        if (userResults[q.id] && userResults[q.id].display === 'block') {
+            if (userResults[q.id].className.includes('correct')) navBtn.classList.add('correct');
+            else if (userResults[q.id].className.includes('wrong')) navBtn.classList.add('wrong');
             else navBtn.classList.add('attempted'); 
         } else if (isAttempted) {
             navBtn.classList.add('attempted');
@@ -591,7 +945,6 @@ function updateProgressAndNav() {
   
   $("#bar").style.width = (qs.length ? done / qs.length * 100 : 0) + "%";
 }
-
 
 // --- UI Utilities ---
 function switchTab(tabId) {
@@ -612,11 +965,15 @@ function toggleFloatingMenu(show) {
 }
 
 $("#resetBtn").onclick = () => {
-  if(!confirm("현재 데이터 세트의 풀이 기록을 초기화하시겠습니까?")) return;
+  if(!confirm("현재 데이터 세트의 전체 풀이 기록 및 채점 결과를 초기화하시겠습니까?")) return;
   const currentDs = datasets.find(ds => ds.id === currentDsId);
   if(!currentDs) return;
-  currentDs.questions.forEach(q => delete userAnswers[q.id]); 
+  currentDs.questions.forEach(q => {
+    delete userAnswers[q.id]; 
+    delete userResults[q.id];
+  }); 
   saveAnswers();
+  saveResults();
   render(); 
 };
 
@@ -631,9 +988,7 @@ $("#deleteDatasetBtn").onclick = () => {
   } else {
     currentDsId = null;
     $('#dropArea').style.display = 'block';
-    $('#datasetTabsContainer').style.display = 'none';
-    $('#toolbar').style.display = 'none';
-    $('#progressWrap').style.display = 'none';
+    $('#quizToolbarWrap').style.display = 'none';
     $('#fmToggleBtn').style.display = 'none';
     $("#app").innerHTML = "";
     $("#fmNavContainer").innerHTML = "";
@@ -642,7 +997,6 @@ $("#deleteDatasetBtn").onclick = () => {
   }
 };
 
-$("#topicSelect").onchange = render;
 $("#typeSelect").onchange = render;
 
 document.addEventListener("change", (e) => { 
@@ -660,7 +1014,6 @@ document.addEventListener("input", (e) => {
     updateProgressAndNav(); 
   }
 });
-
 
 // --- Prompt Generator Logic ---
 let mdFiles = []; 
@@ -817,12 +1170,11 @@ function generatePrompt() {
   const countShort = $("#countShort").value.trim() || "1~2문항";
   const countEssay = $("#countEssay").value.trim() || "0~1문항";
   
-  
   if(mdFiles.length === 0 && keywordsList.length === 0 && urls.length === 0 && !instructions) {
     alert("학습 자료, 키워드, 지시사항 또는 URL 중 최소 하나는 입력해야 합니다."); return;
   }
 
-  let prompt = `당신은 머신러닝·딥러닝 교육을 위한 퀴즈 출제 전문가입니다.\n\n아래에 제공된 학습 자료, 핵심 키워드, 외부 참고 자료 및 출제 조건을 바탕으로 학습용 퀴즈 문제를 생성하세요.\n\n출력은 반드시 하나의 유효한 JSON 파일만 출력해야 합니다.\nMarkdown 코드블록(\`\`\`json)은 절대 사용하지 마세요.\nJSON 앞뒤에 설명이나 부가 문장을 작성하지 마세요.\n\n[정보 우선순위]\n\n문제 출제에 사용하는 정보는 다음 우선순위를 따릅니다.\n\n1. 제공된 학습 자료\n2. 제공된 핵심 키워드\n3. 외부 참고 자료\n4. 웹 검색을 통한 보완 정보\n\n학습 자료를 가장 중요한 기준으로 사용하세요.\n\n학습 자료에 없는 개념을 보완하거나 사실관계를 확인할 필요가 있는 경우에만 웹 검색을 활용하세요.\n\n웹 검색 결과가 학습 자료와 충돌하는 경우에는 학습 자료의 교육적 맥락을 우선합니다.\n단, 학습 자료에 명백한 사실 오류가 있는 경우에는 신뢰할 수 있는 외부 자료를 이용하여 수정할 수 있습니다.\n\n`;
+  let prompt = `당신은 머신러닝·딥러닝 교육을 위한 퀴즈 출제 전문가입니다.\n\n아래에 제공된 학습 자료, 핵심 키워드, 외부 참고 자료 및 출제 조건을 바탕으로 학습용 퀴즈 문제를 생성하세요.\n\n출력은 반드시 하나의 유효한 JSON 파일만 출력해야 합니다.\nMarkdown 코드블록(\`\`\`json)은 절대 사용하지 마세요.\nJSON 앞뒤에 설명이나 부가 문장을 작성하지 마세요.\n\n[정보 우선순위]\n\n문제 출제에 사용하는 정보는 다음 우선순위를 따릅니다.\n\n1. 제공된 학습 자료\n2. 제공된 핵심 키워드\n3. 외부 참고 자료\n4. 웹 검색을 통한 보완 정보\n\n학습 자료를 가장 중요한 기준으로 사용하세요.\n\n`;
   
   if (webSearch) prompt += `웹 검색이 활성화되어 있으므로 필요한 경우 웹 검색을 활용하여 개념을 보완하고 정확한 해설을 작성하세요.\n`;
   if (urls.length > 0) {
@@ -852,8 +1204,6 @@ function generatePrompt() {
   if(instructions) {
     prompt += `[추가 지시사항]\n${instructions}\n\n`;
   }
-  
-
 
   prompt += `[문제 수 및 유형 조건]\n`;
   prompt += `- 각 주제/키워드당 생성할 문제 수 :\n`;
@@ -861,23 +1211,7 @@ function generatePrompt() {
   prompt += `  * 주관식: ${countShort}\n`;
   prompt += `  * 서술형: ${countEssay}\n\n`;
 
-
-
-  prompt += `[문제 유형 정의]\n\n객관식:\n- 5개의 보기 중 하나를 선택하는 문제입니다.\n- 정답은 반드시 하나만 존재해야 합니다.\n\n주관식:\n- 짧은 단어나 문장으로 답할 수 있는 문제입니다.\n- 일반적으로 1~3단어 정도의 답변을 요구합니다.\n\n연계형:\n- 현재 주제와 다른 주제의 개념을 최소 1개 이상 결합한 문제입니다.\n- 단순히 두 개념을 각각 묻는 문제가 아니라 두 개념 사이의 관계를 이해해야 풀 수 있도록 작성하세요.\n\n서술형:\n- 개념의 원리, 과정, 비교, 장단점 또는 여러 개념 사이의 관계를 논리적으로 설명해야 하는 문제입니다.\n- 2-3문장 정도의 답변을 요구합니다.\n- 단순 암기형 질문은 피하세요.\n\n`;
-
-  prompt += `[객관식 작성 규칙]\n\n- choices 배열에는 정확히 5개의 보기를 넣으세요.\n- 모든 보기는 문자열이어야 합니다.\n- 정답은 반드시 하나만 존재해야 합니다.\n- answer는 반드시 "①", "②", "③", "④", "⑤" 중 하나여야 합니다.\n- answer는 반드시 choices의 실제 정답과 일치해야 합니다.\n- "모두 정답", "모두 오답", "①과 ②", "해당 없음" 등의 보기는 사용하지 마세요.\n- 보기의 길이와 표현 방식은 가능한 한 균형을 맞추세요.\n- 문제 자체에 정답을 암시하는 표현을 넣지 마세요.\n\n`;
-
-  prompt += `[주관식/서술형 작성 규칙]\n\n- choices는 빈 배열 []로 설정하세요.\n- answer에는 모범 답안을 작성하세요.\n- 모범 답안은 핵심 개념을 정확하게 포함해야 합니다.\n- 가능한 경우 핵심 키워드와 논리적 관계를 포함하세요.\n\n`;
-
-  prompt += `[해설 규칙]\n\n모든 문제에는 explanation 필드를 반드시 포함하세요.\n\n해설에는 다음 내용을 포함하세요.\n\n1. 정답이 맞는 이유\n2. 문제에서 평가하려는 핵심 개념\n3. 필요한 경우 오답 선택지가 틀린 이유\n\n단순히 정답을 반복하는 설명은 작성하지 마세요.\n\n객관식의 경우 가능하면 각 선택지가 왜 맞거나 틀리는지 설명하세요.\n\n`;
-
-  prompt += `[난이도]\n\n모든 문제에는 difficulty를 지정하세요.\n\n허용되는 값은 다음 세 가지뿐입니다.\n\n- "easy"\n- "medium"\n- "hard"\n\n난이도 기준:\n\neasy:\n핵심 개념을 직접적으로 묻는 문제\n\nmedium:\n두 개 이상의 개념을 이해하거나 적용해야 하는 문제\n\nhard:\n여러 개념을 연결하거나 상황을 분석해야 하는 문제\n\n`;
-
-  prompt += `[연계 문제]\n\n연계형 문제에는 related_topics 배열을 반드시 포함하세요.\n\n현재 주제 이외에 연계된 주제명을 최소 1개 이상 기록하세요.\n\n`;
-
-  prompt += `[문제 중복 방지]\n\n같은 주제 안에서 문제의 질문, 정답, 핵심 사고과정이 반복되지 않도록 하세요.\n\n단순히 숫자나 보기만 변경한 유사 문제를 여러 개 생성하지 마세요.\n\n서로 다른 개념, 상황, 적용 사례를 사용하세요.\n\n`;
-
-  prompt += `[자체 검증]\n\n최종 JSON을 출력하기 전에 모든 문제를 다음 기준으로 검증하세요.\n\n1. [문제 수 및 유형 조건]을 따랐는가?\n2. 객관식 choices가 정확히 5개인가?\n3. 객관식 정답이 정확히 하나인가?\n4. answer가 실제 choices의 정답과 일치하는가?\n5. 주관식/서술형 answer가 질문에 대한 적절한 모범답안인가?\n6. explanation과 answer가 서로 모순되지 않는가?\n7. 학습 자료의 내용과 모순되지 않는가?\n8. 문제 간 중복이 심하지 않은가?\n9. JSON 문법이 올바른가?\n\n`;
+  prompt += `[난이도]\n모든 문제에는 difficulty 필드를 반드시 포함하고 값은 "easy", "medium", "hard" 중 하나로 지정하세요.\n\n`;
 
   prompt += `[출력 JSON 구조]\n\n`;
   prompt += `{
@@ -892,22 +1226,14 @@ function generatePrompt() {
           "difficulty": "medium",
           "related_topics": [],
           "question": "문제 내용",
-          "choices": [
-            "보기1",
-            "보기2",
-            "보기3",
-            "보기4",
-            "보기5"
-          ],
-          "answer": "③",
+          "choices": ["보기1", "보기2", "보기3", "보기4", "보기5"],
+          "answer": "3",₩
           "explanation": "상세한 해설"
         }
       ]
     }
   ]
 }\n\n`;
-
-  prompt += `[최종 출력 규칙]\n\n반드시 유효한 JSON 파일 하나만 출력하세요.\n\n다음은 절대 출력하지 마세요.\n\n- Markdown\n- \`\`\`json\n- 설명 문장\n- JSON 외의 텍스트\n- 주석`;
 
   $("#pgResult").value = prompt;
 }
@@ -916,7 +1242,7 @@ function copyPrompt() {
   const text = $("#pgResult").value;
   if(!text) return;
   navigator.clipboard.writeText(text).then(() => {
-    alert("프롬프트가 복사되었습니다. ChatGPT나 Claude에게 붙여넣기 하세요!");
+    alert("프롬프트가 복사되었습니다!");
   });
 }
 </script>
