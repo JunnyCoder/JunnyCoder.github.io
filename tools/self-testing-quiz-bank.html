@@ -24,7 +24,7 @@ h1{font-size:20px;margin:0}.stats{font-size:13px;color:var(--muted)}
 
 /* Form & Inputs */
 .toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px; align-items:center;}
-button,select,input[type="text"],textarea {border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer;font-family:inherit; transition: background 0.3s, color 0.3s, border-color 0.3s;}
+button,select,input[type="text"],input[type="number"],textarea {border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer;font-family:inherit; transition: background 0.3s, color 0.3s, border-color 0.3s;}
 button.primary{background:var(--accent);color:white;border-color:var(--accent)} button.danger{color:var(--bad); border-color:var(--bad); background:var(--card);} button.sm{padding:6px 10px; font-size:12px;}
 button.secondary{background:var(--line); border-color:var(--line); color:var(--text);}
 .upload-area { display: block; border: 2px dashed var(--muted); border-radius: 12px; padding: 40px 20px; text-align: center; background: var(--card); margin-bottom: 24px; cursor: pointer; transition: 0.2s; }
@@ -66,19 +66,32 @@ textarea{width:100%;min-height:110px;margin-top:12px;resize:vertical}
 .fm-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;}
 .fm-nav a { display: inline-block; padding: 4px 8px; background: var(--bg); border-radius: 6px; font-size: 12px; text-decoration: none; color: var(--text); border: 1px solid var(--line); transition: 0.2s;}
 .fm-nav a:hover { border-color: var(--accent); }
-/* Nav States */
 .fm-nav a.attempted { background: var(--line); border-color: var(--muted); }
 .fm-nav a.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--good); color: var(--good); font-weight: bold; }
 .fm-nav a.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--bad); color: var(--bad); font-weight: bold; }
 
-/* Prompt Generator */
-.pg-group { margin-bottom: 20px; }
+/* Prompt Generator Specific Styles */
+.pg-group { margin-bottom: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--line); }
+.pg-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .pg-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
 .pg-help { font-size: 12px; color: var(--muted); margin-top: 4px; }
 input[type="radio"], input[type="checkbox"] { margin-right: 6px; }
 .url-input-group { display: flex; gap: 8px; margin-bottom: 8px; }
 .url-input-group input { flex: 1; }
 .radio-group { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; align-items: center;}
+
+/* Keyword Chips & Box */
+.keyword-chips-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.kw-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--card); border: 1px solid var(--line); padding: 6px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+.kw-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 14px; }
+.kw-input-row { display: flex; gap: 8px; margin-top: 8px; }
+.kw-input-row input { flex: 1; }
+
+/* Question Count Config */
+.count-config-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 10px; }
+.count-card { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 12px; text-align: center; }
+.count-card label { font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+.count-card input { width: 100%; text-align: center; padding: 6px; }
 
 /* File List Chips */
 .file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
@@ -133,9 +146,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
     
     <div class="progress" id="progressWrap" style="display:none;"><div class="bar" id="bar"></div></div>
     
-    <div id="app">
-      <!-- 퀴즈 렌더링 영역 -->
-    </div>
+    <div id="app"></div>
   </div>
 
   <!-- Tab 2: Prompt Generator -->
@@ -143,6 +154,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
     <div class="topic" style="padding: 24px;">
       <h2 style="padding:0 0 16px 0; margin-bottom:20px;">AI 프롬프트 생성기</h2>
       
+      <!-- 1. 학습 자료 (.md) -->
       <div class="pg-group">
         <label>1. 학습 자료 (.md 파일) 다중 업로드</label>
         <label class="upload-area" id="mdDropArea" style="padding: 20px; margin-bottom: 10px;">
@@ -158,31 +170,81 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
         </div>
       </div>
 
+      <!-- 2. 키워드 지정 섹션 (분할 모드 적용) -->
       <div class="pg-group">
-        <label>1-2. 직접 텍스트 입력 (선택)</label>
-        <textarea id="pgContent" placeholder="여기에 직접 키워드나 요약본을 적어도 됩니다."></textarea>
+        <label>2. 키워드 지정 (다중 입력 후 변환)</label>
+        
+        <div class="radio-group" style="margin: 8px 0 12px 0;">
+          <label><input type="radio" name="kwMode" value="auto" checked onchange="toggleKwMode()"> Auto 모드 (공백 2개 이상 또는 줄바꿈 분할)</label>
+          <label><input type="radio" name="kwMode" value="custom" onchange="toggleKwMode()"> 직접 구분자 입력</label>
+        </div>
+
+        <div id="customDelimiterBox" style="display: none; margin-bottom: 8px;">
+          <input type="text" id="pgDelimiter" placeholder="구분자 입력 (예: ,, /, | 등)" style="width: 200px;">
+        </div>
+
+        <textarea id="pgRawKeywords" placeholder="예: 오버피팅  드롭아웃  배치정규화 (공백 2개 이상 또는 줄바꿈으로 구분)" style="min-height: 80px;"></textarea>
+        
+        <div style="display: flex; gap: 8px; margin-top: 8px;">
+          <button type="button" class="secondary sm" onclick="convertKeywords()">✨ 키워드로 변환</button>
+          <button type="button" class="danger sm" onclick="clearKeywords()">전체 삭제</button>
+        </div>
+
+        <div class="keyword-chips-container" id="keywordChipsContainer">
+          <span style="color: var(--muted); font-size: 13px; align-self: center; margin: auto;">변환된 키워드가 여기에 표시됩니다.</span>
+        </div>
+
+        <div class="kw-input-row" style="margin-top: 10px;">
+          <input type="text" id="singleKeywordInput" placeholder="개별 키워드 추가 입력..." onkeydown="if(event.key==='Enter'){addSingleKeyword(); event.preventDefault();}">
+          <button type="button" class="secondary" onclick="addSingleKeyword()">추가</button>
+        </div>
       </div>
 
+      <!-- 3. 지시사항 입력 -->
       <div class="pg-group">
-        <label>2. 외부 검색 소스 URL (최대 10개)</label>
+        <label>3. 지시사항 입력 (선택)</label>
+        <textarea id="pgInstructions" placeholder="예: 개념 설명 위주로 출제해 주세요. 난이도는 중급 이상으로 맞춰주세요."></textarea>
+      </div>
+
+      <!-- 4. 외부 검색 소스 URL -->
+      <div class="pg-group">
+        <label>4. 외부 검색 소스 URL (최대 10개)</label>
         <div id="urlContainer">
           <div class="url-input-group">
-            <input type="text" class="pgUrl" placeholder="https://example.com/">
+            <input type="text" class="pgUrl" placeholder="https://example.com/ml-guide">
             <button type="button" class="secondary sm" onclick="addUrlField()">+ 추가</button>
           </div>
         </div>
         <div class="pg-help">AI가 참고할 웹사이트나 문서 링크가 있다면 입력하세요.</div>
       </div>
 
-      <div class="pg-group">
-        <label style="display:flex; align-items:center; cursor:pointer;">
+      <div class="pg-group" style="border-bottom: none; padding-bottom: 0;">
+        <label style="display:flex; align-items:center; cursor:pointer; margin-bottom: 16px;">
           <input type="checkbox" id="pgWebSearch" checked> 웹 검색 허용하여 최신 정보 반영하기
         </label>
+
+        <!-- 5. 키워드별 문제 수 설정 -->
+        <label>5. 키워드별 문제 수 설정 (유형별 범위)</label>
+        <div class="pg-help" style="margin-bottom: 10px;">각 키워드(또는 전반적 기준)당 생성할 문제 수의 범위를 지정합니다.</div>
+        <div class="count-config-grid">
+          <div class="count-card">
+            <label>객관식</label>
+            <input type="text" id="countMC" value="2~3문항">
+          </div>
+          <div class="count-card">
+            <label>주관식</label>
+            <input type="text" id="countShort" value="1~2문항">
+          </div>
+          <div class="count-card">
+            <label>서술형</label>
+            <input type="text" id="countEssay" value="0~1문항">
+          </div>
+        </div>
       </div>
 
-      <button class="primary" onclick="generatePrompt()" style="width:100%; padding:14px; font-size:16px;">프롬프트 생성하기</button>
+      <button class="primary" onclick="generatePrompt()" style="width:100%; padding:14px; font-size:16px; margin-top: 24px;">프롬프트 생성하기</button>
 
-      <div class="pg-group" style="margin-top:24px;">
+      <div class="pg-group" style="margin-top:24px; border-bottom:none; padding-bottom:0;">
         <label>생성된 프롬프트 (복사하여 AI에게 전달하세요)</label>
         <textarea id="pgResult" style="min-height:250px;" readonly placeholder="생성하기 버튼을 누르면 여기에 프롬프트가 나타납니다."></textarea>
         <button onclick="copyPrompt()" style="margin-top:8px;">클립보드에 복사</button>
@@ -190,7 +252,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
     </div>
   </div>
 
-  <footer>버전 2.5 - 다중 JSON 및 마크다운 업로드 지원</footer>
+  <footer>버전 2.7 - 키워드 변환 모드 분할 및 해시태그 제거 완료</footer>
 </main>
 
 <!-- Floating Menu Toggle Button -->
@@ -207,9 +269,7 @@ footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
       <button class="primary" onclick="evaluateAll(false)" style="font-size:13px; padding:8px;">전체 채점</button>
       <button onclick="evaluateAll(true)" style="font-size:13px; padding:8px;">전체 정답보기</button>
     </div>
-    <div id="fmNavContainer">
-      <!-- 동적으로 주제별 숏컷 링크 생성 -->
-    </div>
+    <div id="fmNavContainer"></div>
   </div>
 </div>
 
@@ -602,12 +662,12 @@ document.addEventListener("input", (e) => {
 });
 
 
-// --- Prompt Generator (Multi MD Support & Drag-n-Drop) ---
+// --- Prompt Generator Logic ---
 let mdFiles = []; 
+let keywordsList = [];
 
 const mdDropArea = $('#mdDropArea');
 mdDropArea.addEventListener('click', () => $('#mdUpload').click());
-
 mdDropArea.addEventListener('dragover', e => { e.preventDefault(); mdDropArea.style.borderColor = "var(--accent)"; });
 mdDropArea.addEventListener('dragleave', e => { mdDropArea.style.borderColor = "var(--muted)"; });
 mdDropArea.addEventListener('drop', e => {
@@ -654,6 +714,90 @@ function removeMdFile(index) {
   renderMdFileList();
 }
 
+// Keyword Mode Toggle
+function toggleKwMode() {
+  const mode = document.querySelector('input[name="kwMode"]:checked').value;
+  const customBox = $('#customDelimiterBox');
+  if(mode === 'custom') {
+    customBox.style.display = 'block';
+  } else {
+    customBox.style.display = 'none';
+  }
+}
+
+// Keyword Conversion Logic with Auto / Custom modes
+function convertKeywords() {
+  const rawText = $("#pgRawKeywords").value;
+  if(!rawText.trim()) return;
+
+  const mode = document.querySelector('input[name="kwMode"]:checked').value;
+  let tokens = [];
+
+  if(mode === 'auto') {
+    // Split by 2 or more spaces, or newlines
+    tokens = rawText.split(/(?:\s{2,}|\n+)/).map(t => t.trim()).filter(t => t.length > 0);
+  } else {
+    const delimiter = $('#pgDelimiter').value;
+    if(!delimiter) {
+      alert("구분자를 입력해주세요.");
+      return;
+    }
+    // Escape special characters for RegExp safely
+    const escaped = delimiter.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(escaped, 'g');
+    tokens = rawText.split(regex).map(t => t.trim()).filter(t => t.length > 0);
+  }
+
+  tokens.forEach(token => {
+    if(!keywordsList.includes(token)) {
+      keywordsList.push(token);
+    }
+  });
+
+  $("#pgRawKeywords").value = "";
+  renderKeywordChips();
+}
+
+function addSingleKeyword() {
+  const input = $("#singleKeywordInput");
+  const val = input.value.trim();
+  if(!val) return;
+
+  if(!keywordsList.includes(val)) {
+    keywordsList.push(val);
+  }
+  input.value = "";
+  renderKeywordChips();
+}
+
+function removeKeyword(index) {
+  keywordsList.splice(index, 1);
+  renderKeywordChips();
+}
+
+function clearKeywords() {
+  keywordsList = [];
+  renderKeywordChips();
+}
+
+function renderKeywordChips() {
+  const container = $("#keywordChipsContainer");
+  container.innerHTML = "";
+  
+  if(keywordsList.length === 0) {
+    container.innerHTML = `<span style="color: var(--muted); font-size: 13px; align-self: center; margin: auto;">변환된 키워드가 여기에 표시됩니다.</span>`;
+    return;
+  }
+
+  keywordsList.forEach((kw, index) => {
+    const chip = document.createElement('div');
+    chip.className = 'kw-chip';
+    // # 제거된 순수 텍스트 표시
+    chip.innerHTML = `${kw} <button type="button" onclick="removeKeyword(${index})">&times;</button>`;
+    container.appendChild(chip);
+  });
+}
+
 let urlCount = 1;
 function addUrlField() {
     if(urlCount >= 10) { alert("URL은 최대 10개까지만 추가 가능합니다."); return; }
@@ -665,57 +809,105 @@ function addUrlField() {
 }
 
 function generatePrompt() {
-  const manualContent = $("#pgContent").value.trim();
+  const instructions = $("#pgInstructions").value.trim();
   const mdOption = document.querySelector('input[name="mdOption"]:checked').value;
   const webSearch = $("#pgWebSearch").checked;
-  
   const urls = Array.from($$('.pgUrl')).map(el => el.value.trim()).filter(val => val !== "");
-
-  if(!manualContent && urls.length === 0 && mdFiles.length === 0) {
-    alert("학습 자료 파일, 텍스트 입력, 혹은 URL 중 최소 하나는 제공해야 합니다."); return;
+  const countMC = $("#countMC").value.trim() || "2~3문항";
+  const countShort = $("#countShort").value.trim() || "1~2문항";
+  const countEssay = $("#countEssay").value.trim() || "0~1문항";
+  
+  
+  if(mdFiles.length === 0 && keywordsList.length === 0 && urls.length === 0 && !instructions) {
+    alert("학습 자료, 키워드, 지시사항 또는 URL 중 최소 하나는 입력해야 합니다."); return;
   }
 
-  let prompt = `당신은 퀴즈 출제 전문가입니다. 아래 제공된 학습 자료와 조건을 바탕으로 퀴즈 데이터를 '단일 통합 JSON' 형식으로만 출력해주세요.\n\n`;
+  let prompt = `당신은 머신러닝·딥러닝 교육을 위한 퀴즈 출제 전문가입니다.\n\n아래에 제공된 학습 자료, 핵심 키워드, 외부 참고 자료 및 출제 조건을 바탕으로 학습용 퀴즈 문제를 생성하세요.\n\n출력은 반드시 하나의 유효한 JSON 파일만 출력해야 합니다.\nMarkdown 코드블록(\`\`\`json)은 절대 사용하지 마세요.\nJSON 앞뒤에 설명이나 부가 문장을 작성하지 마세요.\n\n[정보 우선순위]\n\n문제 출제에 사용하는 정보는 다음 우선순위를 따릅니다.\n\n1. 제공된 학습 자료\n2. 제공된 핵심 키워드\n3. 외부 참고 자료\n4. 웹 검색을 통한 보완 정보\n\n학습 자료를 가장 중요한 기준으로 사용하세요.\n\n학습 자료에 없는 개념을 보완하거나 사실관계를 확인할 필요가 있는 경우에만 웹 검색을 활용하세요.\n\n웹 검색 결과가 학습 자료와 충돌하는 경우에는 학습 자료의 교육적 맥락을 우선합니다.\n단, 학습 자료에 명백한 사실 오류가 있는 경우에는 신뢰할 수 있는 외부 자료를 이용하여 수정할 수 있습니다.\n\n`;
   
-  if (webSearch) prompt += `- 필요하다면 웹 검색을 적극 활용하여 개념을 보완하고 정확한 해설을 작성해 주세요.\n`;
+  if (webSearch) prompt += `웹 검색이 활성화되어 있으므로 필요한 경우 웹 검색을 활용하여 개념을 보완하고 정확한 해설을 작성하세요.\n`;
   if (urls.length > 0) {
-      prompt += `- 다음 외부 소스(URL)를 참고하여 문제를 출제해 주세요:\n`;
-      urls.forEach(url => prompt += `  * ${url}\n`);
+      prompt += `\n[외부 참고 자료]\n\n다음 URL을 보조 자료로 활용할 수 있습니다.\n\n`;
+      urls.forEach(url => prompt += `- ${url}\n`);
+      prompt += `\n외부 자료는 학습 자료의 내용을 보완하거나 사실관계를 검증하는 목적으로만 사용하세요.\n`;
   }
   
-  prompt += `\n[학습 자료 및 키워드]\n`;
+  if(keywordsList.length > 0) {
+    prompt += `\n[출제 핵심 키워드]\n\n`;
+    keywordsList.forEach(kw => prompt += `- ${kw}\n`);
+  }
+
+  prompt += `\n[학습 자료]\n`;
   if(mdFiles.length > 0) {
       mdFiles.forEach(file => {
           if(mdOption === 'full') {
               prompt += `--- 파일 시작: ${file.name} ---\n${file.content}\n--- 파일 끝 ---\n\n`;
           } else {
-              prompt += `(첨부된 파일 '${file.name}'의 내용을 읽고 반영해주세요.)\n\n`;
+              prompt += `(첨부된 파일 '${file.name}'의 내용을 반드시 읽고 문제에 반영하세요.)\n\n`;
           }
       });
+  } else {
+    prompt += `(첨부된 파일 없음)\n\n`;
   }
-  if(manualContent) prompt += `${manualContent}\n\n`;
-  
-  prompt += `[요구사항]\n1. 문제는 객관식, 주관식, 서술형을 골고루 섞어주세요.\n2. 객관식의 경우 반드시 'choices' 배열에 4개 이상의 보기를 문자열로 넣고, 'answer'는 '①, ②, ③, ④, ⑤' 중 하나로 적어주세요.\n3. 주관식/서술형의 경우 'choices'는 생략하거나 빈 배열로 두고, 'answer'에 모범 답안 텍스트를 적어주세요.\n4. 모든 문제에 'explanation(해설)' 필드를 필수로 포함해주세요.\n5. 마크다운(\`\`\`json) 코드블록 없이 순수한 JSON 문자열만 출력해야 합니다.\n\n`;
 
-  prompt += `[출력 JSON 구조 (정확히 이 스키마를 따르세요)]\n`;
+  if(instructions) {
+    prompt += `[추가 지시사항]\n${instructions}\n\n`;
+  }
+  
+
+
+  prompt += `[문제 수 및 유형 조건]\n`;
+  prompt += `- 각 주제/키워드당 생성할 문제 수 :\n`;
+  prompt += `  * 객관식: ${countMC}\n`;
+  prompt += `  * 주관식: ${countShort}\n`;
+  prompt += `  * 서술형: ${countEssay}\n\n`;
+
+
+
+  prompt += `[문제 유형 정의]\n\n객관식:\n- 5개의 보기 중 하나를 선택하는 문제입니다.\n- 정답은 반드시 하나만 존재해야 합니다.\n\n주관식:\n- 짧은 단어나 문장으로 답할 수 있는 문제입니다.\n- 일반적으로 1~3단어 정도의 답변을 요구합니다.\n\n연계형:\n- 현재 주제와 다른 주제의 개념을 최소 1개 이상 결합한 문제입니다.\n- 단순히 두 개념을 각각 묻는 문제가 아니라 두 개념 사이의 관계를 이해해야 풀 수 있도록 작성하세요.\n\n서술형:\n- 개념의 원리, 과정, 비교, 장단점 또는 여러 개념 사이의 관계를 논리적으로 설명해야 하는 문제입니다.\n- 2-3문장 정도의 답변을 요구합니다.\n- 단순 암기형 질문은 피하세요.\n\n`;
+
+  prompt += `[객관식 작성 규칙]\n\n- choices 배열에는 정확히 5개의 보기를 넣으세요.\n- 모든 보기는 문자열이어야 합니다.\n- 정답은 반드시 하나만 존재해야 합니다.\n- answer는 반드시 "①", "②", "③", "④", "⑤" 중 하나여야 합니다.\n- answer는 반드시 choices의 실제 정답과 일치해야 합니다.\n- "모두 정답", "모두 오답", "①과 ②", "해당 없음" 등의 보기는 사용하지 마세요.\n- 보기의 길이와 표현 방식은 가능한 한 균형을 맞추세요.\n- 문제 자체에 정답을 암시하는 표현을 넣지 마세요.\n\n`;
+
+  prompt += `[주관식/서술형 작성 규칙]\n\n- choices는 빈 배열 []로 설정하세요.\n- answer에는 모범 답안을 작성하세요.\n- 모범 답안은 핵심 개념을 정확하게 포함해야 합니다.\n- 가능한 경우 핵심 키워드와 논리적 관계를 포함하세요.\n\n`;
+
+  prompt += `[해설 규칙]\n\n모든 문제에는 explanation 필드를 반드시 포함하세요.\n\n해설에는 다음 내용을 포함하세요.\n\n1. 정답이 맞는 이유\n2. 문제에서 평가하려는 핵심 개념\n3. 필요한 경우 오답 선택지가 틀린 이유\n\n단순히 정답을 반복하는 설명은 작성하지 마세요.\n\n객관식의 경우 가능하면 각 선택지가 왜 맞거나 틀리는지 설명하세요.\n\n`;
+
+  prompt += `[난이도]\n\n모든 문제에는 difficulty를 지정하세요.\n\n허용되는 값은 다음 세 가지뿐입니다.\n\n- "easy"\n- "medium"\n- "hard"\n\n난이도 기준:\n\neasy:\n핵심 개념을 직접적으로 묻는 문제\n\nmedium:\n두 개 이상의 개념을 이해하거나 적용해야 하는 문제\n\nhard:\n여러 개념을 연결하거나 상황을 분석해야 하는 문제\n\n`;
+
+  prompt += `[연계 문제]\n\n연계형 문제에는 related_topics 배열을 반드시 포함하세요.\n\n현재 주제 이외에 연계된 주제명을 최소 1개 이상 기록하세요.\n\n`;
+
+  prompt += `[문제 중복 방지]\n\n같은 주제 안에서 문제의 질문, 정답, 핵심 사고과정이 반복되지 않도록 하세요.\n\n단순히 숫자나 보기만 변경한 유사 문제를 여러 개 생성하지 마세요.\n\n서로 다른 개념, 상황, 적용 사례를 사용하세요.\n\n`;
+
+  prompt += `[자체 검증]\n\n최종 JSON을 출력하기 전에 모든 문제를 다음 기준으로 검증하세요.\n\n1. [문제 수 및 유형 조건]을 따랐는가?\n2. 객관식 choices가 정확히 5개인가?\n3. 객관식 정답이 정확히 하나인가?\n4. answer가 실제 choices의 정답과 일치하는가?\n5. 주관식/서술형 answer가 질문에 대한 적절한 모범답안인가?\n6. explanation과 answer가 서로 모순되지 않는가?\n7. 학습 자료의 내용과 모순되지 않는가?\n8. 문제 간 중복이 심하지 않은가?\n9. JSON 문법이 올바른가?\n\n`;
+
+  prompt += `[출력 JSON 구조]\n\n`;
   prompt += `{
   "topics": [
     {
       "id": 1,
-      "topic": "생성된 주제명",
+      "topic": "주제명",
       "questions": [
         {
           "id": "Q1-1",
-          "type": "객관식|주관식|서술형",
-          "question": "문제 내용이 들어갑니다.",
-          "choices": ["보기1", "보기2", "보기3", "보기4"],
-          "answer": "①", 
-          "explanation": "해설 내용이 상세하게 들어갑니다."
+          "type": "객관식",
+          "difficulty": "medium",
+          "related_topics": [],
+          "question": "문제 내용",
+          "choices": [
+            "보기1",
+            "보기2",
+            "보기3",
+            "보기4",
+            "보기5"
+          ],
+          "answer": "③",
+          "explanation": "상세한 해설"
         }
       ]
     }
   ]
-}`;
+}\n\n`;
+
+  prompt += `[최종 출력 규칙]\n\n반드시 유효한 JSON 객체 하나만 출력하세요.\n\n다음은 절대 출력하지 마세요.\n\n- Markdown\n- \`\`\`json\n- 설명 문장\n- JSON 외의 텍스트\n- 주석`;
 
   $("#pgResult").value = prompt;
 }
