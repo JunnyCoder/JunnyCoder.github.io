@@ -1,1 +1,6 @@
 .vscode/settings.json
+_config.yml
+.ruby-version
+Gemfile.lock
+Gemfile
+_site

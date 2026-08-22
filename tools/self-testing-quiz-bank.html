@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Self Testing Quiz Bank</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#667085;--line:#e5e7eb;--accent:#4f46e5;--good:#15803d;--bad:#dc2626}
+[data-theme="dark"]{--bg:#0f172a;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;--line:#334155;--accent:#6366f1;--good:#22c55e;--bad:#ef4444}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif; scroll-behavior: smooth; transition: background 0.3s, color 0.3s;}
+header{position:sticky;top:0;z-index:10;background:var(--card);backdrop-filter:blur(10px);border-bottom:1px solid var(--line); transition: background 0.3s, border-color 0.3s;}
+.top{max-width:1100px;margin:auto;padding:16px 20px;display:flex;gap:16px;align-items:center;justify-content:space-between}
+.header-right { display: flex; align-items: center; gap: 12px; }
+h1{font-size:20px;margin:0}.stats{font-size:13px;color:var(--muted)}
+.wrap{max-width:1100px;margin:24px auto;padding:0 20px}
+
+/* Main Tabs */
+.tabs { display: flex; gap: 10px; border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 24px; }
+.tab-btn { background: none; border: none; font-size: 16px; font-weight: 600; color: var(--muted); cursor: pointer; padding: 10px 16px; border-radius: 8px; transition: all 0.2s; }
+.tab-btn:hover { background: var(--line); }
+.tab-btn.active { color: var(--accent); background: var(--line); }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* Form & Inputs */
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px; align-items:center;}
+button,select,input[type="text"],textarea {border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:10px;padding:10px 13px;font-size:14px;cursor:pointer;font-family:inherit; transition: background 0.3s, color 0.3s, border-color 0.3s;}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)} button.danger{color:var(--bad); border-color:var(--bad); background:var(--card);} button.sm{padding:6px 10px; font-size:12px;}
+button.secondary{background:var(--line); border-color:var(--line); color:var(--text);}
+.upload-area { display: block; border: 2px dashed var(--muted); border-radius: 12px; padding: 40px 20px; text-align: center; background: var(--card); margin-bottom: 24px; cursor: pointer; transition: 0.2s; }
+.upload-area:hover { border-color: var(--accent); }
+.upload-area h3 { margin:0 0 8px 0; color:var(--accent); }
+.upload-area p { margin:0; color:var(--muted); font-size:14px; }
+
+/* Dataset Tabs */
+.dataset-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 8px; align-items: center; }
+.ds-tab { padding: 8px 14px; font-size: 13px; font-weight:600; border-radius: 8px; border: 1px solid var(--line); background: var(--card); color: var(--text); cursor: pointer; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.ds-tab.active { background: var(--accent); color: white; border-color: var(--accent); }
+.ds-tab button { background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 14px; font-weight: bold; }
+.ds-add-btn { background: var(--card); color:var(--accent); border-style: dashed; padding: 8px 14px;}
+
+/* Quiz Elements */
+.topic{background:var(--card);border:1px solid var(--line);border-radius:16px;margin:16px 0;overflow:hidden; transition: background 0.3s, border-color 0.3s;}
+.topic h2{font-size:17px;margin:0;padding:16px 18px;border-bottom:1px solid var(--line)}
+.q{padding:18px;border-bottom:1px solid var(--line)}.q:last-child{border-bottom:0}
+.meta{font-size:12px;color:var(--muted);margin-bottom:8px}.question{font-weight:600;line-height:1.65;white-space:pre-wrap; scroll-margin-top: 80px;}
+.choices{display:grid;gap:8px;margin-top:12px}.choice{display:flex;gap:10px;align-items:flex-start;padding:11px;border:1px solid var(--line);border-radius:10px; cursor: pointer; background: var(--card);}
+.choice:hover{border-color:var(--accent)}.choice input{margin-top:4px}
+textarea{width:100%;min-height:110px;margin-top:12px;resize:vertical}
+.result{margin-top:12px;padding:12px;border-radius:10px;display:none;white-space:pre-wrap;line-height:1.6; font-size:14px;}
+.correct{background:rgba(21, 128, 61, 0.15);color:var(--good);border:1px solid var(--good)}
+.wrong{background:rgba(220, 38, 38, 0.15);color:var(--bad);border:1px solid var(--bad)}
+.neutral{background:var(--line);color:var(--text);border:1px solid var(--line)}
+.q-actions { margin-top:12px; display:flex; gap:8px; }
+
+/* Progress */
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:10px 0 20px}.bar{height:100%;background:var(--accent);width:0;transition:width 0.3s;}
+
+/* Floating Menu */
+.fm-minimized { display: none; position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: white; border: none; padding: 14px 20px; border-radius: 30px; font-weight: bold; box-shadow: 0 4px 12px rgba(0,0,0,0.2); cursor: pointer; z-index: 50; }
+.floating-menu { position: fixed; bottom: 30px; right: 30px; background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 300px; z-index: 51; display: flex; flex-direction: column; overflow: hidden; }
+.fm-header { background: var(--line); padding: 12px 16px; border-bottom: 1px solid var(--line); font-weight: bold; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+.fm-body { padding: 16px; max-height: 50vh; overflow-y: auto; }
+.fm-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.fm-topic-title { font-size: 12px; font-weight: 700; color: var(--text); margin: 12px 0 6px 0; border-bottom: 1px solid var(--line); padding-bottom: 4px; }
+.fm-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;}
+.fm-nav a { display: inline-block; padding: 4px 8px; background: var(--bg); border-radius: 6px; font-size: 12px; text-decoration: none; color: var(--text); border: 1px solid var(--line); transition: 0.2s;}
+.fm-nav a:hover { border-color: var(--accent); }
+/* Nav States */
+.fm-nav a.attempted { background: var(--line); border-color: var(--muted); }
+.fm-nav a.correct { background: rgba(34, 197, 94, 0.2); border-color: var(--good); color: var(--good); font-weight: bold; }
+.fm-nav a.wrong { background: rgba(239, 68, 68, 0.2); border-color: var(--bad); color: var(--bad); font-weight: bold; }
+
+/* Prompt Generator */
+.pg-group { margin-bottom: 20px; }
+.pg-group label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 14px; }
+.pg-help { font-size: 12px; color: var(--muted); margin-top: 4px; }
+input[type="radio"], input[type="checkbox"] { margin-right: 6px; }
+.url-input-group { display: flex; gap: 8px; margin-bottom: 8px; }
+.url-input-group input { flex: 1; }
+.radio-group { display: flex; gap: 16px; margin-top: 8px; font-size: 14px; align-items: center;}
+
+/* File List Chips */
+.file-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.file-chip { display: flex; align-items: center; gap: 6px; background: var(--line); padding: 6px 12px; border-radius: 8px; font-size: 13px; }
+.file-chip button { background: none; border: none; color: var(--bad); cursor: pointer; font-weight: bold; padding: 0; font-size: 14px; }
+
+footer{color:var(--muted);font-size:12px;padding:40px 0;text-align:center}
+@media(max-width:700px){.top{align-items:flex-start;flex-direction:column}.wrap{padding:0 12px}.q{padding:14px}.floating-menu{bottom:15px;right:15px;width:calc(100% - 30px);}.fm-minimized{bottom:15px;right:15px;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Self Testing Quiz Bank</h1>
+    <div class="header-right">
+      <div class="stats" id="stats">데이터를 업로드해주세요.</div>
+      <button id="themeToggleBtn" class="secondary sm" onclick="toggleTheme()" title="다크모드 전환">🌙 다크모드</button>
+    </div>
+  </div>
+</header>
+<main class="wrap">
+  
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('quiz')">퀴즈 풀기</button>
+    <button class="tab-btn" onclick="switchTab('prompt')">프롬프트 생성기</button>
+  </div>
+
+  <!-- Tab 1: Quiz -->
+  <div id="tab-quiz" class="tab-content active">
+    
+    <div id="datasetTabsContainer" style="display:none;">
+      <div class="dataset-tabs" id="datasetTabs">
+        <label class="ds-tab ds-add-btn">
+          + 데이터 추가
+          <input type="file" id="jsonUploadAdd" accept=".json" multiple style="display:none;">
+        </label>
+      </div>
+    </div>
+
+    <label class="upload-area" id="dropArea">
+      <h3>JSON 문제 파일 업로드</h3>
+      <p>클릭하여 여러 JSON 파일을 선택하거나 드래그 앤 드롭 하세요.</p>
+      <input type="file" id="jsonUploadMain" accept=".json" multiple style="display:none;">
+    </label>
+
+    <div class="toolbar" id="toolbar" style="display:none;">
+      <select id="topicSelect"><option value="all">전체 주제</option></select>
+      <select id="typeSelect"><option value="all">전체 유형</option><option>객관식</option><option>주관식</option><option>연계형</option><option>서술형</option></select>
+      <button id="resetBtn" class="secondary">현재 풀이 초기화</button>
+      <button id="deleteDatasetBtn" class="danger">현재 데이터 세트 삭제</button>
+    </div>
+    
+    <div class="progress" id="progressWrap" style="display:none;"><div class="bar" id="bar"></div></div>
+    
+    <div id="app">
+      <!-- 퀴즈 렌더링 영역 -->
+    </div>
+  </div>
+
+  <!-- Tab 2: Prompt Generator -->
+  <div id="tab-prompt" class="tab-content">
+    <div class="topic" style="padding: 24px;">
+      <h2 style="padding:0 0 16px 0; margin-bottom:20px;">AI 프롬프트 생성기</h2>
+      
+      <div class="pg-group">
+        <label>1. 학습 자료 (.md 파일) 다중 업로드</label>
+        <label class="upload-area" id="mdDropArea" style="padding: 20px; margin-bottom: 10px;">
+          <h3 style="font-size: 15px; margin-bottom: 4px;">마크다운(.md) 파일 드래그 또는 클릭하여 추가</h3>
+          <p style="font-size: 12px;">여러 개의 파일을 동시에 선택할 수 있습니다.</p>
+          <input type="file" id="mdUpload" accept=".md" multiple style="display:none;">
+        </label>
+        <div class="file-list" id="mdFileList"></div>
+        
+        <div class="radio-group" style="margin-top: 12px;">
+          <label><input type="radio" name="mdOption" value="full" checked> 마크다운 내용 전체 프롬프트에 포함</label>
+          <label><input type="radio" name="mdOption" value="name"> 파일명만 포함 (AI가 파일을 읽을 수 있는 환경일 때)</label>
+        </div>
+      </div>
+
+      <div class="pg-group">
+        <label>1-2. 직접 텍스트 입력 (선택)</label>
+        <textarea id="pgContent" placeholder="여기에 직접 키워드나 요약본을 적어도 됩니다."></textarea>
+      </div>
+
+      <div class="pg-group">
+        <label>2. 외부 검색 소스 URL (최대 10개)</label>
+        <div id="urlContainer">
+          <div class="url-input-group">
+            <input type="text" class="pgUrl" placeholder="https://example.com/">
+            <button type="button" class="secondary sm" onclick="addUrlField()">+ 추가</button>
+          </div>
+        </div>
+        <div class="pg-help">AI가 참고할 웹사이트나 문서 링크가 있다면 입력하세요.</div>
+      </div>
+
+      <div class="pg-group">
+        <label style="display:flex; align-items:center; cursor:pointer;">
+          <input type="checkbox" id="pgWebSearch" checked> 웹 검색 허용하여 최신 정보 반영하기
+        </label>
+      </div>
+
+      <button class="primary" onclick="generatePrompt()" style="width:100%; padding:14px; font-size:16px;">프롬프트 생성하기</button>
+
+      <div class="pg-group" style="margin-top:24px;">
+        <label>생성된 프롬프트 (복사하여 AI에게 전달하세요)</label>
+        <textarea id="pgResult" style="min-height:250px;" readonly placeholder="생성하기 버튼을 누르면 여기에 프롬프트가 나타납니다."></textarea>
+        <button onclick="copyPrompt()" style="margin-top:8px;">클립보드에 복사</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>버전 2.5 - 다중 JSON 및 마크다운 업로드 지원</footer>
+</main>
+
+<!-- Floating Menu Toggle Button -->
+<button id="fmToggleBtn" class="fm-minimized" onclick="toggleFloatingMenu(true)">📝 패널 열기</button>
+
+<!-- Floating Menu -->
+<div class="floating-menu" id="floatingMenu" style="display:none;">
+  <div class="fm-header">
+    퀴즈 컨트롤 패널
+    <button class="sm danger" style="padding:2px 6px; font-size:10px; background:none; border:none;" onclick="toggleFloatingMenu(false)">최소화 ➖</button>
+  </div>
+  <div class="fm-body">
+    <div class="fm-buttons">
+      <button class="primary" onclick="evaluateAll(false)" style="font-size:13px; padding:8px;">전체 채점</button>
+      <button onclick="evaluateAll(true)" style="font-size:13px; padding:8px;">전체 정답보기</button>
+    </div>
+    <div id="fmNavContainer">
+      <!-- 동적으로 주제별 숏컷 링크 생성 -->
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+
+// --- Theme Management ---
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('quizBank_theme', newTheme);
+  updateThemeButton(newTheme);
+}
+
+function updateThemeButton(theme) {
+  const btn = $('#themeToggleBtn');
+  if (theme === 'dark') {
+    btn.textContent = '☀️ 라이트모드';
+  } else {
+    btn.textContent = '🌙 다크모드';
+  }
+}
+
+// --- Dataset & Storage Management ---
+let datasets = []; 
+let currentDsId = null;
+let userAnswers = {}; 
+
+function saveDatasets() {
+  localStorage.setItem('quizBank_datasets', JSON.stringify(datasets));
+}
+function saveAnswers() {
+  localStorage.setItem('quizBank_answers', JSON.stringify(userAnswers));
+}
+
+window.onload = () => {
+  const savedTheme = localStorage.getItem('quizBank_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateThemeButton(savedTheme);
+
+  const savedDatasets = localStorage.getItem('quizBank_datasets');
+  const savedAnswers = localStorage.getItem('quizBank_answers');
+  
+  if (savedAnswers) userAnswers = JSON.parse(savedAnswers);
+  
+  if (savedDatasets) {
+    datasets = JSON.parse(savedDatasets);
+    if (datasets.length > 0) {
+      $('#dropArea').style.display = 'none';
+      $('#datasetTabsContainer').style.display = 'block';
+      $('#toolbar').style.display = 'flex';
+      $('#progressWrap').style.display = 'block';
+      $('#fmToggleBtn').style.display = 'block';
+      renderDatasetTabs();
+      switchDataset(datasets[0].id);
+    }
+  }
+};
+
+function handleJsonFiles(files) {
+  Array.from(files).forEach(file => {
+    if (!file.name.endsWith('.json')) {
+      alert(`"${file.name}" 파일은 JSON 형식이 아닙니다.`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        processJSON(data, file.name);
+      } catch (err) {
+        alert(`"${file.name}" 파싱 오류! 형식을 확인해주세요.\n` + err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
+}
+
+function processJSON(data, fileName) {
+  if(!data.topics || !Array.isArray(data.topics)) {
+    alert(`"${fileName}" 유효하지 않은 데이터 구조입니다. 'topics' 배열이 존재해야 합니다.`); return;
+  }
+  
+  const flattenedQs = data.topics.flatMap(t => 
+    t.questions.map(q => ({ ...q, topicId: t.id, topic: t.topic }))
+  );
+
+  const newDsId = 'ds_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+  datasets.push({ id: newDsId, name: fileName, questions: flattenedQs });
+  saveDatasets(); 
+  
+  $('#dropArea').style.display = 'none';
+  $('#datasetTabsContainer').style.display = 'block';
+  $('#toolbar').style.display = 'flex';
+  $('#progressWrap').style.display = 'block';
+  $('#fmToggleBtn').style.display = 'block';
+  toggleFloatingMenu(true);
+  
+  renderDatasetTabs();
+  if(!currentDsId) {
+    switchDataset(newDsId);
+  } else {
+    renderDatasetTabs();
+  }
+}
+
+function renderDatasetTabs() {
+  $$('.ds-tab-item').forEach(el => el.remove());
+  
+  const container = $('#datasetTabs');
+  const addBtn = $('.ds-add-btn');
+  
+  datasets.forEach(ds => {
+    const btn = document.createElement('div');
+    btn.className = `ds-tab ds-tab-item ${ds.id === currentDsId ? 'active' : ''}`;
+    btn.innerHTML = `<span onclick="switchDataset('${ds.id}')" style="cursor:pointer; flex:1;">${ds.name}</span> <button type="button" onclick="removeDataset('${ds.id}', event)" title="닫기">&times;</button>`;
+    container.insertBefore(btn, addBtn);
+  });
+}
+
+function removeDataset(dsId, event) {
+  event.stopPropagation();
+  if(!confirm("해당 데이터 세트를 닫으시겠습니까?")) return;
+  
+  datasets = datasets.filter(ds => ds.id !== dsId);
+  saveDatasets();
+  
+  if(datasets.length > 0) {
+    if(currentDsId === dsId) {
+      switchDataset(datasets[0].id);
+    } else {
+      renderDatasetTabs();
+    }
+  } else {
+    currentDsId = null;
+    $('#dropArea').style.display = 'block';
+    $('#datasetTabsContainer').style.display = 'none';
+    $('#toolbar').style.display = 'none';
+    $('#progressWrap').style.display = 'none';
+    $('#fmToggleBtn').style.display = 'none';
+    $("#app").innerHTML = "";
+    $("#fmNavContainer").innerHTML = "";
+    $("#stats").textContent = "데이터를 업로드해주세요.";
+    toggleFloatingMenu(false);
+  }
+}
+
+function switchDataset(dsId) {
+  currentDsId = dsId;
+  renderDatasetTabs(); 
+  
+  const currentQs = datasets.find(ds => ds.id === dsId).questions;
+  
+  const ts = [...new Map(currentQs.map(q => [q.topicId, q.topic])).entries()];
+  $('#topicSelect').innerHTML = '<option value="all">전체 주제</option>';
+  ts.forEach(([id, name]) => $('#topicSelect').insertAdjacentHTML("beforeend", `<option value="${id}">${id}. ${name}</option>`));
+  $('#typeSelect').value = "all";
+  
+  render();
+}
+
+$('#jsonUploadMain').addEventListener('change', e => {
+  if(e.target.files.length) handleJsonFiles(e.target.files);
+  e.target.value = '';
+});
+
+$('#jsonUploadAdd').addEventListener('change', e => {
+  if(e.target.files.length) handleJsonFiles(e.target.files);
+  e.target.value = ''; 
+});
+
+const dropArea = $('#dropArea');
+dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.style.borderColor = "var(--accent)"; });
+dropArea.addEventListener('dragleave', e => { dropArea.style.borderColor = "var(--muted)"; });
+dropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  dropArea.style.borderColor = "var(--muted)";
+  if(e.dataTransfer.files.length) handleJsonFiles(e.dataTransfer.files);
+});
+
+// --- Quiz Rendering & Evaluation ---
+function filtered() {
+  if (!currentDsId) return [];
+  const currentDs = datasets.find(ds => ds.id === currentDsId);
+  if (!currentDs) return [];
+  const currentQs = currentDs.questions;
+  const t = $("#topicSelect").value, ty = $("#typeSelect").value;
+  return currentQs.filter(q => (t === "all" || String(q.topicId) === t) && (ty === "all" || q.type === ty));
+}
+
+function render() {
+  const qs = filtered(); 
+  const groups = new Map();
+  qs.forEach(q => { if (!groups.has(q.topic)) groups.set(q.topic, []); groups.get(q.topic).push(q); });
+  
+  $("#app").innerHTML = "";
+  $("#fmNavContainer").innerHTML = ""; 
+  
+  for (const [topic, arr] of groups) {
+    const sec = document.createElement("section"); sec.className = "topic";
+    sec.innerHTML = `<h2>${topic}</h2>`;
+    
+    const navGroup = document.createElement("div");
+    navGroup.innerHTML = `<div class="fm-topic-title">${topic}</div><div class="fm-nav" id="nav-group-${topic.replace(/\s/g,'')}"></div>`;
+    $("#fmNavContainer").appendChild(navGroup);
+    const navInner = navGroup.querySelector('.fm-nav');
+
+    arr.forEach(q => {
+      navInner.insertAdjacentHTML("beforeend", `<a href="#q-${q.id}" id="nav-${q.id}">${q.id}</a>`);
+
+      const el = document.createElement("div"); 
+      el.className = "q";
+      el.id = `q-${q.id}`; 
+
+      let input = "";
+      let savedAns = userAnswers[q.id]; 
+      
+      if (q.type === "객관식") {
+        input = `<div class="choices">${q.choices.map((c, i) => {
+          let val = ["①","②","③","④","⑤"][i];
+          let isChecked = (savedAns === val) ? "checked" : "";
+          return `<label class="choice"><input type="radio" name="${q.id}" value="${val}" ${isChecked}><span>${c}</span></label>`;
+        }).join("")}</div>`;
+      } else {
+        input = `<textarea id="answer-${q.id}" placeholder="답안을 작성하세요.">${savedAns || ""}</textarea>`;
+      }
+
+      el.innerHTML = `
+        <div class="meta">${q.id} · ${q.type}</div>
+        <div class="question">${q.question}</div>
+        ${input}
+        <div class="q-actions">
+          <button class="sm" onclick="evalSingle('${q.id}', false)">채점</button>
+          <button class="sm secondary" onclick="evalSingle('${q.id}', true)">정답 및 해설 보기</button>
+        </div>
+        <div class="result" id="result-${q.id}"></div>
+      `;
+      sec.appendChild(el);
+    });
+    $("#app").appendChild(sec);
+  }
+  $("#stats").textContent = `현재 탭: 총 ${qs.length}문항`;
+  updateProgressAndNav();
+}
+
+function evalSingle(qId, showOnly) {
+  const currentDs = datasets.find(ds => ds.id === currentDsId);
+  if(!currentDs) return;
+  const q = currentDs.questions.find(x => x.id === qId);
+  const r = $(`#result-${qId}`);
+  
+  if (q.type === "객관식") {
+    const selected = document.querySelector(`input[name="${qId}"]:checked`);
+    if (!showOnly && !selected) {
+      r.className = "result neutral"; r.textContent = "보기 중 하나를 선택해주세요."; r.style.display = "block"; return;
+    }
+    
+    if (showOnly) {
+      r.className = "result neutral";
+      r.innerHTML = `<strong>정답:</strong> ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || '해설이 없습니다.'}`;
+    } else {
+      const ok = selected.value === q.answer;
+      r.className = "result " + (ok ? "correct" : "wrong");
+      r.innerHTML = ok ? `<strong>정답입니다! (${q.answer})</strong><br><br><strong>해설:</strong> ${q.explanation || ''}` 
+                       : `<strong>오답입니다.</strong><br>내가 고른 답: ${selected.value} <br>정답: ${q.answer}<br><br><strong>해설:</strong> ${q.explanation || ''}`;
+    }
+  } else {
+    r.className = "result neutral";
+    r.innerHTML = `<strong>예시 답안 (정답):</strong><br>${q.answer}<br><br><strong>해설:</strong><br>${q.explanation || '해설이 없습니다.'}`;
+  }
+  r.style.display = "block";
+  updateProgressAndNav();
+}
+
+function evaluateAll(showOnly = false) {
+  const qs = filtered(); 
+  let mc = 0, totalMC = 0;
+  
+  qs.forEach(q => {
+    evalSingle(q.id, showOnly);
+    if(q.type === "객관식" && !showOnly) {
+      totalMC++;
+      const selected = document.querySelector(`input[name="${q.id}"]:checked`);
+      if(selected && selected.value === q.answer) mc++;
+    }
+  });
+  
+  if (!showOnly && totalMC > 0) alert(`객관식 채점 결과: ${totalMC}문제 중 ${mc}문제 정답`);
+}
+
+function updateProgressAndNav() {
+  const qs = filtered(); let done = 0;
+  
+  qs.forEach(q => {
+    let isAttempted = false;
+    
+    if (q.type === "객관식") { 
+        if (document.querySelector(`input[name="${q.id}"]:checked`)) { done++; isAttempted = true; }
+    } else { 
+        if (document.querySelector(`#answer-${q.id}`)?.value.trim()) { done++; isAttempted = true; }
+    }
+
+    const navBtn = $(`#nav-${q.id}`);
+    const resEl = $(`#result-${q.id}`);
+    
+    if (navBtn) {
+        navBtn.className = ''; 
+        if (resEl && resEl.style.display === 'block') {
+            if (resEl.classList.contains('correct')) navBtn.classList.add('correct');
+            else if (resEl.classList.contains('wrong')) navBtn.classList.add('wrong');
+            else navBtn.classList.add('attempted'); 
+        } else if (isAttempted) {
+            navBtn.classList.add('attempted');
+        }
+    }
+  });
+  
+  $("#bar").style.width = (qs.length ? done / qs.length * 100 : 0) + "%";
+}
+
+
+// --- UI Utilities ---
+function switchTab(tabId) {
+  $$('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  $$('.tab-content').forEach(content => content.classList.remove('active'));
+  event.target.classList.add('active');
+  $(`#tab-${tabId}`).classList.add('active');
+}
+
+function toggleFloatingMenu(show) {
+  if(show) {
+    $('#floatingMenu').style.display = 'flex';
+    $('#fmToggleBtn').style.display = 'none';
+  } else {
+    $('#floatingMenu').style.display = 'none';
+    $('#fmToggleBtn').style.display = 'block';
+  }
+}
+
+$("#resetBtn").onclick = () => {
+  if(!confirm("현재 데이터 세트의 풀이 기록을 초기화하시겠습니까?")) return;
+  const currentDs = datasets.find(ds => ds.id === currentDsId);
+  if(!currentDs) return;
+  currentDs.questions.forEach(q => delete userAnswers[q.id]); 
+  saveAnswers();
+  render(); 
+};
+
+$("#deleteDatasetBtn").onclick = () => {
+  if(!confirm("현재 데이터 세트를 완전히 삭제하시겠습니까? (복구할 수 없습니다)")) return;
+  
+  datasets = datasets.filter(ds => ds.id !== currentDsId);
+  saveDatasets();
+  
+  if(datasets.length > 0) {
+    switchDataset(datasets[0].id);
+  } else {
+    currentDsId = null;
+    $('#dropArea').style.display = 'block';
+    $('#datasetTabsContainer').style.display = 'none';
+    $('#toolbar').style.display = 'none';
+    $('#progressWrap').style.display = 'none';
+    $('#fmToggleBtn').style.display = 'none';
+    $("#app").innerHTML = "";
+    $("#fmNavContainer").innerHTML = "";
+    $("#stats").textContent = "데이터를 업로드해주세요.";
+    toggleFloatingMenu(false);
+  }
+};
+
+$("#topicSelect").onchange = render;
+$("#typeSelect").onchange = render;
+
+document.addEventListener("change", (e) => { 
+  if(e.target.type === 'radio') {
+    userAnswers[e.target.name] = e.target.value;
+    saveAnswers();
+    updateProgressAndNav(); 
+  }
+});
+document.addEventListener("input", (e) => { 
+  if(e.target.tagName.toLowerCase() === 'textarea' && e.target.id.startsWith('answer-')) {
+    const qId = e.target.id.replace('answer-', '');
+    userAnswers[qId] = e.target.value;
+    saveAnswers();
+    updateProgressAndNav(); 
+  }
+});
+
+
+// --- Prompt Generator (Multi MD Support & Drag-n-Drop) ---
+let mdFiles = []; 
+
+const mdDropArea = $('#mdDropArea');
+mdDropArea.addEventListener('click', () => $('#mdUpload').click());
+
+mdDropArea.addEventListener('dragover', e => { e.preventDefault(); mdDropArea.style.borderColor = "var(--accent)"; });
+mdDropArea.addEventListener('dragleave', e => { mdDropArea.style.borderColor = "var(--muted)"; });
+mdDropArea.addEventListener('drop', e => {
+  e.preventDefault();
+  mdDropArea.style.borderColor = "var(--muted)";
+  if(e.dataTransfer.files.length) handleMdFiles(e.dataTransfer.files);
+});
+
+$('#mdUpload').addEventListener('change', (e) => {
+    if(e.target.files.length) handleMdFiles(e.target.files);
+    e.target.value = ''; 
+});
+
+function handleMdFiles(files) {
+  Array.from(files).forEach(file => {
+    if(!file.name.endsWith('.md')) {
+      alert(`"${file.name}" 파일은 마크다운(.md) 형식이 아닙니다.`);
+      return;
+    }
+    if(mdFiles.some(f => f.name === file.name)) return;
+
+    const reader = new FileReader();
+    reader.onload = ev => {
+      mdFiles.push({ name: file.name, content: ev.target.result });
+      renderMdFileList();
+    };
+    reader.readAsText(file);
+  });
+}
+
+function renderMdFileList() {
+  const container = $('#mdFileList');
+  container.innerHTML = "";
+  mdFiles.forEach((file, index) => {
+    const chip = document.createElement('div');
+    chip.className = 'file-chip';
+    chip.innerHTML = `📄 ${file.name} <button type="button" onclick="removeMdFile(${index})">&times;</button>`;
+    container.appendChild(chip);
+  });
+}
+
+function removeMdFile(index) {
+  mdFiles.splice(index, 1);
+  renderMdFileList();
+}
+
+let urlCount = 1;
+function addUrlField() {
+    if(urlCount >= 10) { alert("URL은 최대 10개까지만 추가 가능합니다."); return; }
+    urlCount++;
+    const div = document.createElement('div');
+    div.className = 'url-input-group';
+    div.innerHTML = `<input type="text" class="pgUrl" placeholder="추가 URL 입력..."><button type="button" class="danger sm" onclick="this.parentElement.remove(); urlCount--;">삭제</button>`;
+    $('#urlContainer').appendChild(div);
+}
+
+function generatePrompt() {
+  const manualContent = $("#pgContent").value.trim();
+  const mdOption = document.querySelector('input[name="mdOption"]:checked').value;
+  const webSearch = $("#pgWebSearch").checked;
+  
+  const urls = Array.from($$('.pgUrl')).map(el => el.value.trim()).filter(val => val !== "");
+
+  if(!manualContent && urls.length === 0 && mdFiles.length === 0) {
+    alert("학습 자료 파일, 텍스트 입력, 혹은 URL 중 최소 하나는 제공해야 합니다."); return;
+  }
+
+  let prompt = `당신은 퀴즈 출제 전문가입니다. 아래 제공된 학습 자료와 조건을 바탕으로 퀴즈 데이터를 '단일 통합 JSON' 형식으로만 출력해주세요.\n\n`;
+  
+  if (webSearch) prompt += `- 필요하다면 웹 검색을 적극 활용하여 개념을 보완하고 정확한 해설을 작성해 주세요.\n`;
+  if (urls.length > 0) {
+      prompt += `- 다음 외부 소스(URL)를 참고하여 문제를 출제해 주세요:\n`;
+      urls.forEach(url => prompt += `  * ${url}\n`);
+  }
+  
+  prompt += `\n[학습 자료 및 키워드]\n`;
+  if(mdFiles.length > 0) {
+      mdFiles.forEach(file => {
+          if(mdOption === 'full') {
+              prompt += `--- 파일 시작: ${file.name} ---\n${file.content}\n--- 파일 끝 ---\n\n`;
+          } else {
+              prompt += `(첨부된 파일 '${file.name}'의 내용을 읽고 반영해주세요.)\n\n`;
+          }
+      });
+  }
+  if(manualContent) prompt += `${manualContent}\n\n`;
+  
+  prompt += `[요구사항]\n1. 문제는 객관식, 주관식, 서술형을 골고루 섞어주세요.\n2. 객관식의 경우 반드시 'choices' 배열에 4개 이상의 보기를 문자열로 넣고, 'answer'는 '①, ②, ③, ④, ⑤' 중 하나로 적어주세요.\n3. 주관식/서술형의 경우 'choices'는 생략하거나 빈 배열로 두고, 'answer'에 모범 답안 텍스트를 적어주세요.\n4. 모든 문제에 'explanation(해설)' 필드를 필수로 포함해주세요.\n5. 마크다운(\`\`\`json) 코드블록 없이 순수한 JSON 문자열만 출력해야 합니다.\n\n`;
+
+  prompt += `[출력 JSON 구조 (정확히 이 스키마를 따르세요)]\n`;
+  prompt += `{
+  "topics": [
+    {
+      "id": 1,
+      "topic": "생성된 주제명",
+      "questions": [
+        {
+          "id": "Q1-1",
+          "type": "객관식|주관식|서술형",
+          "question": "문제 내용이 들어갑니다.",
+          "choices": ["보기1", "보기2", "보기3", "보기4"],
+          "answer": "①", 
+          "explanation": "해설 내용이 상세하게 들어갑니다."
+        }
+      ]
+    }
+  ]
+}`;
+
+  $("#pgResult").value = prompt;
+}
+
+function copyPrompt() {
+  const text = $("#pgResult").value;
+  if(!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    alert("프롬프트가 복사되었습니다. ChatGPT나 Claude에게 붙여넣기 하세요!");
+  });
+}
+</script>
+</body>
+</html>
