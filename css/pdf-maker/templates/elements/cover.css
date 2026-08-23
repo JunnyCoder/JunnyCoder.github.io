@@ -1,0 +1,27 @@
+.pdf-page.cover-page-wrapper { padding: 0 !important; }
+.cover-page {
+  width: 100%; height: 100%; /* 전체 화면 채우기 */
+  box-sizing: border-box;
+  display: flex; flex-direction: column; justify-content: space-between;
+  padding: var(--cover-padding, 60mm 25mm 30mm 25mm);
+  border-left: var(--cover-border-left, none);
+  border-top: var(--cover-border-top, none);
+  text-align: var(--cover-align, left);
+  page-break-before: avoid !important; /* 빈 페이지 생성 방지 */
+  break-before: avoid !important;
+}
+
+.cover-title-group h1 {
+  font-family: var(--cover-font-family, var(--font-family));
+  font-size: var(--cover-title-size, 34pt) !important;
+  color: var(--cover-title-color, #111);
+  border-top: var(--cover-title-border-top, none);
+  border-bottom: var(--cover-title-border-bottom, none);
+  padding: var(--cover-title-padding, 0);
+  margin-bottom: 12px;
+}
+.cover-title-group h3 {
+  font-size: var(--cover-subtitle-size, 15pt) !important;
+  color: var(--cover-subtitle-color, #555);
+  font-style: var(--cover-subtitle-style, normal);
+}

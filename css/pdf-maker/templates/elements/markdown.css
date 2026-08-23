@@ -1,0 +1,12 @@
+/* 코드 블록에만 배경색 허용 */
+pre, code { background: var(--code-bg, #f6f8fa) !important; border-radius: 6px; }
+pre { padding: 16px; overflow-x: auto; border: 1px solid var(--border-color, #e1e4e8); }
+code { padding: 2px 6px; font-family: monospace; font-size: 0.9em; }
+
+h1, h2, h3 { color: var(--heading-color, inherit); }
+h1 { border-bottom: 1px solid var(--border-color, #eee); padding-bottom: 6px; }
+
+blockquote {
+  border-left: 4px solid var(--accent-color, #007acc);
+  margin: 10px 0; padding: 6px 12px; color: #555;
+}

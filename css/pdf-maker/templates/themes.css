@@ -1,0 +1,12 @@
+/* 1. 기본 (Default 모노톤) */
+.pdf-content[data-theme="default"] { background: #fff; color: #000; font-family: sans-serif; }
+/* 2. 오션 (Ocean) */
+.pdf-content[data-theme="ocean"] { background: #f0f8ff; color: #0f172a; font-family: 'Noto Sans KR', sans-serif; }
+.pdf-content[data-theme="ocean"] h1, .pdf-content[data-theme="ocean"] h2 { color: #1e3a8a; }
+/* 3. 포레스트 (Forest) */
+.pdf-content[data-theme="forest"] { background: #f0fdf4; color: #14532d; font-family: serif; }
+/* 4. 웜 (Warm) */
+.pdf-content[data-theme="warm"] { background: #fffbeb; color: #451a03; }
+/* 5. 다크 크래프트 (Dark Craft - 인쇄용 반전) */
+.pdf-content[data-theme="dark"] { background: #1e1e1e; color: #e5e5e5; }
+.pdf-content[data-theme="dark"] h1 { color: #facc15; }

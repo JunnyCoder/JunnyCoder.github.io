@@ -1,0 +1,16 @@
+[data-theme="academic"] {
+  --font-family: "Georgia", "Times New Roman", serif;
+  --text-main: #1c1917;
+  --accent-color: #44403c;
+  --border-color: #d6d3d1;
+  
+  --cover-align: center;
+  --cover-padding: 80mm 20mm 30mm 20mm;
+  --cover-title-border-top: 1px solid var(--accent-color);
+  --cover-title-border-bottom: 1px solid var(--accent-color);
+  --cover-title-padding: 20px 0;
+  --cover-subtitle-style: italic;
+  
+  --toc-align: center;
+  --toc-border: none;
+}

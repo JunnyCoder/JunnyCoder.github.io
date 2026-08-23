@@ -278,6 +278,7 @@
       </div>
     </div>
     <div class="toolbar-center">
+      <button type="button" class="btn-pill" id="sendToPdfBtn" style="color: #ffb27a; border-color: #ffb27a;">PDF 편집</button>
       <button type="button" class="btn-pill" id="downloadMdBtn">.md</button>
       <button type="button" class="btn-pill" id="downloadHtmlBtn">.html</button>
     </div>
@@ -947,8 +948,19 @@
       downloadMdBtn.click();
     }
   });
-
+  /* ================= PDF Maker 연동 ================= */
+  var sendToPdfBtn = document.getElementById('sendToPdfBtn');
+  if(sendToPdfBtn) {
+    sendToPdfBtn.addEventListener('click', function() {
+      // 현재 에디터의 내용을 'pdfMakerTransfer'라는 키로 저장
+      localStorage.setItem('pdfMakerTransfer', editor.getValue());
+      // 같은 폴더 내의 pdf-maker.html을 새 창(또는 새 탭)으로 열기
+      window.open('pdf-maker.html', '_blank'); 
+    });
+  }
 })();
+
+
 </script>
 </body>
 </html>

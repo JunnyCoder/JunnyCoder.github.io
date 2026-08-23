@@ -1,0 +1,24 @@
+@page {
+  size: A4 portrait;
+  margin: 20mm;
+}
+@page :first { margin: 0; } /* 첫 페이지(표지) 꽉 차게 설정 */
+
+.pdf-page.A4 {
+  width: 794px; height: 1123px;
+  background: transparent; /* 배경색 제거 */
+  padding: 20mm; /* A4 규격 마진 */
+  flex-shrink: 0; box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  position: relative; box-sizing: border-box;
+  page-break-after: always; break-after: page;
+}
+
+@media print {
+  .pdf-page.A4 { box-shadow: none !important; margin: 0 auto !important; }
+}
+
+.pdf-content {
+  font-family: var(--font-family, sans-serif);
+  color: var(--text-main, #1a1a1a) !important; /* White-on-white 버그 방지 */
+  word-break: keep-all;
+}

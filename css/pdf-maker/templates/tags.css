@@ -1,0 +1,26 @@
+/* --- 제목(H1~H6) 스타일 4종 --- */
+[data-style="h-style-1"] { border-bottom: 2px solid currentColor; padding-bottom: 5px; }
+[data-style="h-style-2"] { border-left: 5px solid #3b82f6; padding-left: 10px; }
+[data-style="h-style-3"] { text-align: center; font-weight: 900; letter-spacing: 2px; }
+[data-style="h-style-4"] { background: #f3f4f6; padding: 5px 15px; border-radius: 4px; color: #333; }
+
+/* --- 표(Table) 스타일 4종 --- */
+[data-style="t-style-1"] { width: 100%; border-collapse: collapse; }
+[data-style="t-style-1"] th, [data-style="t-style-1"] td { border: 1px solid #ccc; padding: 8px; }
+
+[data-style="t-style-2"] { width: 100%; border-collapse: collapse; }
+[data-style="t-style-2"] th { background: #333; color: white; padding: 8px; }
+[data-style="t-style-2"] td { border: 1px solid #ddd; padding: 8px; }
+
+[data-style="t-style-3"] { width: 100%; border-collapse: collapse; }
+[data-style="t-style-3"] th, [data-style="t-style-3"] td { padding: 8px; border-bottom: 1px solid #eee; text-align: left;}
+[data-style="t-style-3"] tr:nth-child(even) { background: #f9f9f9; }
+
+[data-style="t-style-4"] { width: 100%; border-collapse: collapse; border-top: 3px solid #000; border-bottom: 3px solid #000; }
+[data-style="t-style-4"] th, [data-style="t-style-4"] td { padding: 8px; border-bottom: 1px dashed #ddd; text-align: center;}
+
+/* --- 리스트(UL/OL) 스타일 4종 --- */
+[data-style="l-style-1"] { list-style-type: disc; }
+[data-style="l-style-2"] { list-style-type: square; color: #555; }
+[data-style="l-style-3"] li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 4px;}
+[data-style="l-style-4"] { list-style-type: '👉 '; }

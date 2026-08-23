@@ -1,0 +1,21 @@
+.toc-wrapper {
+  min-height: 100vh; /* 내용이 적어도 최소 한 페이지 차지 */
+  padding-top: 10px;
+  box-sizing: border-box;
+}
+
+.toc-header-block h2 {
+  font-family: var(--toc-font-family, var(--font-family));
+  font-size: var(--toc-title-size, 20pt);
+  color: var(--toc-title-color, inherit);
+  border-bottom: var(--toc-border, none);
+  padding-bottom: 8px; margin-bottom: 24px;
+  text-align: var(--toc-align, left);
+}
+
+.toc-item {
+  display: flex; align-items: baseline; margin-bottom: 10px;
+  page-break-inside: avoid;
+}
+.toc-title, .toc-page { background: #fff; z-index: 1; }
+.toc-dots { flex-grow: 1; border-bottom: 1px dotted #888; margin: 0 8px; }

@@ -1,0 +1,16 @@
+[data-theme="tech"] {
+  --font-family: "SFMono-Regular", Consolas, monospace;
+  --text-main: #24292f;
+  --accent-color: #0969da;
+  --border-color: #d0d7de;
+  
+  --cover-border-top: 8px solid var(--accent-color);
+  --cover-title-size: 32pt;
+  --cover-title-color: var(--text-main);
+  --cover-subtitle-color: var(--accent-color);
+  
+  --toc-border: 1px dashed var(--border-color);
+  --toc-title-color: var(--accent-color);
+  
+  --code-bg: #f6f8fa;
+}

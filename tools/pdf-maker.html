@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <title>pdf-maker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
+    <link rel="stylesheet" href="../css/pdf-maker/style.css" />
+    <!-- Elements -->
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/base.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/cover.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/toc.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/markdown.css" />
+
+    <!-- Themes -->
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css" />
+
+    <link rel="stylesheet" href="../css/templates/tags.css" />
+
+    <!-- A4 출력 및 UI 숨김 인쇄 전용 CSS -->
+    <style>
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 0;
+        }
+
+        body {
+          background: #ffffff !important;
+          color: #000000 !important;
+        }
+
+        header.toolbar,
+        .sub-toolbar,
+        .panel,
+        .left-panel,
+        .right-panel,
+        .help-text,
+        button,
+        input,
+        select,
+        details,
+        .toc-action-popup {
+          display: none !important;
+        }
+
+        #app, .workspace, .preview-panel {
+          display: block !important;
+          position: static !important;
+          width: 100% !important;
+          height: auto !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+          box-shadow: none !important;
+          background: transparent !important;
+        }
+
+        #pdfPreviewContainer {
+          display: block !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+        }
+
+        .pdf-page {
+          box-shadow: none !important;
+          margin: 0 auto !important;
+          page-break-after: always;
+          break-after: page;
+        }
+
+        .pdf-page:last-child {
+          page-break-after: avoid;
+          break-after: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <header class="toolbar">
+        <div class="toolbar-left"><span>pdf-maker</span></div>
+        <div class="toolbar-center">
+          <label class="btn-pill" for="mdFileInput">.md 열기</label>
+          <input type="file" id="mdFileInput" accept=".md" hidden />
+          <label class="btn-pill" for="htmlFileInput">.html 열기</label>
+          <input type="file" id="htmlFileInput" accept=".html" hidden />
+        </div>
+        <div class="toolbar-right"><button class="btn-primary" id="downloadPdfBtn">PDF 출력</button></div>
+      </header>
+
+      <div class="sub-toolbar">
+        <button id="toggleBreakMode" class="btn-ghost">✂️ 페이지 자르기</button>
+        <button id="toggleDeleteMode" class="btn-ghost">🗑️ 요소 제거</button>
+        <button id="undoBtn" class="btn-ghost" disabled>↩️ 되돌리기 (<span id="undoCount">0</span>)</button>
+        <span id="interactionHelpText" class="help-text">일반 모드: 텍스트 더블클릭 시 편집 가능 / 파일 드래그 앤 드롭 지원</span>
+      </div>
+
+      <main class="workspace layout-pdf">
+        <aside class="panel left-panel">
+          <details open>
+            <summary>마크다운 연동</summary>
+            <div class="setting-group">
+              <label>임시저장 목록 불러오기</label>
+              <select id="mdHistorySelect" style="background: #2d2d2d;">
+                <option value="">저장된 기록 없음</option>
+              </select>
+              <button id="loadMdHistoryBtn" class="btn-pill" style="margin-top: 5px;">불러오기</button>
+            </div>
+          </details>
+
+          <details open>
+            <summary>글로벌 & 헤더/푸터 설정</summary>
+            <div class="setting-group">
+              <label>테마 세트</label>
+                  <select id="colorTheme">
+                    <option value="modern">모던 (비즈니스)</option>
+                    <option value="tech">테크 (개발문서)</option>
+                    <option value="academic">아카데믹 (논문/리포트)</option>
+                  </select>
+
+            </div>
+            <div class="setting-group"><label>폰트 크기 (pt)</label><input type="number" id="fontSize" value="11" /></div>
+            <div class="setting-group"><label>전체 줄 간격</label><input type="number" id="globalLineHeight" value="1.6" step="0.1" /></div>
+            <hr style="margin: 10px 0; border-color: #444;">
+            <div class="setting-group" style="flex-direction: row; align-items: center; gap: 8px;">
+              <input type="checkbox" id="enableHeaderFooter" style="width: auto;" />
+              <label for="enableHeaderFooter" style="cursor: pointer; margin: 0;">헤더/푸터 표기</label>
+            </div>
+            <div class="setting-group"><label>헤더 제목 Override</label><input type="text" id="headerTitleInput" placeholder="문서 제목" /></div>
+            <div class="setting-group"><label>작성자 이름</label><input type="text" id="footerAuthorInput" placeholder="작성자" /></div>
+          </details>
+
+          <details open>
+            <summary>표지 & 목차 자동 생성</summary>
+            <div class="action-group" style="margin-top: 0;">
+              <button id="generateCoverBtn" class="btn-primary">표지 생성</button>
+              <button id="generateTocBtn" class="btn-pill">목차(TOC) 생성</button>
+            </div>
+            
+            <div id="coverConfigPanel" style="display: none; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
+              <label style="font-weight: bold; font-size: 12px; color: #aaa;">표지 세부 설정</label>
+              <div class="setting-group" style="margin-top: 5px;"><label>부제목</label><input type="text" id="coverSubtitleInput" placeholder="SUBTITLE" /></div>
+              <div class="setting-group"><label>배경 스타일 (CSS)</label><input type="text" id="coverBgInput" placeholder="linear-gradient(...)" /></div>
+              <div class="setting-group"><label>배경 이미지 URL</label><input type="text" id="coverImgInput" placeholder="https://..." /></div>
+              <button id="applyCoverConfigBtn" class="btn-pill" style="margin-top: 5px;">표지 디자인 업데이트</button>
+            </div>
+          </details>
+        </aside>
+
+        <section class="preview-panel" id="dropZone">
+          <div id="pdfPreviewContainer">
+            <div class="placeholder-box">
+              <p>📄 마크다운(.md) 또는 HTML 파일을 여기에 드래그 앤 드롭하세요.</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="panel right-panel" id="rightPanel" style="display:none;">
+          <details open>
+            <summary>선택 요소: <span id="selectedTagType" style="color: #4ade80;"></span></summary>
+            <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
+            <hr style="margin: 15px 0; border-color: #444;">
+            <label style="font-size: 13px; font-weight: bold;">디자인 템플릿 (2x2)</label>
+            <div class="preview-grid" id="stylePreviewGrid"></div>
+            <div class="action-group">
+              <button id="applyToSelectedBtn" class="btn-primary">선택 요소에 적용</button>
+              <button id="applyToAllBtn" class="btn-pill">동일한 모든 태그에 적용</button>
+            </div>
+          </details>
+        </aside>
+      </main>
+    </div>
+
+    <!-- 목차 제어용 플로팅 툴바 -->
+    <div id="tocActionPopup" class="toc-action-popup">
+      <button id="tocEditBtn">✏️ 수정</button>
+      <button id="tocAddBtn">➕ 추가</button>
+      <button id="tocPromoteBtn">◀️ 상위</button>
+      <button id="tocDemoteBtn">▶️ 하위</button>
+      <button id="tocDeleteBtn">🗑️ 삭제</button>
+    </div>
+
+    <div id="sourceContent" style="display: none;"></div>
+    
+    <script type="module" src="../js/pdf-maker/script.js"></script>
+  </body>
+</html>

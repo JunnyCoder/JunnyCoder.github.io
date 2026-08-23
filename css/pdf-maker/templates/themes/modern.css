@@ -1,0 +1,17 @@
+[data-theme="modern"] {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --text-main: #0f172a;
+  --accent-color: #2563eb;
+  --border-color: #e2e8f0;
+  
+  --cover-border-left: 12px solid var(--accent-color);
+  --cover-title-size: 36pt;
+  --cover-title-color: var(--text-main);
+  --cover-subtitle-color: var(--accent-color);
+  
+  --toc-title-color: var(--text-main);
+  --toc-border: 2px solid var(--text-main);
+  
+  --heading-color: var(--text-main);
+  --code-bg: #f8fafc;
+}
