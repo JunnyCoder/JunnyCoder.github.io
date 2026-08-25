@@ -1,4 +1,14 @@
 /* ==========================================================================
+   0. 페이지 여백 변수 (기본값)
+   ========================================================================== */
+:root {
+  --page-margin-top: 20mm;
+  --page-margin-bottom: 20mm;
+  --page-margin-left: 15mm;
+  --page-margin-right: 15mm;
+}
+
+/* ==========================================================================
    1. 기본 사이트 레이아웃 & 초기화 (App UI)
    ========================================================================== */
 body { 
@@ -85,8 +95,13 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
 .action-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
 .panel-divider { margin: 15px 0; border: none; border-top: 1px solid #444; }
 
+/* 여백 조절 UI 그리드 */
+.margin-control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+.margin-input-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #fff; }
+.margin-input-item input { width: 50px; padding: 4px; background: #2d2d2d; color: #fff; border: 1px solid #555; border-radius: 4px; }
+
 /* ==========================================================================
-   4. 미리보기 영역 & 종이(Paper) 하얀 배경 렌더링
+   4. 미리보기 영역 & 용지(Paper) 렌더링
    ========================================================================== */
 .preview-panel { 
   flex: 1; 
@@ -101,48 +116,75 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
 }
 .preview-panel.drag-over { background: #444; border: 3px dashed #4ade80; }
 
-/* 미리보기 화면 상에서 문서 용지가 하얀색으로 렌더링되도록 보장 */
-.pdf-page, .paper, .pdf-content, #pdfPreviewContainer > div {
+#pdfPreviewContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* 본문 그림자/테두리 제거 및 실시간 여백 반영 */
+.pdf-page, .paper, .pdf-content {
   background-color: #ffffff !important;
   color: #111111 !important;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+  border: none !important;
   box-sizing: border-box;
 }
 
-.placeholder-box { 
-  border: 2px dashed #555; 
-  padding: 50px; 
-  border-radius: 8px; 
-  color: #888; 
-  text-align: center; 
-  margin-top: 50px; 
+.pdf-page {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding-top: var(--page-margin-top, 20mm) !important;
+  padding-bottom: var(--page-margin-bottom, 20mm) !important;
+  padding-left: var(--page-margin-left, 15mm) !important;
+  padding-right: var(--page-margin-right, 15mm) !important;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important; /* 미리보기 용지 외곽선만 표현 */
 }
-
-/* 목차 액션 팝업 */
-.toc-action-popup {
-  display: none;
-  position: fixed;
-  z-index: 10000;
-  background: #1e1e1e;
-  border: 1px solid #444;
-  border-radius: 6px;
-  padding: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  gap: 4px;
-}
-.toc-action-popup button {
-  background: #2d2d2d;
-  color: #fff;
-  border: 1px solid #555;
-  font-size: 11px;
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.toc-action-popup button:hover { background: #007acc; border-color: #007acc; }
 
 /* ==========================================================================
-   5. 목차(TOC) 중첩 방지 레이아웃
+   5. 헤더/푸터 격리 및 제목/코드 블록 스타일
+   ========================================================================== */
+.pdf-header {
+  position: absolute;
+  top: 10mm;
+  left: var(--page-margin-left, 15mm) !important;
+  right: var(--page-margin-right, 15mm) !important;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9pt;
+  color: #666;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 4px;
+}
+
+.pdf-footer {
+  position: absolute;
+  bottom: 10mm;
+  left: var(--page-margin-left, 15mm) !important;
+  right: var(--page-margin-right, 15mm) !important;
+  display: flex;
+  justify-content: space-between;
+  font-size: 9pt;
+  color: #666;
+  border-top: 1px solid #eee;
+  padding-top: 4px;
+}
+
+.pdf-content h1, .pdf-content h2 {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+}
+
+.pdf-content pre, .pdf-content code {
+  white-space: pre-wrap !important;
+  word-break: break-all !important;
+  overflow-x: hidden !important;
+}
+
+/* ==========================================================================
+   6. 목차(TOC) & 템플릿 Grid & 편집 모드
    ========================================================================== */
 .toc-container, .toc-wrapper, .toc-page {
   display: block !important;
@@ -162,9 +204,6 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
   page-break-inside: avoid;
 }
 
-/* ==========================================================================
-   6. 디자인 템플릿 Grid (2x2) & 커스텀 클래스
-   ========================================================================== */
 .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .preview-item { 
   background: #2d2d2d; color: #fff; padding: 8px; text-align: center; 
@@ -180,10 +219,6 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
 .style-preset-bordered { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc; }
 .style-preset-card { background: #ffffff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; }
 
-/* ==========================================================================
-   7. 에디터 편집 모드 & 페이지 자르기 가이드선 제어
-   ========================================================================== */
-/* 첫 번째 요소에서 불필요한 인쇄 브레이크가 걸려 첫 빈화면이 생기는 현상 방지 */
 .pdf-content > :first-child,
 .pdf-page:first-child {
   page-break-before: avoid !important;
@@ -191,17 +226,14 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
   margin-top: 0 !important;
 }
 
-/* 기본 페이지 구분자 동작 */
 .page-break-before {
   page-break-before: always !important;
   break-before: page !important;
-  border-top: none !important; /* 기본 상태에서는 테두리를 완전히 제거 */
+  border-top: none !important;
 }
 
-/* 편집 모드 활성화 시에만 노란 가이드선 표시 */
 .edit-break-mode .pdf-content > * { cursor: row-resize !important; }
 .edit-break-mode .pdf-content > *:hover { outline: 2px dashed #ffa500; background: rgba(255, 165, 0, 0.1); }
-
 .edit-break-mode .page-break-before {
   border-top: 2px dashed #ffb703 !important;
   margin-top: 15px !important;
@@ -225,7 +257,7 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
 .selected-element { outline: 3px solid #4ade80 !important; background: rgba(74, 222, 128, 0.1); }
 
 /* ==========================================================================
-   8. 웹 인쇄 시 UI 숨김 및 페이지 출력 처리
+   7. 인쇄 미디어 쿼리
    ========================================================================== */
 @media print {
   body { background: #ffffff !important; }
@@ -247,7 +279,6 @@ summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; 
     background: transparent !important;
   }
 
-  /* 인쇄 출력물에서 가이드선 요소 보이지 않도록 차단 */
   .edit-break-mode .page-break-before::before,
   .page-break-before::before {
     display: none !important;

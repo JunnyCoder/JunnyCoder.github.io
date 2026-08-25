@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let activeTocItem = null;
   let selectedPresetClass = null;
 
+  initMarginControls(); // [추가] 여백 조절 이벤트 초기화
+  initCodeBlockEvents(); // [추가] 코드블럭 드래그 방지 초기화
+
   // 템플릿 정보 사전
   const STYLE_PRESETS = [
     { id: 'style-preset-default', name: '기본 (Default)' },
@@ -152,7 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const footerDiv = document.createElement('div');
       footerDiv.className = 'pdf-footer';
-      footerDiv.innerHTML = `<span>${todayDate}</span><span class="page-num-slot">${pageIndex}</span>`;
+      footerDiv.innerHTML = `<span class="footer-date">${todayDate}</span><span class="page-num-slot">${pageIndex}</span>`;
       pageWrapper.appendChild(footerDiv);
     }
 
@@ -426,5 +429,54 @@ document.addEventListener('DOMContentLoaded', () => {
   if (transferData) {
     renderDocument(marked.parse(transferData));
     localStorage.removeItem('pdfMakerTransfer'); 
+  }
+  // === [추가됨] 여백 조절 및 코드블럭 이벤트 제어 함수 ===
+  function initMarginControls() {
+    const marginMap = {
+      marginTop: 'paddingTop',
+      marginBottom: 'paddingBottom',
+      marginLeft: 'paddingLeft',
+      marginRight: 'paddingRight'
+    };
+
+    Object.entries(marginMap).forEach(([inputId, styleProp]) => {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+
+      el.addEventListener('input', (e) => {
+        const val = e.target.value || 0;
+        const cssVarName = `--page-${inputId.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+        
+        // 1. Root CSS 변수 업데이트
+        document.documentElement.style.setProperty(cssVarName, `${val}mm`);
+
+        // 2. 현재 렌더링된 모든 페이지 노드에 직접 패딩 적용 (우선순위 차단)
+        const pages = document.querySelectorAll('.pdf-page');
+        pages.forEach(page => {
+          page.style[styleProp] = `${val}mm`;
+        });
+
+        // 3. 페이지 재분할 연산 트리거 (디바운싱)
+        clearTimeout(window.marginDebounce);
+        window.marginDebounce = setTimeout(() => {
+          if (typeof paginate === 'function') {
+            paginate();
+          }
+        }, 150);
+      });
+    });
+  }
+
+  function initCodeBlockEvents() {
+    if(!previewContainer) return;
+    previewContainer.addEventListener('mousedown', (e) => {
+      if (e.target.closest('pre, code')) e.stopPropagation();
+    }, true);
+    previewContainer.addEventListener('dragstart', (e) => {
+      if (e.target.closest('pre, code')) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
   }
 });

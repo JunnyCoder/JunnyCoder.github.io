@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css" />
     <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css" />
 
-    <link rel="stylesheet" href="../css/templates/tags.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css" />
 
     <!-- A4 출력 및 UI 숨김 인쇄 전용 CSS -->
     <style>
@@ -137,6 +137,30 @@
             <div class="setting-group"><label>헤더 제목 Override</label><input type="text" id="headerTitleInput" placeholder="문서 제목" /></div>
             <div class="setting-group"><label>작성자 이름</label><input type="text" id="footerAuthorInput" placeholder="작성자" /></div>
           </details>
+
+          <div class="control-group">
+            <details open>
+              <summary class="control-label">페이지 여백 설정 (mm)</summary>
+              <div class="margin-control-grid">
+                <div class="margin-input-item">
+                  <span>상 (Top)</span>
+                  <input type="number" id="marginTop" value="20" min="0" max="50" step="1">
+                </div>
+                <div class="margin-input-item">
+                  <span>하 (Bottom)</span>
+                  <input type="number" id="marginBottom" value="20" min="0" max="50" step="1">
+                </div>
+                <div class="margin-input-item">
+                  <span>좌 (Left)</span>
+                  <input type="number" id="marginLeft" value="15" min="0" max="50" step="1">
+                </div>
+                <div class="margin-input-item">
+                  <span>우 (Right)</span>
+                  <input type="number" id="marginRight" value="15" min="0" max="50" step="1">
+                </div>
+              </div>
+            </details>
+          </div>
 
           <details open>
             <summary>표지 & 목차 자동 생성</summary>
