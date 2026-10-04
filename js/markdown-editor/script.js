@@ -2,7 +2,7 @@
 
   /* ================= Example content ================= */
   var exampleLines = [
-    '# Hello from Coddy',
+    '# Hello from Junny',
     '',
     'A tiny README to **try out** the editor.',
     '',
@@ -118,6 +118,8 @@
   /* ================= Elements ================= */
   var editorHost = document.getElementById('editorHost');
   var previewHost = document.getElementById('previewHost');
+  var scrollSegment = document.getElementById('scrollSegment');
+  var shortcutList = document.getElementById('shortcutList');
   var statsLabel = document.getElementById('statsLabel');
   var workspace = document.getElementById('workspace');
   var paneEditor = document.getElementById('paneEditor');
@@ -316,7 +318,41 @@
 
   /* ================= CodeMirror ================= */
   var savedDraft = loadAutosave();
+  // The old starter text was auto-saved on first load; update only an untouched copy.
+  if (savedDraft === exampleMarkdown.replace('# Hello from Junny', '# Hello from Coddy')){
+    savedDraft = exampleMarkdown;
+  }
   var initialValue = (savedDraft !== null && savedDraft.trim().length > 0) ? savedDraft : exampleMarkdown;
+
+  // Add or edit a shortcut here; its editor binding and toolbar help share this list.
+  var SHORTCUTS = [
+    { keys: ['Tab'], display: 'Tab', name: '들여쓰기', description: '커서에는 공백 두 칸을 넣고, 선택한 줄은 들여씁니다.', handler: insertIndent },
+    { keys: ['Ctrl-B', 'Cmd-B'], display: 'Ctrl / ⌘ + B', name: '굵게', description: '선택한 글자를 굵게 표시하거나 커서 위치에 표시를 넣습니다.', handler: insertBold },
+    { keys: ['Ctrl-['], display: 'Ctrl + [', name: '접기 블록', description: '선택한 내용을 접기 블록으로 감쌉니다.', handler: insertDetailsBlock },
+    { keys: ['Ctrl-]'], display: 'Ctrl + ]', name: '코드 블록', description: '선택한 내용을 코드 블록으로 감쌉니다.', handler: insertCodeBlock },
+    { keys: ['Ctrl-`'], display: 'Ctrl + `', name: '인라인 코드', description: '선택한 글자를 백틱으로 감쌉니다.', handler: insertHighlightBlock },
+    { keys: ['Shift-Enter'], display: 'Shift + Enter', name: '줄바꿈', description: '문단을 유지한 채 줄을 바꿉니다.', handler: insertBRtag },
+    { keys: ['Ctrl-S', 'Cmd-S'], display: 'Ctrl / ⌘ + S', name: 'Markdown 저장', description: '현재 내용을 .md 파일로 다운로드합니다.', scope: 'page', handler: function(){ downloadMdBtn.click(); } }
+  ];
+  var editorKeys = {};
+  SHORTCUTS.forEach(function(shortcut){
+    if (shortcut.scope !== 'page') shortcut.keys.forEach(function(key){ editorKeys[key] = shortcut.handler; });
+    var item = document.createElement('div');
+    item.className = 'shortcut-item';
+    var name = document.createElement('span');
+    name.className = 'shortcut-name';
+    name.textContent = shortcut.name;
+    var keys = document.createElement('span');
+    keys.className = 'shortcut-keys';
+    keys.textContent = shortcut.display;
+    var description = document.createElement('span');
+    description.className = 'shortcut-description';
+    description.textContent = shortcut.description;
+    item.appendChild(name);
+    item.appendChild(keys);
+    item.appendChild(description);
+    shortcutList.appendChild(item);
+  });
 
   var editor = CodeMirror(editorHost, {
     value: initialValue,
@@ -325,64 +361,51 @@
     lineWrapping: true,
     tabSize: 2,
     indentUnit: 2,
-    extraKeys: {
-      Tab: function(cm){ cm.replaceSelection('  '); },
-      'Ctrl-B': insertBold,
-      'Ctrl-[': insertDetailsBlock,
-      'Ctrl-]': insertCodeBlock,
-      'Ctrl-`': insertHighlightBlock,
-      'Shift-Enter': insertBRtag
-    }
+    extraKeys: editorKeys
   });
 
-  function insertBlock(cm, s, e) {
+  function insertWrapped(cm, prefix, suffix){
     var selected = cm.getSelection();
-    var start = cm.getCursor('from');
-
-    if (selected) {
-      cm.replaceSelection(s + selected + '\n' + e);
-      cm.setCursor({ line: start.line + s.split('\n').length - 1 , ch: selected.length });
-    } else {
-      cm.replaceSelection(s + selected + '\n' + e);
-      cm.setCursor({ line: start.line + s.split('\n').length - 1 , ch: 0 });
-    }
+    var from = cm.getCursor('from');
+    var to = cm.getCursor('to');
+    var startIndex = cm.indexFromPos(from);
+    cm.operation(function(){
+      cm.replaceRange(prefix + selected + suffix, from, to);
+      cm.setSelection(
+        cm.posFromIndex(startIndex + prefix.length),
+        cm.posFromIndex(startIndex + prefix.length + selected.length)
+      );
+    });
     cm.focus();
   }
-  function insertBlockOneline(cm, s, e) {
-    var selected = cm.getSelection();
-    var start = cm.getCursor('from');
-
-    if (selected) {
-      cm.replaceSelection(s + selected + e);
-    } else {
-      cm.replaceSelection(s + selected + e);
-      cm.setCursor({ line: start.line, ch: start.ch + (s + selected ).length });
-    }
-    cm.focus();
+  function insertIndent(cm){
+    if (cm.somethingSelected()) cm.indentSelection('add');
+    else cm.replaceSelection('  ', 'end');
   }
-  function insertTag(cm, s) {
-    var selected = cm.getSelection();
-    var start = cm.getCursor('from');
-    cm.replaceSelection(s);
-    cm.setCursor({ line: start.line, ch: start.ch + (s).length });
-    cm.focus();
-  }
-  
   function insertHighlightBlock(cm) {
-    insertBlockOneline(cm, '`','`');
+    insertWrapped(cm, '`', '`');
   }
   function insertBRtag(cm) {
-    insertTag(cm, '</br>');
+    cm.replaceSelection('  \n', 'end');
   }
   function insertBold(cm) {
-    insertBlockOneline(cm, '**', '**');
+    insertWrapped(cm, '**', '**');
+  }
+  function insertBlock(cm, opening, closing, blankBeforeClose){
+    var selected = cm.getSelection();
+    var from = cm.getCursor('from');
+    var to = cm.getCursor('to');
+    var prefix = (from.ch ? '\n' : '') + opening;
+    var suffix = (selected.endsWith('\n') ? '' : '\n') + (blankBeforeClose ? '\n' : '') + closing;
+    if (to.ch < cm.getLine(to.line).length) suffix += '\n';
+    insertWrapped(cm, prefix, suffix);
   }
   function insertCodeBlock(cm) {
-    insertBlock(cm, '```\n', '```\n');
+    insertBlock(cm, '```\n', '```', false);
   }
 
   function insertDetailsBlock(cm) {
-    insertBlock(cm, '<details>\n<summary>예제</summary>\n', '</details>\n');
+    insertBlock(cm, '<details>\n<summary>예제</summary>\n\n', '</details>', true);
   }
 
   lastSnapshotContent = initialValue;
@@ -426,21 +449,21 @@
     statsLabel.textContent = editor.lineCount() + '줄 · ' + formatBytes(bytes);
   }
 
-  /* ================= 🛠️ 수정한 부분: renderPreview 함수 ================= */
+  /* ================= Preview rendering and source positions ================= */
+  var previewBlocks = [];
   function renderPreview(){
     var raw = editor.getValue();
     if (!raw.trim()){
       previewHost.innerHTML = '<p class="empty-state">편집기에 마크다운을 입력하면 여기에 미리보기가 표시됩니다.</p>';
+      previewBlocks = [];
       return;
     }
-    
-    var html = marked.parse(raw);
+
+    var tokens = marked.lexer(raw);
+    var html = marked.parser(tokens);
     var clean = window.DOMPurify ? DOMPurify.sanitize(html) : html;
-    
-    // 1. DOM에 변환된 마크다운 삽입
     previewHost.innerHTML = clean;
 
-    // 2. DOM 삽입 직후 수식 기호($ 및 $$) 감지하여 KaTeX 렌더링 실행
     if (window.renderMathInElement) {
       window.renderMathInElement(previewHost, {
         delimiters: [
@@ -450,8 +473,149 @@
         throwOnError: false
       });
     }
+
+    // Each top-level Markdown token corresponds to its rendered top-level elements.
+    previewBlocks = [];
+    var sourceLine = 0;
+    var elementIndex = 0;
+    var probe = document.createElement('div');
+    tokens.forEach(function(token){
+      var startLine = sourceLine;
+      var newlines = (token.raw.match(/\n/g) || []).length;
+      sourceLine += newlines;
+      var endLine = Math.max(startLine, sourceLine - (/\n$/.test(token.raw) ? 1 : 0));
+      var single = [token];
+      single.links = tokens.links;
+      var part = marked.parser(single);
+      probe.innerHTML = window.DOMPurify ? DOMPurify.sanitize(part) : part;
+      for (var i = 0; i < probe.children.length; i++){
+        if (previewHost.children[elementIndex]){
+          previewBlocks.push({line: startLine, endLine: endLine, element: previewHost.children[elementIndex]});
+        }
+        elementIndex++;
+      }
+    });
   }
-  /* ===================================================================== */
+
+  var pendingPreviewScroll = null;
+  var pendingEditorScroll = null;
+
+  function scrollEdge(position, maxScroll){
+    if (maxScroll <= 2) return null;
+    if (position <= 2) return 'top';
+    if (maxScroll - position <= 2) return 'bottom';
+    return null;
+  }
+
+  function setPreviewScroll(target){
+    if (Math.abs(previewHost.scrollTop - target) < 1) return;
+    pendingPreviewScroll = target;
+    previewHost.scrollTop = target;
+  }
+
+  function blockTop(block){
+    return block.element.getBoundingClientRect().top - previewHost.getBoundingClientRect().top + previewHost.scrollTop;
+  }
+
+  function previewPositionForLine(line){
+    if (!previewBlocks.length) return null;
+    var block = previewBlocks[0];
+    for (var i = 1; i < previewBlocks.length && previewBlocks[i].line <= line; i++){
+      block = previewBlocks[i];
+    }
+    var progress = Math.max(0, Math.min(1, (line - block.line) / Math.max(1, block.endLine - block.line + 1)));
+    return blockTop(block) + progress * block.element.getBoundingClientRect().height;
+  }
+
+  function scrollPreviewToLine(line, viewportFraction){
+    if (currentMode !== 'split') return;
+    var position = previewPositionForLine(line);
+    if (position === null) return;
+    var maxScroll = previewHost.scrollHeight - previewHost.clientHeight;
+    var target = Math.max(0, Math.min(maxScroll, position - viewportFraction * previewHost.clientHeight));
+    setPreviewScroll(target);
+  }
+
+  function syncPreviewToCursor(){
+    if (currentMode !== 'split') return;
+    if (scrollSyncEnabled){
+      var info = editor.getScrollInfo();
+      var edge = scrollEdge(info.top, info.height - info.clientHeight);
+      if (edge){
+        setPreviewScroll(edge === 'top' ? 0 : Math.max(0, previewHost.scrollHeight - previewHost.clientHeight));
+        return;
+      }
+    }
+    var cursorTop = editor.cursorCoords(null, 'page').top;
+    var editorRect = editor.getWrapperElement().getBoundingClientRect();
+    var fraction = Math.max(0, Math.min(1, (cursorTop - editorRect.top) / editorRect.height));
+    scrollPreviewToLine(editor.getCursor().line, fraction);
+  }
+
+  function syncPreviewFromEditorScroll(){
+    if (!scrollSyncEnabled || currentMode !== 'split') return;
+    if (pendingEditorScroll !== null && Math.abs(editor.getScrollInfo().top - pendingEditorScroll) < 2){
+      pendingEditorScroll = null;
+      return;
+    }
+    var info = editor.getScrollInfo();
+    var edge = scrollEdge(info.top, info.height - info.clientHeight);
+    if (edge){
+      setPreviewScroll(edge === 'top' ? 0 : Math.max(0, previewHost.scrollHeight - previewHost.clientHeight));
+      return;
+    }
+    var line = editor.lineAtHeight(info.top + info.clientHeight / 2, 'local');
+    scrollPreviewToLine(line, 0.5);
+  }
+
+  previewHost.addEventListener('scroll', function(){
+    if (!scrollSyncEnabled || currentMode !== 'split') return;
+    if (pendingPreviewScroll !== null && Math.abs(previewHost.scrollTop - pendingPreviewScroll) < 2){
+      pendingPreviewScroll = null;
+      return;
+    }
+    var previewEdge = scrollEdge(previewHost.scrollTop, previewHost.scrollHeight - previewHost.clientHeight);
+    if (previewEdge){
+      var edgeInfo = editor.getScrollInfo();
+      var edgeTarget = previewEdge === 'top' ? 0 : Math.max(0, edgeInfo.height - edgeInfo.clientHeight);
+      if (Math.abs(edgeInfo.top - edgeTarget) >= 1){
+        pendingEditorScroll = edgeTarget;
+        editor.scrollTo(null, edgeTarget);
+      }
+      return;
+    }
+    if (!previewBlocks.length) return;
+    var middle = previewHost.scrollTop + previewHost.clientHeight / 2;
+    var block = previewBlocks[0];
+    for (var i = 1; i < previewBlocks.length && blockTop(previewBlocks[i]) <= middle; i++){
+      block = previewBlocks[i];
+    }
+    var height = Math.max(1, block.element.getBoundingClientRect().height);
+    var progress = Math.max(0, Math.min(1, (middle - blockTop(block)) / height));
+    var line = Math.min(editor.lineCount() - 1, block.line + Math.round(progress * (block.endLine - block.line)));
+    var info = editor.getScrollInfo();
+    var target = Math.max(0, Math.min(info.height - info.clientHeight,
+      editor.heightAtLine(line, 'local') - info.clientHeight / 2));
+    if (Math.abs(info.top - target) < 1) return;
+    pendingEditorScroll = target;
+    editor.scrollTo(null, target);
+  });
+
+  editor.on('scroll', syncPreviewFromEditorScroll);
+  var scrollSyncEnabled = true;
+  scrollSegment.addEventListener('click', function(e){
+    var button = e.target.closest('[data-sync]');
+    if (!button) return;
+    scrollSyncEnabled = button.getAttribute('data-sync') === 'on';
+    Array.prototype.forEach.call(scrollSegment.querySelectorAll('[data-sync]'), function(item){
+      var active = item === button;
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    pendingPreviewScroll = null;
+    pendingEditorScroll = null;
+    if (scrollSyncEnabled) syncPreviewToCursor();
+  });
 
   var scheduleTimer = null;
   function scheduleUpdate(){
@@ -460,6 +624,7 @@
       refreshSyntaxHighlight();
       updateStats();
       renderPreview();
+      syncPreviewToCursor();
       saveAutosave(editor.getValue());
       maybeTakeSnapshot(false);
     }, 200);
@@ -492,6 +657,7 @@
       panePreview.style.flex = '1 1 auto';
     }
     editor.refresh();
+    if (currentMode === 'split' && scrollSyncEnabled) syncPreviewToCursor();
   }
 
   viewSegment.addEventListener('click', function(e){
@@ -529,6 +695,7 @@
     dragging = false;
     divider.classList.remove('dragging');
     editor.refresh();
+    if (scrollSyncEnabled) syncPreviewToCursor();
   }
   divider.addEventListener('pointerup', endDrag);
   divider.addEventListener('pointercancel', endDrag);
@@ -629,10 +796,14 @@
   });
 
   document.addEventListener('keydown', function(e){
-    if ((e.ctrlKey || e.metaKey) && e.key === 's'){
-      e.preventDefault();
-      downloadMdBtn.click();
-    }
+    if (e.altKey || e.shiftKey || !(e.ctrlKey || e.metaKey)) return;
+    var key = (e.metaKey ? 'Cmd-' : 'Ctrl-') + e.key.toUpperCase();
+    SHORTCUTS.forEach(function(shortcut){
+      if (shortcut.scope === 'page' && shortcut.keys.indexOf(key) !== -1){
+        e.preventDefault();
+        shortcut.handler();
+      }
+    });
   });
 
   /* ================= PDF Maker 연동 ================= */

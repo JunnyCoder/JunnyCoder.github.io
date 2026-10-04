@@ -57,8 +57,8 @@
     align-items:center;
     justify-content:space-between;
     gap:12px;
-    height:52px;
-    padding:0 14px;
+    min-height:52px;
+    padding:6px 14px;
     background:var(--bg-toolbar);
     border-bottom:1px solid var(--border);
     flex-wrap:wrap;
@@ -80,6 +80,28 @@
   }
   .seg-btn:hover{color:var(--text);}
   .seg-btn.active{background:var(--pill-active-bg);color:var(--pill-active-text);font-weight:600;}
+  .shortcut-help{position:relative;z-index:20;}
+  .shortcut-help-button{white-space:nowrap;}
+  .shortcut-popover{
+    position:absolute;right:0;top:calc(100% + 9px);width:min(350px,calc(100vw - 20px));
+    padding:15px;background:#212228;border:1px solid #3b3d46;border-radius:10px;
+    box-shadow:0 14px 36px rgba(0,0,0,.45);color:var(--text);
+    opacity:0;visibility:hidden;pointer-events:none;transform:translateY(-4px);
+    transition:opacity .15s ease,transform .15s ease,visibility .15s ease;
+  }
+  .shortcut-help:hover .shortcut-popover,.shortcut-help:focus-within .shortcut-popover{
+    opacity:1;visibility:visible;pointer-events:auto;transform:translateY(0);
+  }
+  .shortcut-popover::before{
+    content:"";position:absolute;right:22px;top:-6px;width:10px;height:10px;
+    background:#212228;border-left:1px solid #3b3d46;border-top:1px solid #3b3d46;transform:rotate(45deg);
+  }
+  .shortcut-popover-title{font-size:13px;font-weight:700;margin-bottom:11px;}
+  .shortcut-list{display:grid;gap:10px;margin:0;}
+  .shortcut-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;}
+  .shortcut-name{font-size:12.5px;font-weight:600;}
+  .shortcut-keys{font:11px var(--mono);color:var(--blue);white-space:nowrap;}
+  .shortcut-description{grid-column:1/-1;color:var(--text-dim);font-size:11.5px;line-height:1.4;}
 
   .btn-pill{
     appearance:none;cursor:pointer;font-family:var(--mono);font-size:12.5px;font-weight:600;
@@ -268,6 +290,7 @@
   @media (max-width:760px){
     .toolbar-label{display:none;}
     .toolbar{height:auto;padding:8px 10px;}
+    .toolbar-left{flex-wrap:wrap;}
     .pane-editor{flex-basis:50%!important;}
   }
 </style>
@@ -283,6 +306,11 @@
         <button type="button" class="seg-btn" data-mode="editor">편집기</button>
         <button type="button" class="seg-btn" data-mode="preview">미리보기</button>
       </div>
+      <span class="toolbar-label">스크롤</span>
+      <div class="segmented" id="scrollSegment" aria-label="스크롤 방식">
+        <button type="button" class="seg-btn active" data-sync="on" aria-pressed="true" title="편집기와 미리보기를 함께 스크롤">동기화</button>
+        <button type="button" class="seg-btn" data-sync="off" aria-pressed="false" title="입력할 때만 미리보기가 따라옴">분리</button>
+      </div>
     </div>
     <div class="toolbar-center">
       <button type="button" class="btn-pill" id="sendToPdfBtn" style="color: #ffb27a; border-color: #ffb27a;">PDF 편집</button>
@@ -290,6 +318,13 @@
       <button type="button" class="btn-pill" id="downloadHtmlBtn">.html</button>
     </div>
     <div class="toolbar-right">
+      <div class="shortcut-help">
+        <button type="button" class="btn-text shortcut-help-button" aria-describedby="shortcutTooltip">단축키 ?</button>
+        <div class="shortcut-popover" id="shortcutTooltip" role="tooltip">
+          <div class="shortcut-popover-title">단축키</div>
+          <div class="shortcut-list" id="shortcutList"></div>
+        </div>
+      </div>
       <button type="button" class="btn-text" id="tempSaveBtn">임시저장</button>
       <button type="button" class="btn-text" id="historyBtn">히스토리</button>
       <button type="button" class="btn-text" id="loadExampleBtn">예제 불러오기</button>
