@@ -11,7 +11,9 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script src="../js/shared/markdown-options.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="../js/shared/code-blocks.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <!-- KaTeX 스타일시트 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -212,19 +214,6 @@
     background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;
     display:block;
   }
-  .preview-body .hljs-keyword,.preview-body .hljs-selector-tag,.preview-body .hljs-literal{color:#c792ea;}
-  .preview-body .hljs-string,.preview-body .hljs-addition{color:#c3e88d;}
-  .preview-body .hljs-number{color:#f78c6c;}
-  .preview-body .hljs-comment,.preview-body .hljs-quote{color:#6b6e76;font-style:italic;}
-  .preview-body .hljs-title,.preview-body .hljs-function,.preview-body .hljs-section{color:#82aaff;}
-  .preview-body .hljs-attr,.preview-body .hljs-attribute,.preview-body .hljs-symbol{color:#ffcb6b;}
-  .preview-body .hljs-tag,.preview-body .hljs-name,.preview-body .hljs-selector-id{color:#f07178;}
-  .preview-body .hljs-built_in,.preview-body .hljs-type,.preview-body .hljs-selector-class{color:#89ddff;}
-  .preview-body .hljs-variable,.preview-body .hljs-params,.preview-body .hljs-template-variable{color:#eeffff;}
-  .preview-body .hljs-meta,.preview-body .hljs-meta-string{color:#ff5874;}
-  .preview-body .hljs-deletion{color:#ff5874;}
-  .preview-body .hljs-emphasis{font-style:italic;}
-  .preview-body .hljs-strong{font-weight:700;}
   .preview-body .empty-state{color:var(--text-mute);font-style:italic;}
 
   /* scrollbars */
@@ -294,6 +283,7 @@
     .pane-editor{flex-basis:50%!important;}
   }
 </style>
+<link rel="stylesheet" href="../css/shared/code-blocks.css" data-code-block-style>
 </head>
 <body>
 <div id="app">

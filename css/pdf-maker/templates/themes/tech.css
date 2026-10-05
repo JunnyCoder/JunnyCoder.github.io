@@ -1,16 +1,13 @@
-[data-theme="tech"] {
-  --font-family: "SFMono-Regular", Consolas, monospace;
-  --text-main: #24292f;
-  --accent-color: #0969da;
-  --border-color: #d0d7de;
-  
-  --cover-border-top: 8px solid var(--accent-color);
-  --cover-title-size: 32pt;
-  --cover-title-color: var(--text-main);
-  --cover-subtitle-color: var(--accent-color);
-  
-  --toc-border: 1px dashed var(--border-color);
-  --toc-title-color: var(--accent-color);
-  
-  --code-bg: #f6f8fa;
+/* tech remains an alias for saved drafts created before the Dev rename. */
+:is([data-theme="dev"], [data-theme="tech"]) {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  --heading-font-family: var(--font-family);
+  --code-font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --text-main: #202830; --heading-color: #18212b; --muted-color: #4b5663;
+  --accent-color: #24567a; --border-color: #cbd2d9; --code-bg: #f4f6f8;
+  --table-head-bg: #eef2f5; --code-radius: 4px;
+  --cover-border-top: 2mm solid var(--accent-color); --cover-title-size: 32pt;
+  --cover-title-color: var(--text-main); --cover-subtitle-color: var(--accent-color);
+  --cover-background: #fff; --cover-padding: 55mm 24mm 28mm;
+  --toc-border: 1px solid var(--border-color); --toc-title-color: var(--heading-color);
 }

@@ -1,12 +1,53 @@
-/* 코드 블록에만 배경색 허용 */
-pre, code { background: var(--code-bg, #f6f8fa) !important; border-radius: 6px; }
-pre { padding: 16px; overflow-x: auto; border: 1px solid var(--border-color, #e1e4e8); }
-code { padding: 2px 6px; font-family: monospace; font-size: 0.9em; }
-
-h1, h2, h3 { color: var(--heading-color, inherit); }
-h1 { border-bottom: 1px solid var(--border-color, #eee); padding-bottom: 6px; }
-
-blockquote {
-  border-left: 4px solid var(--accent-color, #007acc);
-  margin: 10px 0; padding: 6px 12px; color: #555;
+/* Shared document typography. Imported HTML uses its own tag rules. */
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) {
+  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif);
+  color: var(--text-main, #20252b);
+  font-size: var(--document-font-size, 11pt);
+  line-height: var(--document-line-height, 1.55);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  font-variant-numeric: lining-nums;
 }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(h1,h2,h3,h4,h5,h6) {
+  color: var(--heading-color, var(--text-main));
+  font-family: var(--heading-font-family, var(--font-family));
+  line-height: 1.3; font-weight: var(--heading-weight, 700); letter-spacing: -.025em;
+  margin: 1.4em 0 .55em; break-after: avoid; orphans: 2; widows: 2;
+}
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) h1 {
+  font-size: var(--h1-size, 1.95em); text-align: var(--h1-align, left); padding-bottom: .38em; border-bottom: var(--h1-border, 1px solid var(--border-color));
+}
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) h2 { font-size: 1.45em; border-bottom: var(--h2-border, none); padding-bottom: .2em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) h3 { font-size: 1.18em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) h4 { font-size: 1.05em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(h5,h6) { font-size: .95em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(p,ul,ol,dl,blockquote,pre,table,figure,details) { margin: 0 0 1em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(ul,ol) { padding-left: 1.65em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) li { margin: .28em 0; padding-left: .1em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) li :where(ul,ol) { margin: .25em 0 .4em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) li > p { margin-bottom: .4em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(pre,code,kbd,samp) { font-family: var(--code-font-family, "SFMono-Regular", Consolas, "Liberation Mono", monospace); font-size: .88em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) code { background: var(--code-bg); border: 1px solid var(--border-color); padding: .1em .3em; border-radius: 3px; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) pre { padding: .9em 1.1em; background: var(--code-bg); border: 1px solid var(--border-color); border-radius: var(--code-radius, 5px); line-height: 1.5; tab-size: 4; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) pre code { font-size: 1em; padding: 0; border: 0; background: transparent; border-radius: 0; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) blockquote { margin-left: 0; margin-right: 0; border-left: var(--quote-border, 3px solid var(--accent-color)); padding: var(--quote-padding, .35em 1em); font-size: var(--quote-size, 1em); color: var(--muted-color); }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) blockquote > :last-child { margin-bottom: 0; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) table { width: 100%; border-collapse: collapse; font-size: .93em; line-height: 1.45; border-top: var(--table-top, 1px solid var(--border-color)); border-bottom: var(--table-bottom, 1px solid var(--border-color)); }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(th,td) { text-align: left; vertical-align: top; padding: .6em .75em; border: 0; border-bottom: 1px solid var(--table-row-border, var(--border-color)); font-variant-numeric: tabular-nums; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) th { font-weight: 700; background: var(--table-head-bg, #f2f4f6); border-bottom: 1px solid var(--table-head-border, var(--border-color)); }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(caption,figcaption) { color: var(--muted-color); font-size: .88em; text-align: var(--caption-align, left); line-height: 1.45; padding: .5em 0; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) caption { caption-side: top; font-weight: 600; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) figure { margin-left: 0; margin-right: 0; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) a { color: var(--accent-color); text-decoration: underline; text-underline-offset: .15em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) hr { border: 0; border-top: 1px solid var(--border-color); margin: 1.5em 0; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) dt { font-weight: 700; margin-top: .6em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) dd { margin: .2em 0 .6em 1.4em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) details { border: 1px solid var(--border-color); padding: .65em .9em; border-radius: 4px; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) summary { font-weight: 700; margin-bottom: .4em; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(kbd,samp) { padding: .1em .3em; border: 1px solid var(--border-color); border-radius: 2px; }
+:where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) mark { color: inherit; background: #fff0b8; }
+.pdf-content :where(pre,pre code), .block-edit-content :where(pre,pre code) { white-space: pre-wrap; overflow-wrap: anywhere; }
+.pdf-content :where(img,svg), .block-edit-content :where(img,svg) { max-width: 100%; height: auto; }
+.pdf-content .katex-display { overflow-wrap: normal; margin: 1em 0; }
+.pdf-content .katex { font-size: 1.1em; }
+.pdf-content :where(p,li) { orphans: 3; widows: 3; }

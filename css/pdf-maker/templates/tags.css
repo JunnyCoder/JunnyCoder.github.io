@@ -1,26 +1,38 @@
-/* --- 제목(H1~H6) 스타일 4종 --- */
-[data-style="h-style-1"] { border-bottom: 2px solid currentColor; padding-bottom: 5px; }
-[data-style="h-style-2"] { border-left: 5px solid #3b82f6; padding-left: 10px; }
-[data-style="h-style-3"] { text-align: center; font-weight: 900; letter-spacing: 2px; }
-[data-style="h-style-4"] { background: #f3f4f6; padding: 5px 15px; border-radius: 4px; color: #333; }
-
-/* --- 표(Table) 스타일 4종 --- */
-[data-style="t-style-1"] { width: 100%; border-collapse: collapse; }
-[data-style="t-style-1"] th, [data-style="t-style-1"] td { border: 1px solid #ccc; padding: 8px; }
-
-[data-style="t-style-2"] { width: 100%; border-collapse: collapse; }
-[data-style="t-style-2"] th { background: #333; color: white; padding: 8px; }
-[data-style="t-style-2"] td { border: 1px solid #ddd; padding: 8px; }
-
-[data-style="t-style-3"] { width: 100%; border-collapse: collapse; }
-[data-style="t-style-3"] th, [data-style="t-style-3"] td { padding: 8px; border-bottom: 1px solid #eee; text-align: left;}
-[data-style="t-style-3"] tr:nth-child(even) { background: #f9f9f9; }
-
-[data-style="t-style-4"] { width: 100%; border-collapse: collapse; border-top: 3px solid #000; border-bottom: 3px solid #000; }
-[data-style="t-style-4"] th, [data-style="t-style-4"] td { padding: 8px; border-bottom: 1px dashed #ddd; text-align: center;}
-
-/* --- 리스트(UL/OL) 스타일 4종 --- */
-[data-style="l-style-1"] { list-style-type: disc; }
-[data-style="l-style-2"] { list-style-type: square; color: #555; }
-[data-style="l-style-3"] li { margin-bottom: 8px; border-bottom: 1px dashed #ddd; padding-bottom: 4px;}
-[data-style="l-style-4"] { list-style-type: '👉 '; }
+/* Explicit tag overrides win over theme defaults and preserved HTML styling.
+   New variants must also be listed in js/pdf-maker/templates.js. */
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="h-style-1"] { border-bottom: 1px solid currentColor !important; padding-bottom: .35em !important; border-left: 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="h-style-2"] { border-left: 3px solid var(--accent-color) !important; border-bottom: 0 !important; padding: .1em 0 .1em .6em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="h-style-3"] { text-align: center !important; border: 0 !important; letter-spacing: .02em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="h-style-4"] { background: var(--code-bg) !important; padding: .35em .65em !important; border: 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-1"] :is(th,td) { border: 1px solid var(--border-color) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-3"] :is(th,td) { border: 0 !important; border-bottom: 1px solid var(--border-color) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-3"] tbody tr:nth-child(even) { background: var(--code-bg) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-4"] { border-top: 1.5px solid currentColor !important; border-bottom: 1.5px solid currentColor !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-4"] :is(th,td) { border: 0 !important; background: transparent !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-4"] thead th { border-bottom: 1px solid currentColor !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="t-style-2"] th { background: #e8edf1 !important; color: #202830 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="l-style-compact"] > li { margin: .08em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="l-style-3"] > li { padding: .35em .1em !important; border-bottom: 1px solid var(--border-color) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="l-style-spacious"] > li { margin: .65em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) ul[data-style="l-style-2"] { list-style-type: square !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="code-plain"] { background: transparent !important; border: 0 !important; padding: .5em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="code-framed"] { background: transparent !important; border: 1px solid currentColor !important; border-radius: 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="code-compact"] { padding: .5em .7em !important; line-height: 1.35 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="quote-line"] { background: transparent !important; border: 0 !important; border-left: 3px solid currentColor !important; padding: .4em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="quote-editorial"] { border: 0 !important; font-family: Georgia, "AppleMyungjo", serif !important; font-size: 1.15em !important; padding: .6em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="quote-box"] { background: var(--code-bg) !important; border: 1px solid var(--border-color) !important; padding: .8em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="text-lead"] { font-size: 1.12em !important; font-weight: 500 !important; line-height: 1.6 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="text-note"] { border-left: 2px solid var(--accent-color) !important; padding-left: .8em !important; color: var(--muted-color) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="text-framed"] { border: 1px solid var(--border-color) !important; padding: .75em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="figure-framed"] { border: 1px solid var(--border-color) !important; padding: .6em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="figure-caption"] figcaption { border-top: 1px solid var(--border-color) !important; text-align: center !important; margin-top: .4em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="figure-compact"] { margin: .5em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="details-line"] { border: 0 !important; border-left: 2px solid var(--accent-color) !important; padding: .6em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="details-framed"] { border: 1px solid var(--border-color) !important; background: var(--code-bg) !important; padding: .8em 1em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="details-compact"] { border: 0 !important; padding: .4em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="rule-accent"] { border: 0 !important; border-top: 2px solid var(--accent-color) !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="rule-double"] { border: 0 !important; border-top: 3px double currentColor !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="rule-space"] { border: 0 !important; margin: 2em 0 !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="definition-line"] dt { border-top: 1px solid var(--border-color) !important; padding-top: .5em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="definition-compact"] :is(dt,dd) { margin-top: .1em !important; margin-bottom: .2em !important; }
+:is(.pdf-content,.block-edit-content,.document-style) [data-style="definition-framed"] { border: 1px solid var(--border-color) !important; padding: .65em 1em !important; }

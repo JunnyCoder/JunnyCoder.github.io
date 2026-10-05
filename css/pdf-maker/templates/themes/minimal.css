@@ -1,0 +1,20 @@
+[data-theme="minimal"] {
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --text-main: #191919; --heading-color: #191919; --muted-color: #444;
+  --accent-color: #333; --border-color: #aaa; --code-bg: transparent;
+  --h1-border: none; --h1-size: 1.85em; --code-radius: 0;
+  --table-head-bg: transparent; --table-row-border: transparent; --table-head-border: #333;
+  --table-top: none; --table-bottom: none;
+  --quote-border: 1px solid #555; --quote-padding: .1em 1em;
+  --cover-title-size: 30pt; --cover-title-color: #191919; --cover-subtitle-color: #444;
+  --cover-background: #fff; --cover-padding: 60mm 27mm 28mm;
+  --toc-border: 1px solid #888; --toc-title-color: #191919;
+}
+[data-theme="minimal"] pre.shared-code-block {
+  --code-syntax-keyword: #191919; --code-syntax-string: #191919;
+  --code-syntax-number: #191919; --code-syntax-comment: #555;
+  --code-syntax-title: #191919; --code-syntax-attr: #191919;
+  --code-syntax-tag: #191919; --code-syntax-type: #191919;
+  --code-syntax-meta: #191919;
+}
+[data-theme="minimal"] pre.shared-code-block .hljs-keyword { font-weight: 600; }

@@ -1,482 +1,1230 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const sourceContent = document.getElementById('sourceContent');
-  const previewContainer = document.getElementById('pdfPreviewContainer');
-  const historySelect = document.getElementById('mdHistorySelect');
-  const tocActionPopup = document.getElementById('tocActionPopup');
-  
-  let isBreakMode = false, isDeleteMode = false;
-  let selectedBlockId = null, selectedTagName = null;
-  let activeTocItem = null;
-  let selectedPresetClass = null;
-
-  initMarginControls(); // [추가] 여백 조절 이벤트 초기화
-  initCodeBlockEvents(); // [추가] 코드블럭 드래그 방지 초기화
-
-  // 템플릿 정보 사전
-  const STYLE_PRESETS = [
-    { id: 'style-preset-default', name: '기본 (Default)' },
-    { id: 'style-preset-highlight', name: '강조 박스' },
-    { id: 'style-preset-bordered', name: '테두리 상자' },
-    { id: 'style-preset-card', name: '입체 카드' }
-  ];
-
-  // === 0. 우측 패널 디자인 템플릿 Grid 생성 및 이벤트 등록 ===
-  const initRightPanel = () => {
-    const grid = document.getElementById('stylePreviewGrid');
-    if (!grid) return;
-    grid.innerHTML = '';
-
-    STYLE_PRESETS.forEach(preset => {
-      const item = document.createElement('div');
-      item.className = 'preview-item';
-      item.setAttribute('data-preset', preset.id);
-      item.textContent = preset.name;
-      item.addEventListener('click', () => {
-        grid.querySelectorAll('.preview-item').forEach(el => el.classList.remove('active'));
-        item.classList.add('active');
-        selectedPresetClass = preset.id;
-      });
-      grid.appendChild(item);
-    });
-
-    // 개별 줄 간격 변경 시 적용
-    document.getElementById('elementLineHeight')?.addEventListener('input', (e) => {
-      if (!selectedBlockId || !sourceContent) return;
-      const target = sourceContent.querySelector(`[data-block-id="${selectedBlockId}"]`);
-      if (target) {
-        saveHistory();
-        target.style.lineHeight = e.target.value || '';
-        paginate();
-      }
-    });
-
-    // 선택 요소에 프리셋 적용
-    document.getElementById('applyToSelectedBtn')?.addEventListener('click', () => {
-      if (!selectedBlockId || !selectedPresetClass || !sourceContent) return;
-      const target = sourceContent.querySelector(`[data-block-id="${selectedBlockId}"]`);
-      if (target) {
-        saveHistory();
-        STYLE_PRESETS.forEach(p => target.classList.remove(p.id));
-        if (selectedPresetClass !== 'style-preset-default') {
-          target.classList.add(selectedPresetClass);
-        }
-        paginate();
-      }
-    });
-
-    // 동일 태그 전체 적용
-    document.getElementById('applyToAllBtn')?.addEventListener('click', () => {
-      if (!selectedTagName || !selectedPresetClass || !sourceContent) return;
-      saveHistory();
-      const targets = sourceContent.querySelectorAll(selectedTagName);
-      targets.forEach(el => {
-        STYLE_PRESETS.forEach(p => el.classList.remove(p.id));
-        if (selectedPresetClass !== 'style-preset-default') {
-          el.classList.add(selectedPresetClass);
-        }
-      });
-      paginate();
-    });
+  const $ = id => document.getElementById(id);
+  const sourceContent = $('sourceContent');
+  const previewContainer = $('pdfPreviewContainer');
+  const popup = $('tocActionPopup');
+  const draftKey = 'pdfmaker.draft.v1';
+  const templates = window.PdfTemplates;
+  const htmlStyles = window.PdfHtmlStyles;
+  const settingIds = ['colorTheme', 'preserveHtmlCss', 'fontSize', 'globalLineHeight', 'enableHeaderFooter',
+    'headerTitleInput', 'footerAuthorInput', 'marginTop', 'marginBottom', 'marginLeft',
+    'marginRight', 'coverTitleInput', 'coverSubtitleInput', 'coverBgStyle', 'coverBgInput', 'coverImgInput',
+    'coverImageFit', 'coverImageOpacity', 'coverFilterColor', 'coverFilterOpacity', 'removeHtmlBackground', 'tocTitleInput', 'tocNumbering'];
+  const limits = { fontSize: [6, 36], globalLineHeight: [1, 3],
+    coverImageOpacity: [0, 100], coverFilterOpacity: [0, 100], marginTop: [0, 50], marginBottom: [0, 50], marginLeft: [0, 50], marginRight: [0, 50] };
+  let importedStyles = { css: [], attributes: {}, missing: [], available: false };
+  let settings = Object.fromEntries(settingIds.map(id => [id, $(id).type === 'checkbox' ? $(id).checked : $(id).value]));
+  const defaultSettings = { ...settings };
+  let activeCodeId = null, activeEditKind = 'block', pendingConfirmation = null;
+  let history = [], inputGroup = null, selectedId = null, selectedPreset = null;
+  let tocEditor = null;
+  let mode = 'normal', activeTocId = null, activeEditId = null;
+  let renderTimer, saveTimer, scaledCount = 0, serial = 0;
+  let storageFailed = false;
+  let documentVersion = 0, loadRequest = 0, imageRequest = 0;
+  let coverImageProbe = null;
+  const uid = prefix => prefix + '-' + Date.now() + '-' + (++serial);
+  const clean = html => DOMPurify.sanitize(html, { FORBID_ATTR: ['contenteditable'] });
+  const localDate = () => {
+    const date = new Date();
+    return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
   };
-  initRightPanel();
-
-  // === 1. 문서 제목 설정 유틸리티 ===
-  const setDocumentTitle = (htmlString, fileName = null) => {
-    if (fileName) {
-      const cleanName = fileName.replace(/\.[^/.]+$/, "").trim();
-      if (cleanName) {
-        document.title = cleanName;
-        const input = document.getElementById('headerTitleInput');
-        if (input && !input.value) input.value = cleanName;
-        return;
-      }
-    }
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlString;
-    const h1 = tempDiv.querySelector('h1');
-    if (h1 && h1.textContent.trim()) {
-      const cleanH1 = h1.textContent.trim().replace(/[\\/:*?"<>|]/g, '');
-      if (cleanH1) {
-        document.title = cleanH1;
-        const input = document.getElementById('headerTitleInput');
-        if (input && !input.value) input.value = cleanH1;
-        return;
-      }
-    }
-    document.title = 'pdf-export';
+  const textNode = (tag, text, className) => {
+    const node = document.createElement(tag);
+    node.textContent = text;
+    if (className) node.className = className;
+    return node;
   };
-
-  // === 2. History (되돌리기) 관리 ===
-  let historyStack = [];
-  const updateUndoUI = () => {
-    const btn = document.getElementById('undoBtn');
-    const count = document.getElementById('undoCount');
-    if (btn && count) {
-      btn.disabled = historyStack.length === 0;
-      count.textContent = historyStack.length;
-    }
-  };
-  
-  const saveHistory = () => {
-    if (!sourceContent) return;
-    historyStack.push(sourceContent.innerHTML);
-    if (historyStack.length > 10) historyStack.shift();
-    updateUndoUI();
-  };
-
-  document.getElementById('undoBtn')?.addEventListener('click', () => {
-    if (historyStack.length === 0) return;
-    sourceContent.innerHTML = historyStack.pop();
-    updateUndoUI();
-    paginate();
-  });
-
-  // === 3. 페이지 레이아웃 엔진 ===
-  const createNewPage = (pageIndex) => {
-    const pageWrapper = document.createElement('div');
-    pageWrapper.className = 'pdf-page A4';
-
-    const themeEl = document.getElementById('colorTheme');
-    if (themeEl) {
-      pageWrapper.setAttribute('data-theme', themeEl.value);
-    }
-
-
-    const enableHF = document.getElementById('enableHeaderFooter')?.checked;
-    if (enableHF) {
-      const headerTitle = document.getElementById('headerTitleInput')?.value || document.title;
-      const authorName = document.getElementById('footerAuthorInput')?.value || '';
-      const todayDate = new Date().toISOString().slice(0, 10);
-
-      const headerDiv = document.createElement('div');
-      headerDiv.className = 'pdf-header';
-      headerDiv.innerHTML = `<span>${headerTitle}</span><span>${authorName}</span>`;
-      pageWrapper.appendChild(headerDiv);
-
-      const footerDiv = document.createElement('div');
-      footerDiv.className = 'pdf-footer';
-      footerDiv.innerHTML = `<span class="footer-date">${todayDate}</span><span class="page-num-slot">${pageIndex}</span>`;
-      pageWrapper.appendChild(footerDiv);
-    }
-
-    const contentDiv = document.createElement('div');
-    contentDiv.className = 'pdf-content';
-    
-    const fontEl = document.getElementById('fontSize');
-    const lineEl = document.getElementById('globalLineHeight');
-
-    if (fontEl) contentDiv.style.fontSize = `${fontEl.value}pt`;
-    if (lineEl) contentDiv.style.lineHeight = lineEl.value;
-    
-    pageWrapper.appendChild(contentDiv);
-    if (previewContainer) previewContainer.appendChild(pageWrapper);
-    return pageWrapper;
-  };
-
-  const paginate = () => {
-    if (!sourceContent || sourceContent.children.length === 0 || !previewContainer) return; 
-
-    previewContainer.innerHTML = '';
-    let pageCount = 1;
-    let currentPage = createNewPage(pageCount);
-    let currentContentContainer = currentPage.querySelector('.pdf-content');
-    
-    Array.from(sourceContent.children).forEach(block => {
-      if (block.style.display === 'none') return;
-      const clone = block.cloneNode(true);
-      currentContentContainer.appendChild(clone);
-      
-      if (block.classList.contains('page-break-before') || currentContentContainer.offsetHeight > 960) {
-        currentContentContainer.removeChild(clone); 
-        pageCount++;
-        currentPage = createNewPage(pageCount); 
-        currentContentContainer = currentPage.querySelector('.pdf-content');
-        currentContentContainer.appendChild(clone); 
-      }
-    });
-
-    const allPages = previewContainer.querySelectorAll('.pdf-page');
-    allPages.forEach((pg, idx) => {
-      const slot = pg.querySelector('.page-num-slot');
-      if (slot) slot.textContent = `${idx + 1} / ${allPages.length}`;
-    });
-
-    if (selectedBlockId && !isBreakMode && !isDeleteMode) {
-      const activeClone = previewContainer.querySelector(`[data-block-id="${selectedBlockId}"]`);
-      if (activeClone) activeClone.classList.add('selected-element');
-    }
-  };
-
-  ['colorTheme', 'fontSize', 'globalLineHeight', 'enableHeaderFooter', 'headerTitleInput', 'footerAuthorInput'].forEach(id => {
-    document.getElementById(id)?.addEventListener('input', paginate);
-  });
-
-  // === 4. 파일 로드 및 정제 ===
-  const renderDocument = (htmlString, fileName = null) => {
-    setDocumentTitle(htmlString, fileName);
-    sourceContent.innerHTML = DOMPurify.sanitize(htmlString, { USE_PROFILES: { html: true } });
-    
-    if (window.renderMathInElement) {
-      window.renderMathInElement(sourceContent, { 
-        delimiters: [{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}] 
-      });
-    }
-
-    Array.from(sourceContent.children).forEach((child, i) => {
-      child.setAttribute('data-block-id', `block-${Date.now()}-${i}`);
-    });
-    
-    historyStack = [];
-    updateUndoUI();
-    const rightPanel = document.getElementById('rightPanel');
-    if (rightPanel) rightPanel.style.display = 'none';
-    selectedBlockId = null;
-    paginate();
-  };
-
-  document.getElementById('mdFileInput')?.addEventListener('change', async (e) => {
-    if (e.target.files[0]) {
-      const file = e.target.files[0];
-      renderDocument(marked.parse(await file.text()), file.name); 
-      e.target.value = ''; 
-    }
-  });
-
-  document.getElementById('htmlFileInput')?.addEventListener('change', async (e) => {
-    if (e.target.files[0]) {
-      const file = e.target.files[0];
-      renderDocument(await file.text(), file.name); 
-      e.target.value = ''; 
-    }
-  });
-
-  const dropZone = document.getElementById('dropZone');
-  if (dropZone) {
-    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-    dropZone.addEventListener('drop', async (e) => {
-      e.preventDefault(); 
-      dropZone.classList.remove('drag-over');
-      const file = e.dataTransfer.files[0];
-      if (!file) return;
-      if (file.name.endsWith('.md')) renderDocument(marked.parse(await file.text()), file.name);
-      else if (file.name.endsWith('.html')) renderDocument(await file.text(), file.name);
-    });
+  const blockById = id => Array.from(sourceContent.children).find(block => block.dataset.blockId === id);
+  const elementById = id => Array.from(sourceContent.querySelectorAll('[data-element-id]')).find(node => node.dataset.elementId === id);
+  function resetLineHeight(source) {
+    if ('pdfOriginalLineHeight' in source.dataset) {
+      source.style.lineHeight = source.dataset.pdfOriginalLineHeight;
+      delete source.dataset.pdfOriginalLineHeight;
+    } else if (source.dataset.pdfLineHeight) source.style.removeProperty('line-height');
+    delete source.dataset.pdfLineHeight;
   }
-
-  // === 5. 상단 툴바 제어 ===
-  const resetModes = () => { 
-    isBreakMode = isDeleteMode = false; 
-    document.getElementById('toggleBreakMode')?.classList.remove('active');
-    document.getElementById('toggleDeleteMode')?.classList.remove('active');
-    if (previewContainer) previewContainer.className = 'preview-panel';
-  };
-  
-  document.getElementById('toggleBreakMode')?.addEventListener('click', function() {
-    const isActive = isBreakMode; resetModes();
-    if (!isActive) { isBreakMode = true; this.classList.add('active'); previewContainer.className = 'preview-panel edit-break-mode'; }
-  });
-  
-  document.getElementById('toggleDeleteMode')?.addEventListener('click', function() {
-    const isActive = isDeleteMode; resetModes();
-    if (!isActive) { isDeleteMode = true; this.classList.add('active'); previewContainer.className = 'preview-panel edit-delete-mode'; }
-  });
-
-  // === 6. 표지 & 목차 생성기 ===
-  document.getElementById('generateTocBtn')?.addEventListener('click', () => {
-    saveHistory();
-    sourceContent.querySelector('.toc-wrapper')?.remove();
-
-    const headers = sourceContent.querySelectorAll('h1, h2, h3');
-    if (headers.length === 0) { alert('목차로 생성할 H1~H3 제목이 없습니다.'); return; }
-
-    const tocContainer = document.createElement('div');
-    tocContainer.className = 'toc-wrapper page-break-before';
-    tocContainer.setAttribute('data-block-id', `block-${Date.now()}-toc`);
-    
-    let tocHtml = '<h2>목차</h2>';
-    headers.forEach((h, i) => {
-      const level = h.tagName.toLowerCase().replace('h', '');
-      tocHtml += `
-        <div class="toc-item toc-level-${level}" data-toc-id="toc-item-${i}">
-          <span class="toc-title">${h.textContent.trim()}</span>
-          <span class="toc-dots"></span>
-          <span class="toc-page">-</span>
-        </div>`;
-    });
-    
-    tocContainer.innerHTML = tocHtml;
-    const cover = sourceContent.querySelector('.cover-page');
-    if (cover && cover.nextSibling) sourceContent.insertBefore(tocContainer, cover.nextSibling);
-    else sourceContent.insertBefore(tocContainer, sourceContent.firstChild);
-
-    paginate();
-  });
-
-  document.getElementById('generateCoverBtn')?.addEventListener('click', () => {
-    saveHistory();
-    sourceContent.querySelector('.cover-page')?.remove();
-
-    const docTitle = document.getElementById('headerTitleInput')?.value || document.title;
-    const subtitle = document.getElementById('coverSubtitleInput')?.value || 'STUDY GUIDE & REFERENCE';
-    const author = document.getElementById('footerAuthorInput')?.value || '작성자 미지정';
-    const bgStyle = document.getElementById('coverBgInput')?.value || 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)';
-    const imgUrl = document.getElementById('coverImgInput')?.value;
-
-    const coverContainer = document.createElement('div');
-    coverContainer.className = 'cover-page page-break-before';
-    coverContainer.setAttribute('data-block-id', `block-${Date.now()}-cover`);
-    coverContainer.style.background = imgUrl ? `url('${imgUrl}')` : bgStyle;
-
-    coverContainer.innerHTML = `
-      <div class="cover-title-group">
-        <h1>${docTitle}</h1>
-        <h3>${subtitle}</h3>
-      </div>
-      <div class="cover-meta-group">
-        <p><strong>작성자:</strong> ${author}</p>
-        <p><strong>발행일:</strong> ${new Date().toISOString().slice(0, 10)}</p>
-      </div>
-    `;
-
-    sourceContent.insertBefore(coverContainer, sourceContent.firstChild);
-    const configPanel = document.getElementById('coverConfigPanel');
-    if (configPanel) configPanel.style.display = 'block';
-    paginate();
-  });
-
-  // === 7. 미리보기 인터랙션 (클릭 & 더블클릭) ===
-  if (previewContainer) {
-    previewContainer.addEventListener('dblclick', (e) => {
-      if (isBreakMode || isDeleteMode) return;
-      const block = e.target.closest('[data-block-id]');
-      if (!block || block.classList.contains('toc-wrapper')) return;
-      block.setAttribute('contenteditable', 'true');
-      block.focus();
-
-      block.addEventListener('blur', function handler() {
-        block.removeAttribute('contenteditable');
-        const sourceBlock = sourceContent.querySelector(`[data-block-id="${block.getAttribute('data-block-id')}"]`);
-        if (sourceBlock && sourceBlock.innerHTML !== block.innerHTML) {
-          saveHistory(); 
-          sourceBlock.innerHTML = block.innerHTML; 
-        }
-        block.removeEventListener('blur', handler);
-        paginate();
-      });
-    });
-
-    previewContainer.addEventListener('click', (e) => {
-      const target = e.target.closest('[data-block-id]');
-      if (!target) return;
-      const blockId = target.getAttribute('data-block-id');
-      const sourceBlock = sourceContent.querySelector(`[data-block-id="${blockId}"]`);
-      if (!sourceBlock) return;
-
-      if (isBreakMode) { saveHistory(); sourceBlock.classList.toggle('page-break-before'); paginate(); return; }
-      if (isDeleteMode) { saveHistory(); sourceBlock.style.display = 'none'; paginate(); return; }
-
-      selectedBlockId = blockId;
-      selectedTagName = sourceBlock.tagName;
-      
-      const tagSpan = document.getElementById('selectedTagType');
-      if (tagSpan) tagSpan.textContent = `<${selectedTagName.toLowerCase()}>`;
-
-      const lhInput = document.getElementById('elementLineHeight');
-      if (lhInput) lhInput.value = sourceBlock.style.lineHeight || '';
-
-      const rightPanel = document.getElementById('rightPanel');
-      if (rightPanel) rightPanel.style.display = 'block';
-      paginate();
-    });
+  function hiddenInSource(node) {
+    for (let current = node; current && current !== sourceContent; current = current.parentElement) {
+      if (current.hidden || current.style.display === 'none') return true;
+    }
+    return false;
   }
-
-  document.getElementById('downloadPdfBtn')?.addEventListener('click', () => window.print());
-
-  // === 8. 히스토리 로드 ===
-  const loadHistoryOptions = () => {
+  const snapshot = () => ({ html: sourceContent.innerHTML, settings: { ...settings }, title: document.title, importedStyles });
+  const updateUndo = () => {
+    $('undoBtn').disabled = history.length === 0;
+    $('undoCount').textContent = history.length;
+  };
+  function saveHistory(group = null) {
+    if (group && inputGroup === group) return;
+    const state = snapshot();
+    if (JSON.stringify(history[history.length - 1]) !== JSON.stringify(state)) history.push(state);
+    if (history.length > 30) history.shift();
+    inputGroup = group;
+    updateUndo();
+  }
+  function confirmDocument(message) {
+    if (pendingConfirmation) return Promise.resolve(false);
+    $('confirmDocumentMessage').textContent = message;
+    $('confirmDocumentDialog').showModal();
+    return new Promise(resolve => { pendingConfirmation = resolve; });
+  }
+  function finishConfirmation(accepted) {
+    const resolve = pendingConfirmation;
+    pendingConfirmation = null;
+    $('confirmDocumentDialog').close();
+    resolve?.(accepted);
+  }
+  $('cancelDocumentActionBtn').addEventListener('click', () => finishConfirmation(false));
+  $('confirmDocumentActionBtn').addEventListener('click', () => finishConfirmation(true));
+  $('confirmDocumentDialog').addEventListener('cancel', event => { event.preventDefault(); finishConfirmation(false); });
+  function hasDocument() { return sourceContent.children.length > 0; }
+  function resetDocument() {
+    documentVersion++;
+    loadRequest++;
+    imageRequest++;
+    coverImageProbe = null;
+    $('coverImageStatus').textContent = '';
+    clearTimeout(renderTimer);
+    clearTimeout(saveTimer);
+    if ($('blockEditDialog').open) $('blockEditDialog').close();
+    activeEditId = activeCodeId = null;
+    if ($('tocEditDialog').open) $('tocEditDialog').close();
+    tocEditor = null;
+    sourceContent.replaceChildren();
+    settings = { ...defaultSettings };
+    importedStyles = { css: [], attributes: {}, missing: [], available: false };
+    history = [];
+    inputGroup = null;
+    document.title = 'pdf-maker';
+    clearSelection();
+    setMode('normal');
+    updateUndo();
+  }
+  $('discardDocumentBtn').addEventListener('click', async () => {
+    if (!hasDocument() || !await confirmDocument('모든 작업을 버리고 초기 화면으로 돌아갑니다. 계속하시겠습니까?')) return;
+    resetDocument();
+    applySettings();
+    paginate();
+    persist();
+  });
+  function persist() {
+    clearTimeout(saveTimer);
     try {
-      const historyRaw = localStorage.getItem('mdeditor.history.v1');
-      if (historyRaw && historySelect) {
-        const history = JSON.parse(historyRaw);
-        if (history.length > 0) {
-          historySelect.innerHTML = '<option value="">선택하세요</option>';
-          history.slice().reverse().forEach(item => {
-            const date = new Date(item.ts);
-            const label = `${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
-            const opt = document.createElement('option');
-            opt.value = item.ts;
-            const title = item.content.split('\n')[0].replace(/#/g, '').trim().substring(0, 15);
-            opt.textContent = `${label} - ${title || '내용 없음'}`;
-            historySelect.appendChild(opt);
-          });
-        }
-      }
-    } catch (e) { console.error(e); }
-  };
-  loadHistoryOptions();
-
-  document.getElementById('loadMdHistoryBtn')?.addEventListener('click', () => {
-    if (!historySelect || !historySelect.value) return;
-    const historyRaw = localStorage.getItem('mdeditor.history.v1');
-    if (!historyRaw) return;
-    const history = JSON.parse(historyRaw);
-    const target = history.find(h => h.ts == Number(historySelect.value) || h.ts == historySelect.value);
-    if (target) renderDocument(marked.parse(target.content));
-  });
-
-  const transferData = localStorage.getItem('pdfMakerTransfer');
-  if (transferData) {
-    renderDocument(marked.parse(transferData));
-    localStorage.removeItem('pdfMakerTransfer'); 
+      localStorage.setItem(draftKey, JSON.stringify(snapshot()));
+      storageFailed = false;
+    } catch (error) {
+      storageFailed = true;
+      $('documentStatus').textContent = '자동 저장 공간이 부족하거나 사용할 수 없습니다.';
+      console.error(error);
+    }
   }
-  // === [추가됨] 여백 조절 및 코드블럭 이벤트 제어 함수 ===
-  function initMarginControls() {
-    const marginMap = {
-      marginTop: 'paddingTop',
-      marginBottom: 'paddingBottom',
-      marginLeft: 'paddingLeft',
-      marginRight: 'paddingRight'
-    };
-
-    Object.entries(marginMap).forEach(([inputId, styleProp]) => {
-      const el = document.getElementById(inputId);
-      if (!el) return;
-
-      el.addEventListener('input', (e) => {
-        const val = e.target.value || 0;
-        const cssVarName = `--page-${inputId.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
-        
-        // 1. Root CSS 변수 업데이트
-        document.documentElement.style.setProperty(cssVarName, `${val}mm`);
-
-        // 2. 현재 렌더링된 모든 페이지 노드에 직접 패딩 적용 (우선순위 차단)
-        const pages = document.querySelectorAll('.pdf-page');
-        pages.forEach(page => {
-          page.style[styleProp] = `${val}mm`;
-        });
-
-        // 3. 페이지 재분할 연산 트리거 (디바운싱)
-        clearTimeout(window.marginDebounce);
-        window.marginDebounce = setTimeout(() => {
-          if (typeof paginate === 'function') {
-            paginate();
-          }
-        }, 150);
-      });
+  function scheduleSave() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(persist, 250);
+  }
+  function applySettings(syncInputs = true) {
+    if (syncInputs) settingIds.forEach(id => {
+      const input = $(id);
+      if (input.type === 'checkbox') input.checked = Boolean(settings[id]);
+      else input.value = settings[id];
+    });
+    ['Top', 'Bottom', 'Left', 'Right'].forEach(side => {
+      document.documentElement.style.setProperty('--page-margin-' + side.toLowerCase(), settings['margin' + side] + 'mm');
+    });
+    $('coverConfigPanel').hidden = !sourceContent.querySelector('.cover-page');
+    const preserve = settings.preserveHtmlCss && importedStyles.available;
+    $('preserveHtmlCss').disabled = !importedStyles.available;
+    $('removeHtmlBackground').disabled = !preserve;
+    $('coverCustomCssGroup').hidden = settings.coverBgStyle !== 'custom';
+    $('fontSize').disabled = preserve;
+    $('globalLineHeight').disabled = preserve;
+    $('htmlCssStatus').textContent = (importedStyles.available ?
+      (preserve ? '원본 글꼴과 디자인을 유지합니다. 템플릿은 표지와 목차에 적용됩니다.' : '선택한 문서 템플릿을 적용합니다.') :
+      'HTML의 스타일·인라인 CSS를 지원합니다. 별도 CSS 파일은 함께 선택하세요.') +
+      (importedStyles.missing?.length ? ' · 불러오지 못한 CSS: ' + importedStyles.missing.join(', ') + ' (CSS 파일을 HTML과 함께 선택하세요)' : '');
+    $('templateDescription').textContent = templates.themes[settings.colorTheme].description;
+    htmlStyles.mount(importedStyles, preserve);
+  }
+  function normalizeSettings(values) {
+    const next = { ...settings };
+    settingIds.forEach(id => {
+      if (!(id in values)) return;
+      if (id in limits) {
+        const value = Number(values[id]);
+        if (Number.isFinite(value) && values[id] !== '') next[id] = Math.max(limits[id][0], Math.min(limits[id][1], value));
+      } else if ($(id).type === 'checkbox') next[id] = values[id] === true;
+      else if (id === 'colorTheme') next[id] = values[id] === 'tech' ? 'dev' :
+        (values[id] in templates.themes ? values[id] : 'modern');
+      else next[id] = String(values[id]);
+    });
+    if (!('coverBgStyle' in values) && values.coverBgInput) next.coverBgStyle = 'custom';
+    if (!('coverTitleInput' in values) && 'colorTheme' in values && 'headerTitleInput' in values) next.coverTitleInput = values.headerTitleInput || document.title;
+    return next;
+  }
+  function normalizeContent() {
+    SharedCodeBlocks.normalize(sourceContent);
+    // Plain HTML text and the Markdown editor's exported article must also paginate.
+    const exported = sourceContent.querySelector(':scope > article.preview-body');
+    if (exported) exported.replaceWith(...exported.childNodes);
+    Array.from(sourceContent.childNodes).forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) node.replaceWith(textNode('p', node.textContent));
+    });
+    const usedIds = new Set();
+    Array.from(sourceContent.children).forEach(block => {
+      if (!block.dataset.blockId || usedIds.has(block.dataset.blockId)) block.dataset.blockId = uid('block');
+      usedIds.add(block.dataset.blockId);
+    });
+    const headingIds = new Set();
+    const elementIds = new Set();
+    sourceContent.querySelectorAll(templates.selector).forEach(node => {
+      if (!node.dataset.elementId || elementIds.has(node.dataset.elementId)) node.dataset.elementId = uid('element');
+      elementIds.add(node.dataset.elementId);
+    });
+    sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
+      if (heading.closest('.cover-page,.toc-wrapper')) return;
+      if (!heading.dataset.headingId || headingIds.has(heading.dataset.headingId)) heading.dataset.headingId = uid('heading');
+      headingIds.add(heading.dataset.headingId);
     });
   }
-
-  function initCodeBlockEvents() {
-    if(!previewContainer) return;
-    previewContainer.addEventListener('mousedown', (e) => {
-      if (e.target.closest('pre, code')) e.stopPropagation();
-    }, true);
-    previewContainer.addEventListener('dragstart', (e) => {
-      if (e.target.closest('pre, code')) {
-        e.preventDefault();
-        e.stopPropagation();
+  function renderMath(root = sourceContent) {
+    if (window.renderMathInElement) window.renderMathInElement(root, {
+      delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+      throwOnError: false
+    });
+  }
+  function requestPaginate() {
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(paginate, 100);
+  }
+  function hidePopup() {
+    popup.hidden = true;
+    activeTocId = null;
+  }
+  function clearSelection() {
+    selectedId = null;
+    selectedPreset = null;
+    $('rightPanel').style.display = 'none';
+    previewContainer.querySelectorAll('.selected-element').forEach(node => node.classList.remove('selected-element'));
+  }
+  function setMode(next) {
+    mode = next;
+    previewContainer.classList.toggle('edit-break-mode', mode === 'break');
+    previewContainer.classList.toggle('edit-delete-mode', mode === 'delete');
+    $('toggleBreakMode').classList.toggle('active', mode === 'break');
+    $('toggleDeleteMode').classList.toggle('active', mode === 'delete');
+    $('interactionHelpText').textContent = mode === 'break' ? '요소를 클릭하면 그 앞에서 페이지를 나눕니다.' :
+      mode === 'delete' ? '제거할 요소를 클릭하세요. 되돌리기로 복구할 수 있습니다.' :
+        '일반 모드: 더블클릭으로 편집 · 파일 드래그 앤 드롭';
+    hidePopup();
+  }
+  function createPage(cover = false, original = true) {
+    const page = document.createElement('div');
+    page.className = 'pdf-page A4' + (cover ? ' cover-page-wrapper' : '');
+    page.dataset.theme = settings.colorTheme;
+    if (settings.enableHeaderFooter && !cover) {
+      page.classList.add('with-header-footer');
+      const header = document.createElement('div');
+      header.className = 'pdf-header';
+      header.append(textNode('span', settings.headerTitleInput || document.title), textNode('span', settings.footerAuthorInput));
+      const footer = document.createElement('div');
+      footer.className = 'pdf-footer';
+      footer.append(textNode('span', localDate(), 'footer-date'), textNode('span', '', 'page-num-slot'));
+      page.append(header, footer);
+    }
+    const content = document.createElement('div');
+    content.className = 'pdf-content';
+    const preserve = settings.preserveHtmlCss && importedStyles.available && !cover && original;
+    htmlStyles.decorateRoot(content, importedStyles, preserve);
+    if (!preserve) {
+      content.style.fontSize = settings.fontSize + 'pt';
+      content.style.lineHeight = settings.globalLineHeight;
+    }
+    content.style.setProperty('--document-font-size', settings.fontSize + 'pt');
+    content.style.setProperty('--document-line-height', settings.globalLineHeight);
+    page.append(content);
+    previewContainer.append(page);
+    if (preserve) htmlStyles.pageBackground(page, content, settings.removeHtmlBackground);
+    const style = getComputedStyle(page);
+    const capacity = page.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
+    content.style.setProperty('height', Math.max(1, capacity) + 'px', 'important');
+    content.style.setProperty('--page-content-height', Math.max(1, capacity) + 'px');
+    return { page, content };
+  }
+  const fits = content => content.scrollHeight <= content.clientHeight + 1 && content.scrollWidth <= content.clientWidth + 1;
+  function openDetails(node) {
+    if (node.tagName === 'DETAILS') node.open = true;
+    node.querySelectorAll('details').forEach(detail => { detail.open = true; });
+    return node;
+  }
+  function sliceBlock(block, start, end, total) {
+    const range = document.createRange();
+    range.selectNodeContents(block);
+    let offset = 0;
+    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const next = offset + node.textContent.length;
+      if (start > 0 && start >= offset && start < next) range.setStart(node, start - offset);
+      if (end < total && end > offset && end <= next) { range.setEnd(node, end - offset); break; }
+      offset = next;
+    }
+    const fragment = block.cloneNode(false);
+    let contents = range.cloneContents();
+    let ancestor = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ?
+      range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+    // A range wholly inside one text/span omits its ancestors. Retain code and
+    // syntax spans in middle page fragments, including multiline strings/comments.
+    while (ancestor && ancestor !== block && block.contains(ancestor)) {
+      const shell = ancestor.cloneNode(false);
+      shell.append(contents);
+      contents = shell;
+      ancestor = ancestor.parentElement;
+    }
+    fragment.append(contents);
+    fragment.classList.remove('page-break-before');
+    fragment.dataset.fragment = 'true';
+    if (fragment.tagName === 'OL') {
+      const first = fragment.querySelector(':scope > li');
+      if (first?.dataset.listIndex) fragment.start = Number(block.start || 1) + Number(first.dataset.listIndex);
+    }
+    return openDetails(htmlStyles.prepare(fragment, settings.preserveHtmlCss && importedStyles.available));
+  }
+  function tableChunk(table, rows, first) {
+    const clone = table.cloneNode(false);
+    clone.classList.remove('page-break-before');
+    clone.dataset.fragment = 'true';
+    Array.from(table.children).filter(node => ['COLGROUP', 'THEAD'].includes(node.tagName) || (first && node.tagName === 'CAPTION'))
+      .forEach(node => clone.append(node.cloneNode(true)));
+    const body = document.createElement('tbody');
+    rows.forEach(row => body.append(row.cloneNode(true)));
+    clone.append(body);
+    return htmlStyles.prepare(clone, settings.preserveHtmlCss && importedStyles.available);
+  }
+  function paginate() {
+    clearTimeout(renderTimer);
+    hidePopup();
+    previewContainer.replaceChildren();
+    synchronizeToc();
+    scaledCount = 0;
+    $('discardDocumentBtn').disabled = !hasDocument();
+    const visible = Array.from(sourceContent.children).filter(block => !hiddenInSource(block));
+    if (!visible.length) {
+      previewContainer.append(textNode('p', '문서가 비어 있습니다. .md 또는 .html 파일을 열어주세요.', 'placeholder-box'));
+      $('downloadPdfBtn').disabled = true;
+      $('documentStatus').textContent = '빈 문서';
+      scheduleSave();
+      return;
+    }
+    $('downloadPdfBtn').disabled = false;
+    let current = null, inToc = false;
+    const newPage = () => (current = createPage(false, !inToc));
+    const ensurePage = () => current || newPage();
+    const tryAppend = node => {
+      if (!node.classList.contains('cover-page')) htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+      ensurePage().content.append(openDetails(node));
+      if (fits(current.content)) return true;
+      node.remove();
+      return false;
+    };
+    function fitAtomic(node) {
+      if (!node.classList.contains('cover-page')) htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+      const content = ensurePage().content;
+      content.append(node);
+      const style = getComputedStyle(node);
+      openDetails(node);
+      const rect = node.getBoundingClientRect();
+      const height = Math.max(rect.height, node.scrollHeight) +
+        (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+      const width = Math.max(rect.width, node.scrollWidth);
+      const scale = Math.min(1, content.clientHeight / Math.max(1, height + 2), content.clientWidth / Math.max(1, width));
+      node.remove();
+      const wrapper = document.createElement('div');
+      wrapper.className = 'scaled-block';
+      wrapper.dataset.blockId = node.dataset.blockId;
+      wrapper.dataset.fragment = 'true';
+      wrapper.style.height = Math.ceil(height * scale) + 'px';
+      node.style.width = rect.width + 'px';
+      node.style.transform = 'scale(' + scale + ')';
+      node.style.transformOrigin = 'top left';
+      wrapper.append(node);
+      content.append(wrapper);
+      scaledCount++;
+    }
+    function splitText(block) {
+      const total = block.textContent.length;
+      // Formula markup must remain intact; scaling is safer than cutting its DOM.
+      if (!total || block.matches('.katex') || block.querySelector('.katex')) {
+        fitAtomic(block.cloneNode(true));
+        return;
       }
-    }, true);
+      const prepared = block.cloneNode(true);
+      if (prepared.tagName === 'OL') Array.from(prepared.children).forEach((li, i) => { li.dataset.listIndex = String(i); });
+      let start = 0;
+      while (start < total) {
+        let low = start, high = total;
+        while (low < high) {
+          const mid = Math.ceil((low + high) / 2);
+          const candidate = sliceBlock(prepared, start, mid, total);
+          ensurePage().content.append(candidate);
+          const ok = fits(current.content);
+          candidate.remove();
+          if (ok) low = mid;
+          else high = mid - 1;
+        }
+        if (low === start && current.content.children.length) { newPage(); continue; }
+        if (low === start) {
+          fitAtomic(sliceBlock(prepared, start, total, total));
+          return;
+        }
+        let end = low;
+        if (end < total) {
+          const chunk = prepared.textContent.slice(start, end);
+          const boundary = Math.max(chunk.lastIndexOf('\n'), chunk.lastIndexOf(' '));
+          if (boundary > chunk.length * 0.6) end = start + boundary + 1;
+          const code = prepared.textContent.charCodeAt(end);
+          if (code >= 0xDC00 && code <= 0xDFFF) end--;
+          if (end <= start) { fitAtomic(sliceBlock(prepared, start, total, total)); return; }
+        }
+        current.content.append(sliceBlock(prepared, start, end, total));
+        start = end;
+        if (start < total) newPage();
+      }
+    }
+    function splitTable(table) {
+      const rows = Array.from(table.tBodies).flatMap(body => Array.from(body.rows));
+      if (!rows.length || Array.from(table.querySelectorAll('td,th')).some(cell => cell.rowSpan > 1)) {
+        fitAtomic(table.cloneNode(true));
+        return;
+      }
+      let chunk = [], first = true;
+      rows.forEach(row => {
+        const candidate = tableChunk(table, [...chunk, row], first);
+        const previous = current.content.lastElementChild;
+        if (chunk.length) previous.remove();
+        current.content.append(candidate);
+        if (fits(current.content)) { chunk.push(row); return; }
+        candidate.remove();
+        if (chunk.length) {
+          current.content.append(tableChunk(table, chunk, first));
+          newPage();
+          first = false;
+        }
+        chunk = [row];
+        const single = tableChunk(table, chunk, first);
+        if (!tryAppend(single)) {
+          if (current.content.children.length) newPage();
+          if (tryAppend(single)) return;
+          fitAtomic(single);
+          chunk = [];
+          current = null;
+          first = false;
+        }
+        ensurePage();
+      });
+      if (table.tFoot) {
+        const foot = table.cloneNode(false);
+        foot.dataset.fragment = 'true';
+        foot.append(table.tFoot.cloneNode(true));
+        if (!tryAppend(foot)) { newPage(); if (!tryAppend(foot)) fitAtomic(foot); }
+      }
+    }
+    function splitToc(toc) {
+      const entries = Array.from(toc.querySelectorAll(':scope > .toc-item')).filter(item => !item.hidden);
+      if (!entries.length) { splitText(toc); return; }
+      const heading = toc.querySelector(':scope > h2');
+      const makeChunk = items => {
+        const fragment = toc.cloneNode(false);
+        fragment.classList.remove('page-break-before');
+        fragment.dataset.fragment = 'true';
+        if (heading) fragment.append(heading.cloneNode(true));
+        items.forEach(item => fragment.append(item.cloneNode(true)));
+        return fragment;
+      };
+      let chunk = [];
+      entries.forEach(item => {
+        if (chunk.length) current.content.lastElementChild.remove();
+        const candidate = makeChunk([...chunk, item]);
+        current.content.append(candidate);
+        if (fits(current.content)) { chunk.push(item); return; }
+        candidate.remove();
+        if (chunk.length) {
+          current.content.append(makeChunk(chunk));
+          newPage();
+        }
+        chunk = [item];
+        const single = makeChunk(chunk);
+        if (!tryAppend(single)) {
+          fitAtomic(single);
+          chunk = [];
+          current = null;
+        }
+        ensurePage();
+      });
+    }
+    visible.forEach(block => {
+      if (block.classList.contains('cover-page')) {
+        current = createPage(true);
+        const cover = block.cloneNode(true);
+        if (!tryAppend(cover)) fitAtomic(cover);
+        current = null;
+        return;
+      }
+      const section = block.classList.contains('toc-wrapper');
+      inToc = section;
+      if ((section || block.classList.contains('page-break-before')) && current?.content.children.length) current = null;
+      const clone = block.cloneNode(true);
+      clone.classList.remove('page-break-before');
+      if (!tryAppend(clone)) {
+        // Measure the whole block in the same width/typography as its destination.
+        current.content.append(clone);
+        const style = getComputedStyle(clone);
+        const height = Math.max(clone.getBoundingClientRect().height, clone.scrollHeight) +
+          (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
+        clone.remove();
+        const splittable = !section && Boolean(block.textContent.length) &&
+          !block.matches('img,svg,figure,video,canvas,iframe') && !block.querySelector('.katex') &&
+          (block.tagName !== 'TABLE' || !Array.from(block.querySelectorAll('td,th')).some(cell => cell.rowSpan > 1));
+        const large = height >= current.content.clientHeight * .3;
+        if (current.content.children.length && (!large || !splittable)) newPage();
+        const retry = block.cloneNode(true);
+        retry.classList.remove('page-break-before');
+        if (!tryAppend(retry)) {
+          if (section) splitToc(block);
+          else if (block.tagName === 'TABLE') splitTable(block);
+          else splitText(block);
+        }
+      }
+      if (section) current = null;
+    });
+    // A split row may leave an unused working page.
+    previewContainer.querySelectorAll('.pdf-page').forEach(page => {
+      if (!page.querySelector('.pdf-content').children.length) page.remove();
+    });
+    const pages = Array.from(previewContainer.querySelectorAll('.pdf-page'));
+    const headingPages = new Map();
+    const headingAnchors = new Set();
+    const anchorByHeading = new Map();
+    pages.forEach((page, index) => {
+      const slot = page.querySelector('.page-num-slot');
+      if (slot) slot.textContent = (index + 1) + ' / ' + pages.length;
+      page.querySelectorAll('[data-heading-id]').forEach(heading => {
+        const id = heading.id || 'pdf-heading-' + heading.dataset.headingId;
+        if (!anchorByHeading.has(heading.dataset.headingId)) {
+          heading.id = headingAnchors.has(id) ? 'pdf-heading-' + heading.dataset.headingId : id;
+          headingAnchors.add(heading.id);
+          anchorByHeading.set(heading.dataset.headingId, heading.id);
+        } else heading.removeAttribute('id');
+        if (heading.textContent.trim() && !headingPages.has(heading.dataset.headingId)) headingPages.set(heading.dataset.headingId, index + 1);
+      });
+    });
+    [sourceContent, previewContainer].forEach(root => {
+      root.querySelectorAll('.toc-item').forEach(item => {
+        const page = item.querySelector('.toc-page-number,.toc-page');
+        const number = headingPages.get(item.dataset.headingTarget) || item.dataset.manualPage || '';
+        if (page) page.textContent = number || '—';
+        if (root === previewContainer) {
+          if (item.dataset.headingTarget && headingPages.has(item.dataset.headingTarget)) item.href = '#' + anchorByHeading.get(item.dataset.headingTarget);
+          else if (number && pages[Number(number) - 1]) {
+            pages[Number(number) - 1].id = 'pdf-page-' + number;
+            item.href = '#pdf-page-' + number;
+          } else item.removeAttribute('href');
+        }
+      });
+    });
+    SharedCodeBlocks.decorate(previewContainer, (pre, language) => {
+      const source = elementById(pre.dataset.elementId);
+      if (!source || source.tagName !== 'PRE') return;
+      saveHistory();
+      SharedCodeBlocks.setLanguage(source, language);
+      paginate();
+    });
+    highlightSelection();
+    if (!storageFailed) $('documentStatus').textContent = pages.length + '페이지 · 자동 저장' +
+      (scaledCount ? ' · 큰 요소 ' + scaledCount + '개 축소' : '');
+    scheduleSave();
+  }
+  function highlightSelection() {
+    previewContainer.querySelectorAll('.selected-element').forEach(node => node.classList.remove('selected-element'));
+    if (mode === 'normal' && selectedId) previewContainer.querySelectorAll('[data-element-id]').forEach(node => {
+      if (node.dataset.elementId === selectedId) node.classList.add('selected-element');
+    });
+  }
+  function renderDocument(html, fileName = '', styles = null) {
+    resetDocument();
+    importedStyles = styles || { css: [], attributes: {}, missing: [], available: false };
+    settings.preserveHtmlCss = importedStyles.available;
+    sourceContent.innerHTML = clean(html);
+    normalizeContent();
+    const title = fileName ? fileName.replace(/\.[^/.]+$/, '') : sourceContent.querySelector('h1')?.textContent.trim();
+    document.title = title || 'pdf-export';
+    settings.headerTitleInput = title || '';
+    settings.coverTitleInput = sourceContent.querySelector('h1,h2,h3,h4,h5,h6')?.textContent.trim() || title || '';
+    renderMath();
+    clearSelection();
+    setMode('normal');
+    history = [];
+    updateUndo();
+    applySettings();
+    paginate();
+  }
+  async function readFile(file, companions = []) {
+    if (!file) return;
+    const extension = file.name.split('.').pop().toLowerCase();
+    if (!['md', 'html', 'htm'].includes(extension)) { alert('.md 또는 .html 파일을 선택해주세요.'); return; }
+    if (hasDocument() && !await confirmDocument('새 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
+    const request = ++loadRequest, version = documentVersion;
+    const current = () => request === loadRequest && version === documentVersion;
+    try {
+      const content = await file.text();
+      if (!current()) return;
+      if (extension === 'md') renderDocument(marked.parse(content), file.name);
+      else {
+        const imported = await htmlStyles.extract(content, companions);
+        if (!current()) return;
+        const staging = document.createElement('div');
+        staging.innerHTML = clean(imported.html);
+        SharedCodeBlocks.normalize(staging, { forcePlain: true });
+        imported.html = staging.innerHTML;
+        renderDocument(imported.html, file.name, imported.styles);
+      }
+    } catch (error) {
+      if (!current()) return;
+      alert('파일을 읽지 못했습니다. 다시 선택해주세요.');
+      console.error(error);
+    }
+  }
+  ['mdFileInput', 'htmlFileInput'].forEach(id => $(id).addEventListener('change', async event => {
+    const files = Array.from(event.target.files);
+    await readFile(files.find(file => /\.(md|html?)$/i.test(file.name)), files);
+    event.target.value = '';
+  }));
+  const dropZone = $('dropZone');
+  dropZone.addEventListener('dragover', event => { event.preventDefault(); dropZone.classList.add('drag-over'); });
+  dropZone.addEventListener('dragleave', event => { if (!dropZone.contains(event.relatedTarget)) dropZone.classList.remove('drag-over'); });
+  dropZone.addEventListener('drop', async event => {
+    event.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const files = Array.from(event.dataTransfer.files);
+    await readFile(files.find(file => /\.(md|html?)$/i.test(file.name)), files);
+  });
+  settingIds.forEach(id => {
+    const input = $(id);
+    if (limits[id]) { input.min = limits[id][0]; input.max = limits[id][1]; }
+    input.addEventListener('input', () => {
+      if (limits[id] && (!input.value || !Number.isFinite(Number(input.value)))) return;
+      saveHistory(id);
+      settings = normalizeSettings({ [id]: input.type === 'checkbox' ? input.checked : input.value });
+      applySettings(false);
+      if (id === 'tocTitleInput') {
+        sourceContent.querySelectorAll('.toc-heading').forEach(node => { node.textContent = settings.tocTitleInput; });
+      }
+      if ((id.startsWith('cover') || id === 'footerAuthorInput') && sourceContent.querySelector('.cover-page')) buildCover();
+      else requestPaginate();
+    });
+    input.addEventListener('blur', () => { inputGroup = null; applySettings(); });
+  });
+  $('undoBtn').addEventListener('click', () => {
+    const state = history.pop();
+    if (!state) return;
+    documentVersion++; loadRequest++; imageRequest++;
+    sourceContent.innerHTML = clean(state.html);
+    importedStyles = state.importedStyles || { css: [], attributes: {}, missing: [], available: false };
+    settings = normalizeSettings(state.settings);
+    document.title = state.title;
+    inputGroup = null;
+    clearSelection();
+    applySettings();
+    const imageLayer = sourceContent.querySelector('.cover-image-layer');
+    checkCoverImage(imageLayer?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
+    updateUndo();
+    paginate();
+  });
+  $('toggleBreakMode').addEventListener('click', () => { setMode(mode === 'break' ? 'normal' : 'break'); highlightSelection(); });
+  $('toggleDeleteMode').addEventListener('click', () => { setMode(mode === 'delete' ? 'normal' : 'delete'); highlightSelection(); });
+
+  function makeTocItem(title, level, headingTarget = '', manualPage = '') {
+    const item = document.createElement('a');
+    item.className = 'toc-item toc-level-' + level;
+    item.dataset.tocId = uid('toc');
+    item.dataset.level = level;
+    if (headingTarget) item.dataset.headingTarget = headingTarget;
+    if (manualPage) item.dataset.manualPage = manualPage;
+    item.append(textNode('span', '', 'toc-number'), textNode('span', title, 'toc-title'), textNode('span', '', 'toc-dots'), textNode('span', '—', 'toc-page-number'));
+    return item;
+  }
+  $('generateTocBtn').addEventListener('click', () => {
+    const headings = Array.from(sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(heading =>
+      !heading.closest('.cover-page,.toc-wrapper') && !hiddenInSource(heading));
+    if (!headings.length) { alert('목차로 만들 H1~H6 제목이 없습니다.'); return; }
+    const existing = sourceContent.querySelector('.toc-wrapper');
+    const previous = Array.from(existing?.querySelectorAll('.toc-item') || []);
+    const byHeading = new Map();
+    previous.forEach(item => {
+      if (item.dataset.headingTarget && !byHeading.has(item.dataset.headingTarget)) byHeading.set(item.dataset.headingTarget, item);
+    });
+    const toc = document.createElement('div');
+    toc.className = existing?.className || 'toc-wrapper page-break-before';
+    toc.dataset.blockId = existing?.dataset.blockId || uid('block');
+    const tocHeading = existing?.querySelector('.toc-heading')?.cloneNode(false) || textNode('h2', '', 'toc-heading');
+    tocHeading.textContent = settings.tocTitleInput || '목차';
+    toc.append(tocHeading);
+    const emitted = new Set();
+    const append = item => { if (!emitted.has(item.dataset.tocId)) { toc.append(item.cloneNode(true)); emitted.add(item.dataset.tocId); } };
+    // Keep manual/duplicate user entries next to their prior preceding heading.
+    previous.filter((item, index) => !item.dataset.headingTarget &&
+      !previous.slice(0, index).some(entry => entry.dataset.headingTarget)).forEach(append);
+    headings.forEach(heading => {
+      const old = byHeading.get(heading.dataset.headingId);
+      if (old) append(old);
+      else toc.append(makeTocItem(heading.textContent.trim(), heading.tagName.slice(1), heading.dataset.headingId));
+      if (old) {
+        const index = previous.indexOf(old);
+        for (let i = index + 1; i < previous.length; i++) {
+          const item = previous[i];
+          if (item.dataset.headingTarget && byHeading.get(item.dataset.headingTarget) === item) break;
+          append(item);
+        }
+      }
+    });
+    previous.filter(item => !emitted.has(item.dataset.tocId) &&
+      (!item.dataset.headingTarget || item.dataset.customTitle)).forEach(append);
+    if (existing && toc.innerHTML === existing.innerHTML) return;
+    saveHistory();
+    existing?.remove();
+    const cover = sourceContent.querySelector('.cover-page');
+    if (cover) cover.after(toc);
+    else sourceContent.prepend(toc);
+    paginate();
+  });
+  function checkCoverImage(url) {
+    if (!url) { coverImageProbe = null; $('coverImageStatus').textContent = ''; return; }
+    if (coverImageProbe?.url === url && coverImageProbe.version === documentVersion) return;
+    const image = new Image();
+    const probe = { url, version: documentVersion, promise: null };
+    coverImageProbe = probe;
+    $('coverImageStatus').textContent = '배경 이미지를 확인하고 있습니다.';
+    probe.promise = new Promise(resolve => {
+      const done = ok => {
+        if (coverImageProbe === probe && probe.version === documentVersion) {
+          $('coverImageStatus').textContent = ok ? '배경 이미지 준비 완료' : '이미지를 표시할 수 없습니다. 파일 형식이나 URL을 확인해주세요.';
+        }
+        image.onload = image.onerror = null;
+        resolve(ok);
+      };
+      image.onload = () => done(true);
+      image.onerror = () => done(false);
+      image.src = url;
+    });
+  }
+  function buildCover(recordHistory = false) {
+    const existing = sourceContent.querySelector('.cover-page');
+    const cover = document.createElement('div');
+    cover.className = 'cover-page';
+    cover.dataset.blockId = existing?.dataset.blockId || uid('block');
+    const image = settings.coverImgInput.trim();
+    let imageUrl = null;
+    if (image) {
+      try {
+        const parsed = new URL(image, location.href);
+        if (['https:', 'http:'].includes(parsed.protocol) || /^data:image\/[a-z0-9.+-]+(?:;[^,]*)?,/i.test(image)) imageUrl = parsed.href;
+      } catch { /* Keep the selected background if the URL is invalid. */ }
+    }
+    checkCoverImage(imageUrl);
+    if (image && !imageUrl) $('coverImageStatus').textContent = '지원하지 않는 이미지 URL입니다. 이미지 파일 또는 HTTP(S) URL을 사용해주세요.';
+    const backgrounds = {
+      template: 'var(--cover-background, #fff)', white: '#fff',
+      soft: 'linear-gradient(135deg, #f0f9ff, #dbeafe)', warm: 'linear-gradient(135deg, #fffbeb, #f5e9d5)',
+      grid: 'repeating-linear-gradient(0deg, transparent, transparent 23px, #cbd5e1 24px), repeating-linear-gradient(90deg, #f8fafc, #f8fafc 23px, #cbd5e1 24px)',
+      custom: settings.coverBgInput || '#fff'
+    };
+    cover.style.background = backgrounds[settings.coverBgStyle] || backgrounds.template;
+    const imageLayer = document.createElement('div');
+    imageLayer.className = 'cover-image-layer';
+    imageLayer.setAttribute('aria-hidden', 'true');
+    if (imageUrl) imageLayer.style.backgroundImage = 'url(' + JSON.stringify(imageUrl) + ')';
+    const imageFits = { cover: ['cover', 'no-repeat'], tile: ['auto', 'repeat'], width: ['100% auto', 'no-repeat'], original: ['auto', 'no-repeat'] };
+    const [size, repeat] = imageFits[settings.coverImageFit] || imageFits.cover;
+    imageLayer.style.backgroundSize = size;
+    imageLayer.style.backgroundRepeat = repeat;
+    imageLayer.style.opacity = 1 - settings.coverImageOpacity / 100;
+    const filter = document.createElement('div');
+    filter.className = 'cover-filter-layer';
+    filter.setAttribute('aria-hidden', 'true');
+    filter.style.backgroundColor = settings.coverFilterColor;
+    filter.style.opacity = 1 - settings.coverFilterOpacity / 100;
+    const titles = document.createElement('div');
+    titles.className = 'cover-title-group';
+    titles.append(textNode('h1', settings.coverTitleInput || document.title),
+      textNode('h3', settings.coverSubtitleInput));
+    Array.from(titles.children).forEach(node => {
+      const previous = existing?.querySelector('.cover-title-group ' + node.tagName.toLowerCase());
+      if (previous?.dataset.elementId) node.dataset.elementId = previous.dataset.elementId;
+    });
+    const meta = document.createElement('div');
+    meta.className = 'cover-meta-group';
+    meta.append(textNode('p', '작성자: ' + (settings.footerAuthorInput || '작성자 미지정')), textNode('p', '발행일: ' + localDate()));
+    const metadata = existing?.querySelector('.cover-meta-group')?.cloneNode(true) || meta;
+    const author = metadata.querySelector('[data-cover-field="author"]') || metadata.querySelector('p');
+    const oldAuthor = metadata.dataset.coverAuthor ?? settings.footerAuthorInput;
+    if (author?.textContent === '작성자: ' + (oldAuthor || '작성자 미지정')) {
+      author.textContent = '작성자: ' + (settings.footerAuthorInput || '작성자 미지정');
+      author.dataset.coverField = 'author';
+    }
+    metadata.dataset.coverAuthor = settings.footerAuthorInput;
+    cover.append(imageLayer, filter, titles, metadata);
+    if (existing && cover.outerHTML === existing.outerHTML) return;
+    if (recordHistory) saveHistory();
+    if (existing) existing.replaceWith(cover);
+    else sourceContent.prepend(cover);
+    applySettings();
+    paginate();
+  }
+  $('coverImageFile').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { alert('이미지 파일을 선택해주세요.'); event.target.value = ''; return; }
+    const request = ++imageRequest, version = documentVersion;
+    const image = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    }).catch(() => null);
+    event.target.value = '';
+    if (request !== imageRequest || version !== documentVersion) return;
+    if (!image) { alert('이미지를 읽지 못했습니다.'); return; }
+    saveHistory();
+    settings.coverImgInput = image;
+    buildCover();
+  });
+  $('clearCoverImageBtn').addEventListener('click', () => {
+    if (!settings.coverImgInput) return;
+    imageRequest++;
+    saveHistory(); settings.coverImgInput = ''; buildCover();
+  });
+  $('generateCoverBtn').addEventListener('click', () => buildCover(true));
+  $('applyCoverConfigBtn').addEventListener('click', () => buildCover(true));
+
+  function sourceTocItem() {
+    return Array.from(sourceContent.querySelectorAll('.toc-item')).find(item => item.dataset.tocId === activeTocId);
+  }
+  const findHeading = id => Array.from(sourceContent.querySelectorAll('[data-heading-id]')).find(node => node.dataset.headingId === id);
+  function synchronizeToc() {
+    const counters = [0, 0, 0, 0, 0, 0];
+    sourceContent.querySelectorAll('.toc-item').forEach(item => {
+      const heading = findHeading(item.dataset.headingTarget);
+      item.hidden = Boolean(item.dataset.headingTarget && (!heading || hiddenInSource(heading)));
+      if (item.hidden) return;
+      if (heading) {
+        const level = Number(heading.tagName.slice(1));
+        item.dataset.level = level;
+        if (!item.dataset.customTitle) item.querySelector('.toc-title').textContent = heading.textContent.trim();
+      }
+      const level = Math.max(1, Math.min(6, Number(item.dataset.level || 1)));
+      for (let i = 1; i <= 6; i++) item.classList.toggle('toc-level-' + i, i === level);
+      counters[level - 1]++;
+      counters.fill(0, level);
+      let number = item.querySelector('.toc-number');
+      if (!number) { number = textNode('span', '', 'toc-number'); item.prepend(number); }
+      // For documents starting at H2/H3, do not invent empty leading parents.
+      const first = counters.findIndex(value => value > 0);
+      const parts = counters.slice(first, level).map(value => value || 1);
+      number.textContent = settings.tocNumbering ? parts.join('.') + ' ' : '';
+      number.hidden = !settings.tocNumbering;
+    });
+  }
+  function openTocEditor(kind, item = null) {
+    tocEditor = { kind, id: item?.dataset.tocId || null };
+    const titleOnly = kind === 'title';
+    $('tocEditTitle').textContent = titleOnly ? '목차 제목 편집' : kind === 'add' ? '목차 항목 추가' : '목차 항목 편집';
+    $('tocEntryTitle').value = titleOnly ? settings.tocTitleInput : kind === 'add' ? '' : item.querySelector('.toc-title').textContent;
+    $('tocEntryOptions').hidden = titleOnly;
+    const select = $('tocEntryTarget');
+    select.replaceChildren(textNode('option', '직접 페이지 지정 (연결 없음)'));
+    select.firstChild.value = '';
+    sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
+      if (heading.closest('.cover-page,.toc-wrapper') || hiddenInSource(heading)) return;
+      const option = textNode('option', heading.tagName + ' · ' + heading.textContent.trim());
+      option.value = heading.dataset.headingId;
+      select.append(option);
+    });
+    select.value = kind === 'edit' ? item.dataset.headingTarget || '' : '';
+    $('tocEntryPage').value = kind === 'edit' ? item.dataset.manualPage || '' : '';
+    $('tocEntryPage').disabled = Boolean(select.value);
+    hidePopup();
+    $('tocEditDialog').showModal();
+    $('tocEntryTitle').focus();
+  }
+  $('tocEntryTarget').addEventListener('change', () => {
+    $('tocEntryPage').disabled = Boolean($('tocEntryTarget').value);
+    if ($('tocEntryTarget').value && !$('tocEntryTitle').value.trim()) $('tocEntryTitle').value = findHeading($('tocEntryTarget').value).textContent.trim();
+  });
+  function closeTocEditor() { tocEditor = null; $('tocEditDialog').close(); }
+  $('cancelTocEditBtn').addEventListener('click', closeTocEditor);
+  $('tocEditDialog').addEventListener('cancel', event => { event.preventDefault(); closeTocEditor(); });
+  $('saveTocEditBtn').addEventListener('click', () => {
+    if (!tocEditor || !$('tocEntryTitle').value.trim()) { $('tocEntryTitle').focus(); return; }
+    const title = $('tocEntryTitle').value.trim();
+    const item = Array.from(sourceContent.querySelectorAll('.toc-item')).find(node => node.dataset.tocId === tocEditor.id);
+    if (tocEditor.kind === 'title') {
+      if (settings.tocTitleInput !== title) {
+        saveHistory(); settings.tocTitleInput = title;
+        sourceContent.querySelectorAll('.toc-heading').forEach(node => { node.textContent = title; });
+        applySettings();
+      }
+    } else if (item) {
+      const target = $('tocEntryTarget').value;
+      const page = /^[1-9]\d*$/.test($('tocEntryPage').value) && !target ? $('tocEntryPage').value : '';
+      if (tocEditor.kind === 'add') {
+        saveHistory();
+        const heading = findHeading(target);
+        const next = makeTocItem(title, heading ? heading.tagName.slice(1) : item.dataset.level, target, page);
+        next.dataset.customTitle = 'true';
+        item.after(next);
+      } else if (title !== item.querySelector('.toc-title').textContent || target !== (item.dataset.headingTarget || '') || page !== (item.dataset.manualPage || '')) {
+        saveHistory(); item.querySelector('.toc-title').textContent = title;
+        item.dataset.customTitle = 'true'; item.dataset.headingTarget = target; item.dataset.manualPage = page;
+      }
+    }
+    closeTocEditor(); paginate();
+  });
+  $('tocEditBtn').addEventListener('click', () => { const item = sourceTocItem(); if (item) openTocEditor('edit', item); });
+  $('tocAddBtn').addEventListener('click', () => { const item = sourceTocItem(); if (item) openTocEditor('add', item); });
+  function changeHeadingLevel(heading, delta) {
+    const old = Number(heading.tagName.slice(1));
+    const level = Math.max(1, Math.min(6, old + delta));
+    if (old === level) return false;
+    saveHistory();
+    const next = document.createElement('h' + level);
+    Array.from(heading.attributes).forEach(attr => next.setAttribute(attr.name, attr.value));
+    next.append(...heading.childNodes);
+    heading.replaceWith(next);
+    return true;
+  }
+  function changeTocLevel(delta) {
+    const item = sourceTocItem();
+    if (!item) return;
+    const heading = findHeading(item.dataset.headingTarget);
+    if (heading) {
+      if (!changeHeadingLevel(heading, delta)) return;
+    } else {
+      const old = Number(item.dataset.level || 1);
+      const level = Math.max(1, Math.min(6, old + delta));
+      if (old === level) return;
+      saveHistory(); item.dataset.level = level;
+    }
+    paginate();
+  }
+  $('tocPromoteBtn').addEventListener('click', () => changeTocLevel(-1));
+  $('tocDemoteBtn').addEventListener('click', () => changeTocLevel(1));
+  function changeSelectedHeading(delta) {
+    const heading = elementById(selectedId);
+    if (!heading || !/^H[1-6]$/.test(heading.tagName) || !changeHeadingLevel(heading, delta)) return;
+    paginate(); selectBlock(selectedId);
+  }
+  $('headingPromoteBtn').addEventListener('click', () => changeSelectedHeading(-1));
+  $('headingDemoteBtn').addEventListener('click', () => changeSelectedHeading(1));
+  $('removePageBreakBtn').addEventListener('click', () => {
+    const element = elementById(selectedId);
+    const block = element?.closest('[data-block-id]');
+    if (!block?.classList.contains('page-break-before')) return;
+    saveHistory(); block.classList.remove('page-break-before'); paginate(); selectBlock(selectedId);
+  });
+  $('tocDeleteBtn').addEventListener('click', () => {
+    const item = sourceTocItem();
+    if (!item) return;
+    saveHistory();
+    item.remove();
+    paginate();
+  });
+  function selectBlock(id) {
+    const source = elementById(id);
+    if (!source) return;
+    selectedId = id;
+    $('selectedTagType').textContent = '<' + source.tagName.toLowerCase() + '>';
+    $('elementLineHeight').value = source.style.lineHeight || '';
+    $('rightPanel').style.display = 'block';
+    const heading = /^H[1-6]$/.test(source.tagName) && !source.closest('.cover-page,.toc-wrapper');
+    $('headingLevelControls').hidden = !heading;
+    $('headingPromoteBtn').disabled = source.tagName === 'H1';
+    $('headingDemoteBtn').disabled = source.tagName === 'H6';
+    $('removePageBreakBtn').hidden = !source.closest('[data-block-id]')?.classList.contains('page-break-before');
+    renderStyleChoices(source);
+    highlightSelection();
+  }
+  previewContainer.addEventListener('click', event => {
+    const link = event.target.closest('a');
+    if (link) {
+      event.preventDefault();
+      if ((event.ctrlKey || event.metaKey) && link.getAttribute('href')?.startsWith('#')) {
+        document.getElementById(link.getAttribute('href').slice(1))?.scrollIntoView({ block: 'start' });
+        return;
+      }
+    }
+    const target = event.target.closest('[data-block-id]');
+    if (!target) return;
+    const source = blockById(target.dataset.blockId);
+    if (!source) return;
+    if (mode === 'break') {
+      if (source.classList.contains('page-break-before') || source.classList.contains('cover-page')) return;
+      saveHistory(); source.classList.add('page-break-before'); paginate(); return;
+    }
+    if (mode === 'delete') { saveHistory(); source.style.display = 'none'; clearSelection(); paginate(); return; }
+    const toc = event.target.closest('.toc-item');
+    if (toc) {
+      activeTocId = toc.dataset.tocId;
+      popup.hidden = false;
+      popup.style.left = Math.max(8, Math.min(event.clientX, window.innerWidth - popup.offsetWidth - 8)) + 'px';
+      popup.style.top = Math.max(8, Math.min(event.clientY + 12, window.innerHeight - popup.offsetHeight - 8)) + 'px';
+      return;
+    }
+    hidePopup();
+    const element = event.target.closest('[data-element-id]');
+    if (element) selectBlock(element.dataset.elementId);
+  });
+  document.addEventListener('click', event => { if (!event.target.closest('.toc-item,#tocActionPopup')) hidePopup(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') hidePopup(); });
+
+  function closeEditor(save) {
+    const source = blockById(activeEditId);
+    const edited = $('blockEditContent').firstElementChild;
+    const codeSource = activeCodeId && elementById(activeCodeId);
+    if (save && codeSource) {
+      const text = $('codeEditInput').value;
+      const oldText = codeSource.querySelector('code')?.textContent ?? codeSource.textContent;
+      if (text !== oldText) {
+        saveHistory();
+        codeSource.replaceChildren(textNode('code', text));
+        SharedCodeBlocks.setLanguage(codeSource, codeSource.dataset.codeLanguage || 'plaintext');
+      }
+    } else if (save && source && edited && activeEditKind === 'cover-meta') {
+      const meta = source.querySelector('.cover-meta-group');
+      const html = clean(edited.innerHTML);
+      if (meta && html !== meta.innerHTML) { saveHistory(); meta.innerHTML = html; }
+    } else if (save && source && edited) {
+      edited.querySelectorAll('.code-block-controls').forEach(node => node.remove());
+      htmlStyles.restoreInline(edited);
+      const html = clean(edited.innerHTML);
+      if (html !== source.innerHTML) {
+        saveHistory();
+        source.innerHTML = html;
+        renderMath(source);
+        SharedCodeBlocks.normalize(sourceContent);
+        normalizeContent();
+      }
+    }
+    activeEditId = activeCodeId = null;
+    $('blockEditDialog').close();
+    paginate();
+  }
+  previewContainer.addEventListener('dblclick', event => {
+    if (mode !== 'normal') return;
+    const target = event.target.closest('[data-block-id]');
+    const source = target && blockById(target.dataset.blockId);
+    if (!source) return;
+    if (source.classList.contains('toc-wrapper')) {
+      if (event.target.closest('.toc-heading')) openTocEditor('title');
+      else { const item = event.target.closest('.toc-item'); if (item) { const original = Array.from(source.querySelectorAll('.toc-item')).find(node => node.dataset.tocId === item.dataset.tocId); if (original) openTocEditor('edit', original); } }
+      return;
+    }
+    activeEditId = source.dataset.blockId;
+    const code = event.target.closest('pre[data-element-id]');
+    activeCodeId = code?.dataset.elementId || null;
+    activeEditKind = source.classList.contains('cover-page') ? 'cover-meta' : 'block';
+    $('codeEditInput').hidden = !activeCodeId;
+    $('blockEditContent').hidden = Boolean(activeCodeId);
+    if (activeCodeId) {
+      const original = elementById(activeCodeId);
+      $('codeEditInput').value = original.querySelector('code')?.textContent ?? original.textContent;
+      $('blockEditDialog').showModal();
+      $('codeEditInput').focus();
+      return;
+    }
+    if (activeEditKind === 'cover-meta' && !event.target.closest('.cover-meta-group')) { activeEditId = null; return; }
+    const copy = htmlStyles.prepare((activeEditKind === 'cover-meta' ? source.querySelector('.cover-meta-group') : source).cloneNode(true), settings.preserveHtmlCss && importedStyles.available);
+    copy.classList.remove('page-break-before');
+    copy.contentEditable = 'true';
+    copy.removeAttribute('data-block-id');
+    $('blockEditContent').replaceChildren(copy);
+    $('blockEditContent').dataset.theme = settings.colorTheme;
+    $('blockEditContent').className = 'block-edit-content';
+    $('blockEditContent').removeAttribute('style');
+    htmlStyles.decorateRoot($('blockEditContent'), importedStyles, settings.preserveHtmlCss && importedStyles.available);
+    $('blockEditDialog').showModal();
+    copy.focus();
+  });
+  $('blockEditContent').addEventListener('paste', event => {
+    event.preventDefault();
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    range.deleteContents();
+    const text = document.createTextNode(event.clipboardData.getData('text/plain'));
+    range.insertNode(text);
+    range.setStartAfter(text);
+    range.collapse(true);
+    selection.removeAllRanges();
+    selection.addRange(range);
+  });
+  $('saveBlockEditBtn').addEventListener('click', () => closeEditor(true));
+  $('cancelBlockEditBtn').addEventListener('click', () => closeEditor(false));
+  $('blockEditDialog').addEventListener('cancel', event => { event.preventDefault(); closeEditor(false); });
+
+  function renderStyleChoices(source) {
+    const family = templates.family(source.tagName);
+    selectedPreset = source.dataset.style || 'default';
+    $('stylePreviewGrid').replaceChildren();
+    templates.styles[family].forEach(([id, name]) => {
+      const button = document.createElement('button');
+      button.className = 'preview-item';
+      button.type = 'button';
+      button.classList.toggle('active', selectedPreset === id);
+      button.setAttribute('aria-pressed', String(selectedPreset === id));
+      const sample = document.createElement('div');
+      sample.className = 'tag-style-sample document-style';
+      sample.dataset.theme = settings.colorTheme;
+      sample.innerHTML = templates.samples[family];
+      sample.firstElementChild.dataset.style = id;
+      button.append(sample, textNode('span', name));
+      button.addEventListener('click', () => {
+        $('stylePreviewGrid').querySelectorAll('.preview-item').forEach(node => {
+          node.classList.toggle('active', node === button);
+          node.setAttribute('aria-pressed', String(node === button));
+        });
+        selectedPreset = id;
+      });
+      $('stylePreviewGrid').append(button);
+    });
+  }
+  function applyPreset(all) {
+    const source = elementById(selectedId);
+    if (!source || !selectedPreset) return;
+    saveHistory();
+    const targets = all ? sourceContent.querySelectorAll(source.tagName) : [source];
+    targets.forEach(target => {
+      if (target.closest('.cover-page,.toc-wrapper')) return;
+      ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => target.classList.remove(name));
+      if (selectedPreset === 'default') delete target.dataset.style;
+      else target.dataset.style = selectedPreset;
+    });
+    paginate();
+  }
+  $('applyToSelectedBtn').addEventListener('click', () => applyPreset(false));
+  $('applyToAllBtn').addEventListener('click', () => applyPreset(true));
+  $('resetElementStyleBtn').addEventListener('click', () => {
+    const source = elementById(selectedId);
+    if (!source) return;
+    saveHistory();
+    delete source.dataset.style;
+    resetLineHeight(source);
+    ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => source.classList.remove(name));
+    $('elementLineHeight').value = '';
+    renderStyleChoices(source);
+    paginate();
+  });
+  $('elementLineHeight').addEventListener('input', event => {
+    const source = elementById(selectedId);
+    if (!source) return;
+    const value = event.target.value;
+    if (value && (!Number.isFinite(Number(value)) || Number(value) < 1 || Number(value) > 3)) return;
+    saveHistory('elementLineHeight');
+    if (value) {
+      if (!('pdfOriginalLineHeight' in source.dataset)) source.dataset.pdfOriginalLineHeight = source.style.lineHeight;
+      source.style.lineHeight = value;
+      source.dataset.pdfLineHeight = value;
+    } else resetLineHeight(source);
+    requestPaginate();
+  });
+  $('elementLineHeight').addEventListener('blur', () => { inputGroup = null; });
+
+  function getMarkdownHistory() {
+    try {
+      const entries = JSON.parse(localStorage.getItem('mdeditor.history.v1') || '[]');
+      return Array.isArray(entries) ? entries.filter(item => typeof item.content === 'string') : [];
+    } catch { return []; }
+  }
+  function refreshHistory() {
+    const select = $('mdHistorySelect');
+    const entries = getMarkdownHistory();
+    select.replaceChildren(textNode('option', entries.length ? '선택하세요' : '저장된 기록 없음'));
+    select.firstChild.value = '';
+    entries.slice().reverse().forEach(item => {
+      const option = textNode('option', new Date(item.ts).toLocaleString() + ' · ' + (item.content.split('\n')[0].replace(/^#+\s*/, '').slice(0, 25) || '제목 없음'));
+      option.value = String(item.id || item.ts);
+      select.append(option);
+    });
+  }
+  $('loadMdHistoryBtn').addEventListener('click', async () => {
+    const value = $('mdHistorySelect').value;
+    const item = getMarkdownHistory().find(entry => String(entry.id || entry.ts) === value);
+    if (item) {
+      if (hasDocument() && !await confirmDocument('새 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
+      renderDocument(marked.parse(item.content));
+    }
+  });
+  window.addEventListener('storage', event => { if (event.key === 'mdeditor.history.v1') refreshHistory(); });
+  sourceContent.addEventListener('load', requestPaginate, true);
+  sourceContent.addEventListener('error', requestPaginate, true);
+  sourceContent.addEventListener('toggle', requestPaginate, true);
+  async function preparePrint() {
+    const version = documentVersion;
+    if (activeEditId) closeEditor(true);
+    await document.fonts?.ready;
+    if (version !== documentVersion) return;
+    if (coverImageProbe?.promise) {
+      await new Promise(resolve => {
+        const timer = setTimeout(resolve, 3000);
+        coverImageProbe.promise.then(() => { clearTimeout(timer); resolve(); });
+      });
+      if (version !== documentVersion) return;
+    }
+    const images = Array.from(sourceContent.querySelectorAll('img')).filter(image => !image.complete);
+    await Promise.all(images.map(image => new Promise(resolve => {
+      const timer = setTimeout(resolve, 3000);
+      const done = () => { clearTimeout(timer); resolve(); };
+      image.addEventListener('load', done, { once: true });
+      image.addEventListener('error', done, { once: true });
+    })));
+    if (version !== documentVersion) return;
+    paginate();
+    persist();
+    if (previewContainer.querySelector('.pdf-page')) window.print();
+  }
+  $('downloadPdfBtn').addEventListener('click', preparePrint);
+  window.addEventListener('beforeprint', () => {
+    if (activeEditId) closeEditor(true);
+    else paginate();
+    persist();
+  });
+  window.addEventListener('pagehide', persist);
+  document.fonts?.ready.then(requestPaginate);
+  refreshHistory();
+  applySettings();
+  try {
+    const transferred = localStorage.getItem('pdfMakerTransfer');
+    const draft = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    if (draft && typeof draft.html === 'string') {
+      sourceContent.innerHTML = clean(draft.html);
+      importedStyles = draft.importedStyles || { css: [], attributes: {}, missing: [], available: false };
+      settings = normalizeSettings(draft.settings || {});
+      document.title = typeof draft.title === 'string' ? draft.title : 'pdf-export';
+      normalizeContent();
+      applySettings();
+      const background = sourceContent.querySelector('.cover-image-layer')?.style.backgroundImage;
+      checkCoverImage(background?.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
+    }
+    paginate();
+    if (transferred !== null) {
+      (async () => {
+        if (hasDocument() && !await confirmDocument('편집기 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
+        renderDocument(marked.parse(transferred));
+        persist();
+        if (!storageFailed) localStorage.removeItem('pdfMakerTransfer');
+      })();
+    }
+  } catch (error) {
+    console.error(error);
+    paginate();
   }
 });

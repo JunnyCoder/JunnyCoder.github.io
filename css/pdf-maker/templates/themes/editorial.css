@@ -1,0 +1,13 @@
+[data-theme="editorial"] {
+  --font-family: Georgia, "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+  --text-main: #292621; --heading-color: #292621; --muted-color: #5d554b;
+  --accent-color: #695744; --border-color: #cfc7bb; --code-bg: #f6f4f1;
+  --h1-border: none; --h1-size: 2.3em; --heading-weight: 400;
+  --table-head-bg: transparent; --table-top: 1px solid #6a6156; --table-bottom: 1px solid #6a6156;
+  --quote-border: none; --quote-size: 1.18em; --quote-padding: .5em 0;
+  --code-radius: 0; --caption-align: left;
+  --cover-title-size: 38pt; --cover-title-color: var(--text-main); --cover-subtitle-color: var(--accent-color);
+  --cover-padding: 48mm 28mm 30mm; --cover-background: #fff;
+  --cover-title-weight: 400; --cover-meta-border: 1px solid var(--border-color);
+  --toc-title-size: 24pt; --toc-border: 1px solid var(--border-color);
+}

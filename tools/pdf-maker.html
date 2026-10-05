@@ -2,8 +2,14 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>pdf-maker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+    <script src="../js/shared/markdown-options.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="../js/shared/code-blocks.js"></script>
+    <script src="../js/pdf-maker/templates.js"></script>
+    <script src="../js/pdf-maker/html-styles.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -20,68 +26,13 @@
     <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css" />
     <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css" />
     <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/report.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/editorial.css" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/minimal.css" />
 
     <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css" />
+    <link rel="stylesheet" href="../css/shared/code-blocks.css" data-code-block-style>
 
-    <!-- A4 출력 및 UI 숨김 인쇄 전용 CSS -->
-    <style>
-      @media print {
-        @page {
-          size: A4 portrait;
-          margin: 0;
-        }
-
-        body {
-          background: #ffffff !important;
-          color: #000000 !important;
-        }
-
-        header.toolbar,
-        .sub-toolbar,
-        .panel,
-        .left-panel,
-        .right-panel,
-        .help-text,
-        button,
-        input,
-        select,
-        details,
-        .toc-action-popup {
-          display: none !important;
-        }
-
-        #app, .workspace, .preview-panel {
-          display: block !important;
-          position: static !important;
-          width: 100% !important;
-          height: auto !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          overflow: visible !important;
-          box-shadow: none !important;
-          background: transparent !important;
-        }
-
-        #pdfPreviewContainer {
-          display: block !important;
-          width: 100% !important;
-          margin: 0 !important;
-          padding: 0 !important;
-        }
-
-        .pdf-page {
-          box-shadow: none !important;
-          margin: 0 auto !important;
-          page-break-after: always;
-          break-after: page;
-        }
-
-        .pdf-page:last-child {
-          page-break-after: avoid;
-          break-after: avoid;
-        }
-      }
-    </style>
   </head>
   <body>
     <div id="app">
@@ -90,15 +41,16 @@
         <div class="toolbar-center">
           <label class="btn-pill" for="mdFileInput">.md 열기</label>
           <input type="file" id="mdFileInput" accept=".md" hidden />
-          <label class="btn-pill" for="htmlFileInput">.html 열기</label>
-          <input type="file" id="htmlFileInput" accept=".html" hidden />
+          <label class="btn-pill" for="htmlFileInput">.html + CSS 열기</label>
+          <input type="file" id="htmlFileInput" accept=".html,.htm,.css" multiple hidden />
         </div>
-        <div class="toolbar-right"><button class="btn-primary" id="downloadPdfBtn">PDF 출력</button></div>
+        <div class="toolbar-right"><span id="documentStatus" role="status" aria-live="polite"></span><button class="btn-primary" id="downloadPdfBtn" disabled>PDF 출력</button></div>
       </header>
 
       <div class="sub-toolbar">
         <button id="toggleBreakMode" class="btn-ghost">✂️ 페이지 자르기</button>
         <button id="toggleDeleteMode" class="btn-ghost">🗑️ 요소 제거</button>
+        <button id="discardDocumentBtn" class="btn-ghost" disabled>문서 작업 버리기</button>
         <button id="undoBtn" class="btn-ghost" disabled>↩️ 되돌리기 (<span id="undoCount">0</span>)</button>
         <span id="interactionHelpText" class="help-text">일반 모드: 텍스트 더블클릭 시 편집 가능 / 파일 드래그 앤 드롭 지원</span>
       </div>
@@ -117,15 +69,23 @@
           </details>
 
           <details open>
-            <summary>글로벌 & 헤더/푸터 설정</summary>
+            <summary>문서 템플릿 & 글꼴</summary>
+            <div class="setting-group import-style-setting">
+              <label class="checkbox-label"><input type="checkbox" id="preserveHtmlCss" disabled> HTML 원본 CSS 유지</label>
+              <label class="checkbox-label"><input type="checkbox" id="removeHtmlBackground" disabled> 문서 전체 배경 제거</label>
+              <p id="htmlCssStatus" class="setting-hint">HTML에 CSS가 있으면 선택할 수 있습니다.</p>
+            </div>
             <div class="setting-group">
-              <label>테마 세트</label>
+              <label for="colorTheme">문서 템플릿</label>
                   <select id="colorTheme">
-                    <option value="modern">모던 (비즈니스)</option>
-                    <option value="tech">테크 (개발문서)</option>
-                    <option value="academic">아카데믹 (논문/리포트)</option>
+                    <option value="modern">Modern · 기본 문서</option>
+                    <option value="dev">Dev · 개발 문서</option>
+                    <option value="academic">Academic · 연구 보고서</option>
+                    <option value="report">Report · 업무·성과 보고서</option>
+                    <option value="editorial">Editorial · 에세이·백서</option>
+                    <option value="minimal">Minimal · 흑백·잉크 절약</option>
                   </select>
-
+              <p id="templateDescription" class="setting-hint"></p>
             </div>
             <div class="setting-group"><label>폰트 크기 (pt)</label><input type="number" id="fontSize" value="11" /></div>
             <div class="setting-group"><label>전체 줄 간격</label><input type="number" id="globalLineHeight" value="1.6" step="0.1" /></div>
@@ -169,11 +129,25 @@
               <button id="generateTocBtn" class="btn-pill">목차(TOC) 생성</button>
             </div>
             
-            <div id="coverConfigPanel" style="display: none; margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
+            <div class="setting-group" style="margin-top: 15px;"><label for="tocTitleInput">목차 제목</label><input type="text" id="tocTitleInput" value="목차"></div>
+            <label class="checkbox-label"><input type="checkbox" id="tocNumbering"> 목차 계층 번호 표시 (1 / 1.1 / 1.1.1)</label>
+            <div id="coverConfigPanel" hidden style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
               <label style="font-weight: bold; font-size: 12px; color: #aaa;">표지 세부 설정</label>
+              <div class="setting-group"><label for="coverTitleInput">표지 제목</label><input type="text" id="coverTitleInput" placeholder="문서 제목" /></div>
               <div class="setting-group" style="margin-top: 5px;"><label>부제목</label><input type="text" id="coverSubtitleInput" placeholder="SUBTITLE" /></div>
-              <div class="setting-group"><label>배경 스타일 (CSS)</label><input type="text" id="coverBgInput" placeholder="linear-gradient(...)" /></div>
+              <div class="setting-group"><label for="coverBgStyle">배경 스타일</label><select id="coverBgStyle">
+                <option value="template">템플릿 기본</option><option value="white">흰색</option>
+                <option value="soft">차분한 블루</option><option value="warm">따뜻한 크림</option>
+                <option value="grid">격자 패턴</option><option value="custom">Custom CSS</option>
+              </select></div>
+              <div class="setting-group" id="coverCustomCssGroup" hidden><label for="coverBgInput">배경 CSS 값</label><input type="text" id="coverBgInput" placeholder="linear-gradient(...)" /></div>
               <div class="setting-group"><label>배경 이미지 URL</label><input type="text" id="coverImgInput" placeholder="https://..." /></div>
+              <div class="setting-group"><label for="coverImageFile">배경 이미지 파일</label><input type="file" id="coverImageFile" accept="image/*"><button id="clearCoverImageBtn" class="btn-ghost" type="button">이미지 제거</button></div>
+              <p id="coverImageStatus" class="setting-hint" role="status"></p>
+              <div class="setting-group"><label for="coverImageFit">이미지 표시 방식</label><select id="coverImageFit"><option value="cover">전체 채우기</option><option value="tile">바둑판 반복</option><option value="width">가로폭 맞춤</option><option value="original">원본 크기 유지</option></select></div>
+              <div class="setting-group"><label for="coverImageOpacity">이미지 투명도 (0: 불투명 / 100: 투명)</label><input type="number" id="coverImageOpacity" value="0" min="0" max="100"></div>
+              <div class="setting-group"><label for="coverFilterColor">덧씌울 색상</label><input type="color" id="coverFilterColor" value="#ffffff"></div>
+              <div class="setting-group"><label for="coverFilterOpacity">색상 필터 투명도 (0: 불투명 / 100: 투명)</label><input type="number" id="coverFilterOpacity" value="100" min="0" max="100"></div>
               <button id="applyCoverConfigBtn" class="btn-pill" style="margin-top: 5px;">표지 디자인 업데이트</button>
             </div>
           </details>
@@ -190,10 +164,13 @@
         <aside class="panel right-panel" id="rightPanel" style="display:none;">
           <details open>
             <summary>선택 요소: <span id="selectedTagType" style="color: #4ade80;"></span></summary>
+            <div id="headingLevelControls" class="setting-group" hidden><label>제목 계층</label><div><button id="headingPromoteBtn" class="btn-pill" type="button">◀ 상위</button> <button id="headingDemoteBtn" class="btn-pill" type="button">▶ 하위</button></div></div>
+            <button id="removePageBreakBtn" class="btn-ghost" type="button" hidden>이 요소 앞의 페이지 자르기 해제</button>
             <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
             <hr style="margin: 15px 0; border-color: #444;">
-            <label style="font-size: 13px; font-weight: bold;">디자인 템플릿 (2x2)</label>
+            <label style="font-size: 13px; font-weight: bold;">태그별 디자인</label>
             <div class="preview-grid" id="stylePreviewGrid"></div>
+            <button id="resetElementStyleBtn" class="btn-ghost" type="button">선택 요소를 템플릿 기본으로</button>
             <div class="action-group">
               <button id="applyToSelectedBtn" class="btn-primary">선택 요소에 적용</button>
               <button id="applyToAllBtn" class="btn-pill">동일한 모든 태그에 적용</button>
@@ -204,7 +181,7 @@
     </div>
 
     <!-- 목차 제어용 플로팅 툴바 -->
-    <div id="tocActionPopup" class="toc-action-popup">
+    <div id="tocActionPopup" class="toc-action-popup" hidden>
       <button id="tocEditBtn">✏️ 수정</button>
       <button id="tocAddBtn">➕ 추가</button>
       <button id="tocPromoteBtn">◀️ 상위</button>
@@ -212,6 +189,36 @@
       <button id="tocDeleteBtn">🗑️ 삭제</button>
     </div>
 
+    <dialog id="blockEditDialog" aria-labelledby="blockEditTitle">
+      <div class="block-edit-heading">
+        <h2 id="blockEditTitle">요소 편집</h2>
+        <p>나뉜 요소도 전체 내용을 편집할 수 있습니다.</p>
+      </div>
+      <div id="blockEditContent" class="block-edit-content"></div>
+      <textarea id="codeEditInput" aria-label="코드 내용" spellcheck="false" hidden></textarea>
+      <div class="block-edit-actions">
+        <button type="button" class="btn-pill" id="cancelBlockEditBtn">취소</button>
+        <button type="button" class="btn-primary" id="saveBlockEditBtn">적용</button>
+      </div>
+    </dialog>
+
+    <dialog id="tocEditDialog" aria-labelledby="tocEditTitle">
+      <h2 id="tocEditTitle">목차 항목 편집</h2>
+      <div class="setting-group"><label for="tocEntryTitle">표시 제목</label><input id="tocEntryTitle" type="text"></div>
+      <div id="tocEntryOptions">
+        <div class="setting-group"><label for="tocEntryTarget">연결할 본문 제목</label><select id="tocEntryTarget"></select></div>
+        <div class="setting-group"><label for="tocEntryPage">직접 지정할 페이지 번호 (본문 연결이 없을 때)</label><input id="tocEntryPage" type="number" min="1" step="1"></div>
+      </div>
+      <div class="block-edit-actions"><button id="cancelTocEditBtn" class="btn-pill" type="button">취소</button><button id="saveTocEditBtn" class="btn-primary" type="button">적용</button></div>
+    </dialog>
+    <dialog id="confirmDocumentDialog" aria-labelledby="confirmDocumentTitle">
+      <h2 id="confirmDocumentTitle">문서 작업 확인</h2>
+      <p id="confirmDocumentMessage"></p>
+      <div class="block-edit-actions">
+        <button type="button" class="btn-pill" id="cancelDocumentActionBtn">취소</button>
+        <button type="button" class="btn-primary" id="confirmDocumentActionBtn">확인</button>
+      </div>
+    </dialog>
     <div id="sourceContent" style="display: none;"></div>
     
     <script type="module" src="../js/pdf-maker/script.js"></script>

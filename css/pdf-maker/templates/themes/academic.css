@@ -1,16 +1,14 @@
 [data-theme="academic"] {
-  --font-family: "Georgia", "Times New Roman", serif;
-  --text-main: #1c1917;
-  --accent-color: #44403c;
-  --border-color: #d6d3d1;
-  
-  --cover-align: center;
-  --cover-padding: 80mm 20mm 30mm 20mm;
-  --cover-title-border-top: 1px solid var(--accent-color);
-  --cover-title-border-bottom: 1px solid var(--accent-color);
-  --cover-title-padding: 20px 0;
-  --cover-subtitle-style: italic;
-  
-  --toc-align: center;
-  --toc-border: none;
+  --font-family: "Georgia", "Noto Serif KR", "AppleMyungjo", "Batang", serif;
+  --heading-font-family: var(--font-family);
+  --text-main: #242424; --heading-color: #181818; --muted-color: #505050;
+  --accent-color: #333; --border-color: #b9b9b9; --code-bg: #f5f5f5; --code-radius: 0;
+  --h1-border: none; --h1-align: center; --table-top: 1.5px solid #333; --table-bottom: 1.5px solid #333;
+  --table-head-bg: transparent; --table-head-border: #555; --table-row-border: #dedede;
+  --caption-align: center;
+  --cover-align: center; --cover-padding: 65mm 27mm 28mm; --cover-background: #fff;
+  --cover-title-size: 29pt; --cover-title-color: #181818;
+  --cover-title-border-top: 1px solid #555; --cover-title-border-bottom: 1px solid #555;
+  --cover-title-padding: 9mm 0; --cover-subtitle-color: #505050;
+  --toc-align: left; --toc-border: 1px solid #555; --toc-title-color: #181818;
 }

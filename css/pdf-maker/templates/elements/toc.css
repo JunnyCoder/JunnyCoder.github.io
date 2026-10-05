@@ -1,10 +1,10 @@
 .toc-wrapper {
-  min-height: 100vh; /* 내용이 적어도 최소 한 페이지 차지 */
+  min-height: 0;
   padding-top: 10px;
   box-sizing: border-box;
 }
 
-.toc-header-block h2 {
+.toc-heading {
   font-family: var(--toc-font-family, var(--font-family));
   font-size: var(--toc-title-size, 20pt);
   color: var(--toc-title-color, inherit);
@@ -17,5 +17,13 @@
   display: flex; align-items: baseline; margin-bottom: 10px;
   page-break-inside: avoid;
 }
-.toc-title, .toc-page { background: #fff; z-index: 1; }
+.toc-title, .toc-page-number { background: #fff; z-index: 1; }
 .toc-dots { flex-grow: 1; border-bottom: 1px dotted #888; margin: 0 8px; }
+a.toc-item, a.toc-item:link, a.toc-item:visited, a.toc-item:hover, a.toc-item:active {
+  color: inherit; text-decoration: none;
+}
+.toc-number { flex: none; margin-right: .35em; color: inherit; }
+.toc-title { overflow-wrap: anywhere; }
+.toc-level-4 { padding-left: 48px; }
+.toc-level-5 { padding-left: 64px; }
+.toc-level-6 { padding-left: 80px; }

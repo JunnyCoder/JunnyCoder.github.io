@@ -74,23 +74,12 @@
     '.preview-body th{background:#212228;color:#f0f1f3;}',
     '.preview-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#26272e;color:#ffb27a;border-radius:4px;padding:.15em .4em;font-size:.88em;}',
     '.preview-body pre{background:#16171c;border:1px solid #2a2b32;border-radius:8px;padding:14px 16px;overflow:auto;margin:1em 0;}',
-    '.preview-body pre code{background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;display:block;}',
-    '.hljs-keyword,.hljs-selector-tag,.hljs-literal{color:#c792ea;}',
-    '.hljs-string,.hljs-addition{color:#c3e88d;}',
-    '.hljs-number{color:#f78c6c;}',
-    '.hljs-comment,.hljs-quote{color:#6b6e76;font-style:italic;}',
-    '.hljs-title,.hljs-function,.hljs-section{color:#82aaff;}',
-    '.hljs-attr,.hljs-attribute,.hljs-symbol{color:#ffcb6b;}',
-    '.hljs-tag,.hljs-name,.hljs-selector-id{color:#f07178;}',
-    '.hljs-built_in,.hljs-type,.hljs-selector-class{color:#89ddff;}',
-    '.hljs-variable,.hljs-params,.hljs-template-variable{color:#eeffff;}',
-    '.hljs-meta,.hljs-meta-string,.hljs-deletion{color:#ff5874;}',
-    '.hljs-emphasis{font-style:italic;}',
-    '.hljs-strong{font-weight:700;}'
+    '.preview-body pre code{background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;display:block;}'
   ].join('\n');
 
   /* ================= Marked + highlight.js setup ================= */
   var renderer = new marked.Renderer();
+  SharedCodeBlocks.configureRenderer(renderer);
   renderer.link = function(href, title, text){
     var titleAttr = title ? ' title="' + title + '"' : '';
     return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
@@ -103,16 +92,7 @@
     headerIds: false,
     mangle: false,
     langPrefix: 'hljs language-',
-    highlight: function(code, lang){
-      try{
-        if (lang && hljs.getLanguage(lang)){
-          return hljs.highlight(code, { language: lang }).value;
-        }
-        return hljs.highlightAuto(code).value;
-      }catch(e){
-        return code.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      }
-    }
+    highlight: null
   });
 
   /* ================= Elements ================= */
@@ -451,6 +431,7 @@
 
   /* ================= Preview rendering and source positions ================= */
   var previewBlocks = [];
+  var languagePreviewScroll = null;
   function renderPreview(){
     var raw = editor.getValue();
     if (!raw.trim()){
@@ -463,6 +444,48 @@
     var html = marked.parser(tokens);
     var clean = window.DOMPurify ? DOMPurify.sanitize(html) : html;
     previewHost.innerHTML = clean;
+    SharedCodeBlocks.normalize(previewHost);
+    var locations = SharedCodeBlocks.markdownLocations(raw, tokens);
+    previewHost.querySelectorAll('pre[data-code-origin="markdown"]').forEach(function(pre, index){
+      var location = locations[index];
+      if (!location) return;
+      pre.codeLocation = location;
+      pre.codeLineHandle = editor.getLineHandle(location.line);
+    });
+    var htmlLocations = SharedCodeBlocks.htmlLocations(tokens);
+    previewHost.querySelectorAll('pre[data-code-origin="html"]').forEach(function(pre, index){
+      var location = htmlLocations[index];
+      if (!location) return;
+      pre.htmlCodeLocation = location;
+      pre.codeLineHandle = editor.getLineHandle(location.from.line);
+      pre.codeEndHandle = editor.getLineHandle(location.to.line);
+    });
+    SharedCodeBlocks.decorate(previewHost, function(pre, language){
+      var scroll = previewHost.scrollTop;
+      if (!pre.codeLineHandle) { renderPreview(); return; }
+      var line = editor.getLineNumber(pre.codeLineHandle);
+      if (line == null) { renderPreview(); return; }
+      if (pre.codeLocation) {
+        var current = editor.getLine(line);
+        var beginning = pre.codeLocation.prefix + pre.codeLocation.marker;
+        if (current.slice(0, beginning.length) !== beginning) { renderPreview(); return; }
+        var extra = current.slice(beginning.length).trim().replace(/^\S+/, '');
+        editor.replaceRange(beginning + (language === 'xml' ? 'html' : language) + extra,
+          { line: line, ch: 0 }, { line: line, ch: current.length }, '+code-language');
+      } else if (pre.htmlCodeLocation) {
+        var location = pre.htmlCodeLocation;
+        var endLine = editor.getLineNumber(pre.codeEndHandle);
+        if (endLine == null) { renderPreview(); return; }
+        var from = { line: line, ch: location.from.ch }, to = { line: endLine, ch: location.to.ch };
+        if (editor.getRange(from, to) !== location.opening) { renderPreview(); return; }
+        var opening = location.opening.replace(/\sdata-code-language\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
+        opening = opening.replace(/>$/, ' data-code-language="' + language + '">');
+        editor.replaceRange(opening, from, to, '+code-language');
+      } else { renderPreview(); return; }
+      languagePreviewScroll = scroll;
+      renderPreview();
+      previewHost.scrollTop = scroll;
+    });
 
     if (window.renderMathInElement) {
       window.renderMathInElement(previewHost, {
@@ -624,13 +647,19 @@
       refreshSyntaxHighlight();
       updateStats();
       renderPreview();
-      syncPreviewToCursor();
+      if (languagePreviewScroll !== null) {
+        previewHost.scrollTop = languagePreviewScroll;
+        languagePreviewScroll = null;
+      } else syncPreviewToCursor();
       saveAutosave(editor.getValue());
       maybeTakeSnapshot(false);
     }, 200);
   }
 
-  editor.on('changes', scheduleUpdate);
+  editor.on('changes', function(cm, changes){
+    if (!changes.every(function(change){ return change.origin === '+code-language'; })) languagePreviewScroll = null;
+    scheduleUpdate();
+  });
   scheduleUpdate();
   renderPreview();
 
@@ -742,9 +771,9 @@
       '<html lang="ko">\n<head>\n<meta charset="UTF-8">\n' +
       '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
       '<title>Markdown Export</title>\n' +
-      '<link rel="stylesheet" href="[https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css](https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css)">\n' + // 수식 스타일 깨짐 방지용 CSS 추가
-      '<style>\n' + EXPORT_CSS + '\n</style>\n</head>\n<body>\n' +
-      '<article class="preview-body">\n' + previewHost.innerHTML + '\n</article>\n</body>\n</html>';
+      '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">\n' +
+      '<style>\n' + EXPORT_CSS + '\n' + SharedCodeBlocks.exportCss() + '\n</style>\n</head>\n<body>\n' +
+      '<article class="preview-body">\n' + SharedCodeBlocks.exportHtml(previewHost) + '\n</article>\n</body>\n</html>';
     downloadFile(deriveFilename('html'), doc, 'text/html;charset=utf-8');
   });
   /* ====================================================================================== */
@@ -771,7 +800,7 @@
   }
 
   copyHtmlBtn.addEventListener('click', function(){
-    var html = previewHost.innerHTML;
+    var html = SharedCodeBlocks.exportHtml(previewHost);
     if (navigator.clipboard && window.isSecureContext){
       navigator.clipboard.writeText(html).then(showCopied).catch(function(){
         fallbackCopy(html);

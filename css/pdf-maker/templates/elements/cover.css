@@ -12,6 +12,7 @@
 }
 
 .cover-title-group h1 {
+  font-weight: var(--cover-title-weight, 700);
   font-family: var(--cover-font-family, var(--font-family));
   font-size: var(--cover-title-size, 34pt) !important;
   color: var(--cover-title-color, #111);
@@ -25,3 +26,8 @@
   color: var(--cover-subtitle-color, #555);
   font-style: var(--cover-subtitle-style, normal);
 }
+
+.cover-page { position: relative; isolation: isolate; overflow: hidden; }
+.cover-image-layer, .cover-filter-layer { position: absolute; inset: 0; z-index: -1; pointer-events: none; background-position: center; }
+.cover-image-layer { z-index: -2; }
+.cover-title-group, .cover-meta-group { position: relative; }
