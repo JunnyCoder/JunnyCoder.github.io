@@ -50,7 +50,7 @@ window.PdfHtmlStyles = (() => {
     return rules.map(rule => {
       if (rule.type === 1 && !rule.selectorText.startsWith('@')) {
         const rootSize = /(^|,)\s*(?:html|:root)(?:\s*[,]|\s*$)/.test(rule.selectorText) && rule.style.getPropertyValue('font-size');
-        return selectors(rule.selectorText).map(scopedSelector).join(',') + '{' + fontDeclarations(rule.style) +
+        return selectors(rule.selectorText).map(scopedSelector).map(value => selectors(value).map(selector => selector.replace(/(::[\w-]+.*)?$/, ':not(.katex):not(.katex *)$1')).join(',')).join(',') + '{' + fontDeclarations(rule.style) +
           (rootSize ? '--pdf-import-root-size:' + absoluteRootSize(rootSize) + ';' : '') + '}';
       }
       if (rule.type === 5) return '@font-face{' + fontDeclarations(rule.style) + '}';
@@ -190,6 +190,8 @@ window.PdfHtmlStyles = (() => {
   }
   function prepare(node, enabled) {
     if (!enabled) [node, ...node.querySelectorAll('[style]')].forEach(element => {
+      // KaTeX's inline offsets/struts are generated layout, not imported presentation.
+      if (element.closest('.katex')) return;
       const hidden = element.style.display === 'none';
       const lineHeight = element.dataset.pdfLineHeight;
       if (element.hasAttribute('style') && !element.dataset.htmlStyle) element.dataset.htmlStyle = element.getAttribute('style');
@@ -198,6 +200,7 @@ window.PdfHtmlStyles = (() => {
       if (lineHeight) element.style.lineHeight = lineHeight;
     });
     else [node, ...node.querySelectorAll('[style]')].forEach(element => {
+      if (element.closest('.katex')) return;
       if (element.hasAttribute('style')) element.style.cssText = fontDeclarations(element.style);
     });
     return node;

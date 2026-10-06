@@ -23,8 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
   let storageFailed = false;
   let documentVersion = 0, loadRequest = 0, imageRequest = 0;
   let coverImageProbe = null;
+  let committedPrint = false;
+  let pendingDesign = null, deferredDesignAction = null, replayDesignAction = false;
+  let activeTableId = null, tableEditCell = null;
   const uid = prefix => prefix + '-' + Date.now() + '-' + (++serial);
   const clean = html => DOMPurify.sanitize(html, { FORBID_ATTR: ['contenteditable'] });
+  const parseMarkdown = markdown => window.PdfMath ? PdfMath.parse(markdown) : marked.parse(markdown);
+  function safeDocumentHtml(html) {
+    const staging = document.createElement('div'); staging.innerHTML = html;
+    return clean(window.PdfMath ? PdfMath.sourceHtml(staging) : html);
+  }
   const localDate = () => {
     const date = new Date();
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
@@ -50,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return false;
   }
-  const snapshot = () => ({ html: sourceContent.innerHTML, settings: { ...settings }, title: document.title, importedStyles });
+  const snapshot = () => ({ html: window.PdfMath ? PdfMath.sourceHtml(sourceContent) : sourceContent.innerHTML, settings: { ...settings }, title: document.title, importedStyles });
   const updateUndo = () => {
     $('undoBtn').disabled = history.length === 0;
     $('undoCount').textContent = history.length;
@@ -80,6 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('confirmDocumentDialog').addEventListener('cancel', event => { event.preventDefault(); finishConfirmation(false); });
   function hasDocument() { return sourceContent.children.length > 0; }
   function resetDocument() {
+    pendingDesign = null;
     documentVersion++;
     loadRequest++;
     imageRequest++;
@@ -189,9 +198,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function renderMath(root = sourceContent) {
     if (window.renderMathInElement) window.renderMathInElement(root, {
-      delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
+      delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }],
+      ignoredClasses: ['pdf-math', 'katex', 'katex-display'],
       throwOnError: false
     });
+    window.PdfMath?.render(sourceContent);
   }
   function requestPaginate() {
     clearTimeout(renderTimer);
@@ -209,11 +221,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function setMode(next) {
     mode = next;
-    previewContainer.classList.toggle('edit-break-mode', mode === 'break');
+    previewContainer.classList.toggle('edit-break-mode', mode === 'break' || mode === 'breakCancel');
     previewContainer.classList.toggle('edit-delete-mode', mode === 'delete');
     $('toggleBreakMode').classList.toggle('active', mode === 'break');
+    $('toggleBreakCancelMode').classList.toggle('active', mode === 'breakCancel');
     $('toggleDeleteMode').classList.toggle('active', mode === 'delete');
     $('interactionHelpText').textContent = mode === 'break' ? '요소를 클릭하면 그 앞에서 페이지를 나눕니다.' :
+      mode === 'breakCancel' ? '강제 페이지 자르기를 해제할 요소를 클릭하세요.' :
       mode === 'delete' ? '제거할 요소를 클릭하세요. 되돌리기로 복구할 수 있습니다.' :
         '일반 모드: 더블클릭으로 편집 · 파일 드래그 앤 드롭';
     hidePopup();
@@ -257,6 +271,16 @@ document.addEventListener('DOMContentLoaded', () => {
     node.querySelectorAll('details').forEach(detail => { detail.open = true; });
     return node;
   }
+  function preparePreview(node) {
+    node = htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+    if (pendingDesign && !committedPrint) [node, ...node.querySelectorAll('[data-element-id]')].forEach(element => {
+      if (element.dataset.elementId !== pendingDesign.id) return;
+      ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => element.classList.remove(name));
+      if (pendingDesign.preset === 'default') delete element.dataset.style;
+      else element.dataset.style = pendingDesign.preset;
+    });
+    return node;
+  }
   function sliceBlock(block, start, end, total) {
     const range = document.createRange();
     range.selectNodeContents(block);
@@ -284,11 +308,12 @@ document.addEventListener('DOMContentLoaded', () => {
     fragment.append(contents);
     fragment.classList.remove('page-break-before');
     fragment.dataset.fragment = 'true';
+    fragment.dataset.manualBreak = String(start === 0 && block.classList.contains('page-break-before'));
     if (fragment.tagName === 'OL') {
       const first = fragment.querySelector(':scope > li');
-      if (first?.dataset.listIndex) fragment.start = Number(block.start || 1) + Number(first.dataset.listIndex);
+      if (first?.dataset.listIndex) fragment.start = Number(block.getAttribute('start') || (block.reversed ? block.children.length : 1)) + (block.reversed ? -1 : 1) * Number(first.dataset.listIndex);
     }
-    return openDetails(htmlStyles.prepare(fragment, settings.preserveHtmlCss && importedStyles.available));
+    return openDetails(preparePreview(fragment));
   }
   function tableChunk(table, rows, first) {
     const clone = table.cloneNode(false);
@@ -299,7 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.createElement('tbody');
     rows.forEach(row => body.append(row.cloneNode(true)));
     clone.append(body);
-    return htmlStyles.prepare(clone, settings.preserveHtmlCss && importedStyles.available);
+    return preparePreview(clone);
   }
   function paginate() {
     clearTimeout(renderTimer);
@@ -321,14 +346,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const newPage = () => (current = createPage(false, !inToc));
     const ensurePage = () => current || newPage();
     const tryAppend = node => {
-      if (!node.classList.contains('cover-page')) htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+      if (!node.classList.contains('cover-page')) preparePreview(node);
       ensurePage().content.append(openDetails(node));
       if (fits(current.content)) return true;
       node.remove();
       return false;
     };
     function fitAtomic(node) {
-      if (!node.classList.contains('cover-page')) htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+      if (!node.classList.contains('cover-page')) preparePreview(node);
       const content = ensurePage().content;
       content.append(node);
       const style = getComputedStyle(node);
@@ -474,6 +499,7 @@ document.addEventListener('DOMContentLoaded', () => {
       inToc = section;
       if ((section || block.classList.contains('page-break-before')) && current?.content.children.length) current = null;
       const clone = block.cloneNode(true);
+      clone.dataset.manualBreak = String(block.classList.contains('page-break-before'));
       clone.classList.remove('page-break-before');
       if (!tryAppend(clone)) {
         // Measure the whole block in the same width/typography as its destination.
@@ -554,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resetDocument();
     importedStyles = styles || { css: [], attributes: {}, missing: [], available: false };
     settings.preserveHtmlCss = importedStyles.available;
-    sourceContent.innerHTML = clean(html);
+    sourceContent.innerHTML = safeDocumentHtml(html);
     normalizeContent();
     const title = fileName ? fileName.replace(/\.[^/.]+$/, '') : sourceContent.querySelector('h1')?.textContent.trim();
     document.title = title || 'pdf-export';
@@ -578,12 +604,12 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const content = await file.text();
       if (!current()) return;
-      if (extension === 'md') renderDocument(marked.parse(content), file.name);
+      if (extension === 'md') renderDocument(parseMarkdown(content), file.name);
       else {
         const imported = await htmlStyles.extract(content, companions);
         if (!current()) return;
         const staging = document.createElement('div');
-        staging.innerHTML = clean(imported.html);
+        staging.innerHTML = safeDocumentHtml(imported.html);
         SharedCodeBlocks.normalize(staging, { forcePlain: true });
         imported.html = staging.innerHTML;
         renderDocument(imported.html, file.name, imported.styles);
@@ -628,7 +654,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = history.pop();
     if (!state) return;
     documentVersion++; loadRequest++; imageRequest++;
-    sourceContent.innerHTML = clean(state.html);
+    sourceContent.innerHTML = safeDocumentHtml(state.html);
+    renderMath();
     importedStyles = state.importedStyles || { css: [], attributes: {}, missing: [], available: false };
     settings = normalizeSettings(state.settings);
     document.title = state.title;
@@ -641,6 +668,7 @@ document.addEventListener('DOMContentLoaded', () => {
     paginate();
   });
   $('toggleBreakMode').addEventListener('click', () => { setMode(mode === 'break' ? 'normal' : 'break'); highlightSelection(); });
+  $('toggleBreakCancelMode').addEventListener('click', () => { setMode(mode === 'breakCancel' ? 'normal' : 'breakCancel'); highlightSelection(); });
   $('toggleDeleteMode').addEventListener('click', () => { setMode(mode === 'delete' ? 'normal' : 'delete'); highlightSelection(); });
 
   function makeTocItem(title, level, headingTarget = '', manualPage = '') {
@@ -941,7 +969,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectBlock(id) {
     const source = elementById(id);
     if (!source) return;
+    if (selectedId === id && pendingDesign) return;
     selectedId = id;
+    configureListControls(source);
     $('selectedTagType').textContent = '<' + source.tagName.toLowerCase() + '>';
     $('elementLineHeight').value = source.style.lineHeight || '';
     $('rightPanel').style.display = 'block';
@@ -970,6 +1000,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (source.classList.contains('page-break-before') || source.classList.contains('cover-page')) return;
       saveHistory(); source.classList.add('page-break-before'); paginate(); return;
     }
+    if (mode === 'breakCancel') {
+      if (!source.classList.contains('page-break-before')) return;
+      saveHistory(); source.classList.remove('page-break-before'); paginate(); return;
+    }
     if (mode === 'delete') { saveHistory(); source.style.display = 'none'; clearSelection(); paginate(); return; }
     const toc = event.target.closest('.toc-item');
     if (toc) {
@@ -989,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeEditor(save) {
     const source = blockById(activeEditId);
     const edited = $('blockEditContent').firstElementChild;
+    const tableSource = activeTableId && elementById(activeTableId);
     const codeSource = activeCodeId && elementById(activeCodeId);
     if (save && codeSource) {
       const text = $('codeEditInput').value;
@@ -998,6 +1033,15 @@ document.addEventListener('DOMContentLoaded', () => {
         codeSource.replaceChildren(textNode('code', text));
         SharedCodeBlocks.setLanguage(codeSource, codeSource.dataset.codeLanguage || 'plaintext');
       }
+    } else if (save && tableSource && edited) {
+      edited.querySelectorAll('[contenteditable]').forEach(node => node.removeAttribute('contenteditable'));
+      htmlStyles.restoreInline(edited);
+      const shell = edited.cloneNode(false);
+      shell.innerHTML = window.PdfMath ? PdfMath.sourceHtml(edited) : edited.innerHTML;
+      const safe = document.createElement('div'); safe.innerHTML = clean(shell.outerHTML);
+      const html = safe.querySelector('table')?.innerHTML || '';
+      const old = window.PdfMath ? PdfMath.sourceHtml(tableSource) : tableSource.innerHTML;
+      if (html !== old) { saveHistory(); tableSource.innerHTML = html; renderMath(tableSource); normalizeContent(); }
     } else if (save && source && edited && activeEditKind === 'cover-meta') {
       const meta = source.querySelector('.cover-meta-group');
       const html = clean(edited.innerHTML);
@@ -1005,8 +1049,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (save && source && edited) {
       edited.querySelectorAll('.code-block-controls').forEach(node => node.remove());
       htmlStyles.restoreInline(edited);
-      const html = clean(edited.innerHTML);
-      if (html !== source.innerHTML) {
+      const html = clean(window.PdfMath ? PdfMath.sourceHtml(edited) : edited.innerHTML);
+      const previousHtml = window.PdfMath ? PdfMath.sourceHtml(source) : source.innerHTML;
+      if (html !== previousHtml) {
         saveHistory();
         source.innerHTML = html;
         renderMath(source);
@@ -1014,7 +1059,8 @@ document.addEventListener('DOMContentLoaded', () => {
         normalizeContent();
       }
     }
-    activeEditId = activeCodeId = null;
+    activeEditId = activeCodeId = activeTableId = null;
+    tableEditCell = null;
     $('blockEditDialog').close();
     paginate();
   }
@@ -1029,6 +1075,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     activeEditId = source.dataset.blockId;
+    activeTableId = event.target.closest('table[data-element-id]')?.dataset.elementId || null;
+    tableEditCell = null;
+    $('tableEditToolbar').hidden = !activeTableId;
     const code = event.target.closest('pre[data-element-id]');
     activeCodeId = code?.dataset.elementId || null;
     activeEditKind = source.classList.contains('cover-page') ? 'cover-meta' : 'block';
@@ -1042,9 +1091,15 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     if (activeEditKind === 'cover-meta' && !event.target.closest('.cover-meta-group')) { activeEditId = null; return; }
-    const copy = htmlStyles.prepare((activeEditKind === 'cover-meta' ? source.querySelector('.cover-meta-group') : source).cloneNode(true), settings.preserveHtmlCss && importedStyles.available);
+    const copy = htmlStyles.prepare((activeTableId ? elementById(activeTableId) : activeEditKind === 'cover-meta' ? source.querySelector('.cover-meta-group') : source).cloneNode(true), settings.preserveHtmlCss && importedStyles.available);
     copy.classList.remove('page-break-before');
-    copy.contentEditable = 'true';
+    window.PdfMath?.editable(copy);
+    if (activeTableId) {
+      copy.contentEditable = 'false';
+      copy.querySelectorAll('td,th,caption').forEach(cell => { cell.contentEditable = 'true'; });
+      $('tableAddRowBtn').disabled = $('tableAddColumnBtn').disabled = false;
+      $('tableEditHint').textContent = '셀 선택 후 해당 행·열 다음에 추가합니다. 병합 영역은 유지합니다.';
+    } else copy.contentEditable = 'true';
     copy.removeAttribute('data-block-id');
     $('blockEditContent').replaceChildren(copy);
     $('blockEditContent').dataset.theme = settings.colorTheme;
@@ -1059,10 +1114,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const selection = window.getSelection();
     if (!selection.rangeCount) return;
     const range = selection.getRangeAt(0);
+    const parent = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+    if (!$('blockEditContent').contains(parent) || (activeTableId && !parent.closest('td,th,caption'))) return;
     range.deleteContents();
-    const text = document.createTextNode(event.clipboardData.getData('text/plain'));
-    range.insertNode(text);
-    range.setStartAfter(text);
+    const fragment = document.createDocumentFragment();
+    event.clipboardData.getData('text/plain').split(/\r?\n/).forEach((line, index) => {
+      if (index) fragment.append(document.createElement('br'));
+      fragment.append(document.createTextNode(line));
+    });
+    const last = fragment.lastChild;
+    range.insertNode(fragment);
+    range.setStartAfter(last);
     range.collapse(true);
     selection.removeAllRanges();
     selection.addRange(range);
@@ -1071,6 +1133,154 @@ document.addEventListener('DOMContentLoaded', () => {
   $('cancelBlockEditBtn').addEventListener('click', () => closeEditor(false));
   $('blockEditDialog').addEventListener('cancel', event => { event.preventDefault(); closeEditor(false); });
 
+  // Table shell is never contenteditable: only cells/captions are edited.
+  $('blockEditContent').addEventListener('focusin', event => {
+    if (activeTableId) tableEditCell = event.target.closest('td,th');
+  });
+  $('blockEditContent').addEventListener('click', event => {
+    if (activeTableId) tableEditCell = event.target.closest('td,th');
+  });
+  function editableTableCell(tag, text = '') {
+    const cell = textNode(tag, text); cell.contentEditable = 'true'; return cell;
+  }
+  function tableGrid(table) {
+    const rows = Array.from(table.rows), grid = rows.map(() => []), records = [];
+    rows.forEach((row, ri) => {
+      let column = 0;
+      Array.from(row.cells).forEach(cell => {
+        while (grid[ri][column]) column++;
+        const groupEnd = rows.findLastIndex(item => item.parentElement === row.parentElement);
+        const bottom = Math.min(groupEnd, cell.rowSpan === 0 ? groupEnd : ri + cell.rowSpan - 1);
+        const record = { cell, top: ri, bottom, left: column, right: column + cell.colSpan - 1, group: row.parentElement };
+        records.push(record);
+        for (let r = ri; r <= bottom; r++) for (let c = record.left; c <= record.right; c++) grid[r][c] = record;
+        column = record.right + 1;
+      });
+    });
+    return { rows, grid, records, width: Math.max(1, ...grid.map(row => row.length)) };
+  }
+  $('tableAddRowBtn').addEventListener('click', () => {
+    const table = $('blockEditContent').firstElementChild;
+    if (!activeTableId || table?.tagName !== 'TABLE') return;
+    const layout = tableGrid(table), chosen = tableEditCell?.closest('tr');
+    const group = chosen?.parentElement || table.tBodies[table.tBodies.length - 1] || table.createTBody();
+    const row = document.createElement('tr');
+    const index = chosen ? chosen.rowIndex + 1 : layout.rows.filter(item => item.parentElement === group).at(-1)?.rowIndex + 1 || (table.tHead?.rows.length || 0);
+    const covered = new Set();
+    layout.records.forEach(record => {
+      if (record.group !== group || record.top >= index) return;
+      if (record.bottom >= index || (record.cell.rowSpan === 0 && record.bottom === index - 1)) {
+        if (record.cell.rowSpan !== 0) record.cell.rowSpan++;
+        for (let c = record.left; c <= record.right; c++) covered.add(c);
+      }
+    });
+    for (let c = 0; c < layout.width; c++) if (!covered.has(c)) row.append(editableTableCell(group.tagName === 'THEAD' ? 'th' : 'td'));
+    if (chosen) chosen.after(row); else group.append(row);
+    tableEditCell = row.cells[0] || tableEditCell; tableEditCell?.focus();
+  });
+  $('tableAddColumnBtn').addEventListener('click', () => {
+    const table = $('blockEditContent').firstElementChild;
+    if (!activeTableId || table?.tagName !== 'TABLE') return;
+    const layout = tableGrid(table), chosen = layout.records.find(record => record.cell === tableEditCell);
+    const index = chosen ? chosen.right + 1 : layout.width;
+    const expanded = new Set();
+    layout.rows.forEach((row, ri) => {
+      const before = layout.grid[ri][index - 1], after = layout.grid[ri][index];
+      if (before && before === after) {
+        if (!expanded.has(before.cell)) { before.cell.colSpan++; expanded.add(before.cell); }
+        return;
+      }
+      const next = layout.records.find(record => record.top === ri && record.left >= index);
+      row.insertBefore(editableTableCell(row.parentElement.tagName === 'THEAD' ? 'th' : 'td'), next?.cell || null);
+    });
+    table.querySelectorAll(':scope > colgroup').forEach(group => {
+      let position = 0;
+      for (const col of Array.from(group.children)) {
+        const width = Number(col.span || 1);
+        if (position < index && index < position + width) { col.span++; return; }
+        if (position >= index) { group.insertBefore(document.createElement('col'), col); return; }
+        position += width;
+      }
+      group.append(document.createElement('col'));
+    });
+  });
+  const markerOptions = {
+    ul: [['disc', '채운 원'], ['circle', '빈 원'], ['square', '사각형'], ['none', '불릿 없음']],
+    ol: [['decimal', '1, 2, 3'], ['decimal-leading-zero', '01, 02, 03'], ['lower-alpha', 'a, b, c'], ['upper-alpha', 'A, B, C'], ['lower-roman', 'i, ii, iii'], ['upper-roman', 'I, II, III']]
+  };
+  function listMarkers(tag, value) {
+    $('listMarkerInput').replaceChildren();
+    markerOptions[tag].forEach(([id, label]) => { const option = textNode('option', label); option.value = id; $('listMarkerInput').append(option); });
+    $('listMarkerInput').value = markerOptions[tag].some(([id]) => id === value) ? value : markerOptions[tag][0][0];
+    $('listStartInput').disabled = $('listReversedInput').disabled = tag !== 'ol';
+  }
+  function configureListControls(source) {
+    const list = /^(UL|OL)$/.test(source.tagName);
+    $('listControls').hidden = !list;
+    if (!list) return;
+    const tag = source.tagName.toLowerCase(); $('listTagInput').value = tag;
+    listMarkers(tag, source.dataset.listMarker || source.style.listStyleType);
+    $('listStartInput').value = source.getAttribute('start') || (source.hasAttribute('reversed') ? source.children.length : 1);
+    $('listReversedInput').checked = source.hasAttribute('reversed');
+  }
+  $('listTagInput').addEventListener('change', () => listMarkers($('listTagInput').value));
+  $('applyListConfigBtn').addEventListener('click', () => {
+    const source = elementById(selectedId);
+    if (!source || !/^(UL|OL)$/.test(source.tagName)) return;
+    const tag = $('listTagInput').value, marker = $('listMarkerInput').value;
+    if (!markerOptions[tag]?.some(([id]) => id === marker)) return;
+    const start = Number($('listStartInput').value), reversed = $('listReversedInput').checked;
+    if (tag === 'ol' && !Number.isInteger(start)) { $('listStartInput').focus(); return; }
+    const next = document.createElement(tag);
+    Array.from(source.attributes).forEach(attr => next.setAttribute(attr.name, attr.value));
+    next.dataset.listMarker = marker; next.style.removeProperty('list-style-type');
+    next.removeAttribute('type');
+    if (tag === 'ol') { next.setAttribute('start', start); next.toggleAttribute('reversed', reversed); }
+    else { next.removeAttribute('start'); next.removeAttribute('reversed'); }
+    next.innerHTML = source.innerHTML;
+    if (next.outerHTML === source.outerHTML) return;
+    saveHistory(); source.replaceWith(next); paginate(); selectBlock(selectedId);
+  });
+  // Defer the next user action until the temporary preview is explicitly resolved.
+  function finishPendingDesign(choice) {
+    const action = deferredDesignAction; deferredDesignAction = null;
+    $('pendingDesignDialog').close();
+    if (choice === 'discard') { pendingDesign = null; paginate(); const source = elementById(selectedId); if (source) renderStyleChoices(source); }
+    else applyPreset(choice === 'all');
+    if (action) {
+      replayDesignAction = true;
+      try { action(); } finally { replayDesignAction = false; }
+    }
+  }
+  $('discardDesignBtn').addEventListener('click', () => finishPendingDesign('discard'));
+  $('commitDesignSelectedBtn').addEventListener('click', () => finishPendingDesign('selected'));
+  $('commitDesignAllBtn').addEventListener('click', () => finishPendingDesign('all'));
+  $('pendingDesignDialog').addEventListener('cancel', event => { event.preventDefault(); deferredDesignAction = null; $('pendingDesignDialog').close(); });
+  function guardDesign(event) {
+    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#applyToSelectedBtn,#applyToAllBtn')) return;
+    if (event.target.closest('#pdfPreviewContainer') && event.type === 'click' && event.target.closest('[data-element-id]')?.dataset.elementId === selectedId && mode === 'normal') return;
+    if (!event.target.closest('button,input,select,label,#pdfPreviewContainer,#dropZone')) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    if ($('pendingDesignDialog').open) return;
+    const target = event.target, id = target.closest('[data-element-id]')?.dataset.elementId;
+    const input = event.type === 'input' || event.type === 'change';
+    const value = target.value, checked = target.checked;
+    if (input && settingIds.includes(target.id)) { target.value = settings[target.id]; if (target.type === 'checkbox') target.checked = settings[target.id]; }
+    const files = target.type === 'file' ? Array.from(target.files || []) : null;
+    const dropped = event.type === 'drop' ? Array.from(event.dataTransfer.files) : null;
+    deferredDesignAction = () => {
+      if (files?.length && target.id === 'coverImageFile') { target.dispatchEvent(new Event('change', { bubbles: true })); return; }
+      if (files?.length) { readFile(files.find(file => /.(md|html?)$/i.test(file.name)), files); target.value = ''; return; }
+      if (dropped) { readFile(dropped.find(file => /.(md|html?)$/i.test(file.name)), dropped); return; }
+      const current = target.isConnected ? target : id ? Array.from(previewContainer.querySelectorAll('[data-element-id]')).find(node => node.dataset.elementId === id) : null;
+      if (!current) return;
+      if (input) { current.value = value; current.checked = checked; current.dispatchEvent(new Event(event.type, { bubbles: true })); }
+      else if (event.type === 'click' && current.matches('button,label,input,select')) { current.focus(); current.click(); }
+      else current.dispatchEvent(new MouseEvent(event.type, { bubbles: true, clientX: event.clientX || 0, clientY: event.clientY || 0, ctrlKey: event.ctrlKey, metaKey: event.metaKey, shiftKey: event.shiftKey, altKey: event.altKey }));
+    };
+    $('pendingDesignDialog').showModal();
+  }
+  ['click', 'dblclick', 'input', 'change', 'drop'].forEach(type => document.addEventListener(type, guardDesign, true));
   function renderStyleChoices(source) {
     const family = templates.family(source.tagName);
     selectedPreset = source.dataset.style || 'default';
@@ -1093,6 +1303,8 @@ document.addEventListener('DOMContentLoaded', () => {
           node.setAttribute('aria-pressed', String(node === button));
         });
         selectedPreset = id;
+        pendingDesign = id === (source.dataset.style || 'default') ? null : { id: source.dataset.elementId, preset: id };
+        paginate();
       });
       $('stylePreviewGrid').append(button);
     });
@@ -1100,8 +1312,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function applyPreset(all) {
     const source = elementById(selectedId);
     if (!source || !selectedPreset) return;
-    saveHistory();
-    const targets = all ? sourceContent.querySelectorAll(source.tagName) : [source];
+    const targets = Array.from(all ? sourceContent.querySelectorAll(source.tagName) : [source]).filter(target => !target.closest('.cover-page,.toc-wrapper'));
+    const changed = targets.some(target => (target.dataset.style || 'default') !== selectedPreset);
+    pendingDesign = null;
+    if (changed) saveHistory();
     targets.forEach(target => {
       if (target.closest('.cover-page,.toc-wrapper')) return;
       ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => target.classList.remove(name));
@@ -1109,6 +1323,7 @@ document.addEventListener('DOMContentLoaded', () => {
       else target.dataset.style = selectedPreset;
     });
     paginate();
+    renderStyleChoices(source);
   }
   $('applyToSelectedBtn').addEventListener('click', () => applyPreset(false));
   $('applyToAllBtn').addEventListener('click', () => applyPreset(true));
@@ -1160,7 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = getMarkdownHistory().find(entry => String(entry.id || entry.ts) === value);
     if (item) {
       if (hasDocument() && !await confirmDocument('새 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
-      renderDocument(marked.parse(item.content));
+      renderDocument(parseMarkdown(item.content));
     }
   });
   window.addEventListener('storage', event => { if (event.key === 'mdeditor.history.v1') refreshHistory(); });
@@ -1193,10 +1408,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   $('downloadPdfBtn').addEventListener('click', preparePrint);
   window.addEventListener('beforeprint', () => {
+    committedPrint = true;
     if (activeEditId) closeEditor(true);
     else paginate();
     persist();
   });
+  window.addEventListener('afterprint', () => { committedPrint = false; paginate(); });
   window.addEventListener('pagehide', persist);
   document.fonts?.ready.then(requestPaginate);
   refreshHistory();
@@ -1205,11 +1422,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const transferred = localStorage.getItem('pdfMakerTransfer');
     const draft = JSON.parse(localStorage.getItem(draftKey) || 'null');
     if (draft && typeof draft.html === 'string') {
-      sourceContent.innerHTML = clean(draft.html);
+      sourceContent.innerHTML = safeDocumentHtml(draft.html);
       importedStyles = draft.importedStyles || { css: [], attributes: {}, missing: [], available: false };
       settings = normalizeSettings(draft.settings || {});
       document.title = typeof draft.title === 'string' ? draft.title : 'pdf-export';
       normalizeContent();
+      renderMath();
       applySettings();
       const background = sourceContent.querySelector('.cover-image-layer')?.style.backgroundImage;
       checkCoverImage(background?.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
@@ -1218,7 +1436,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (transferred !== null) {
       (async () => {
         if (hasDocument() && !await confirmDocument('편집기 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
-        renderDocument(marked.parse(transferred));
+        renderDocument(parseMarkdown(transferred));
         persist();
         if (!storageFailed) localStorage.removeItem('pdfMakerTransfer');
       })();

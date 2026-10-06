@@ -47,7 +47,7 @@
 :where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) :where(kbd,samp) { padding: .1em .3em; border: 1px solid var(--border-color); border-radius: 2px; }
 :where(.pdf-content:not([data-imported-css="true"]), .block-edit-content:not([data-imported-css="true"]), .document-style) mark { color: inherit; background: #fff0b8; }
 .pdf-content :where(pre,pre code), .block-edit-content :where(pre,pre code) { white-space: pre-wrap; overflow-wrap: anywhere; }
-.pdf-content :where(img,svg), .block-edit-content :where(img,svg) { max-width: 100%; height: auto; }
+.pdf-content :where(img,svg):not(.katex *), .block-edit-content :where(img,svg):not(.katex *) { max-width: 100%; height: auto; }
 .pdf-content .katex-display { overflow-wrap: normal; margin: 1em 0; }
 .pdf-content .katex { font-size: 1.1em; }
 .pdf-content :where(p,li) { orphans: 3; widows: 3; }

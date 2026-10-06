@@ -8,6 +8,7 @@
     <script src="../js/shared/markdown-options.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="../js/shared/code-blocks.js"></script>
+    <script src="../js/pdf-maker/math.js"></script>
     <script src="../js/pdf-maker/templates.js"></script>
     <script src="../js/pdf-maker/html-styles.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -49,6 +50,7 @@
 
       <div class="sub-toolbar">
         <button id="toggleBreakMode" class="btn-ghost">✂️ 페이지 자르기</button>
+        <button id="toggleBreakCancelMode" class="btn-ghost">페이지 자르기 해제</button>
         <button id="toggleDeleteMode" class="btn-ghost">🗑️ 요소 제거</button>
         <button id="discardDocumentBtn" class="btn-ghost" disabled>문서 작업 버리기</button>
         <button id="undoBtn" class="btn-ghost" disabled>↩️ 되돌리기 (<span id="undoCount">0</span>)</button>
@@ -164,6 +166,13 @@
         <aside class="panel right-panel" id="rightPanel" style="display:none;">
           <details open>
             <summary>선택 요소: <span id="selectedTagType" style="color: #4ade80;"></span></summary>
+            <div id="listControls" class="setting-group" hidden>
+              <label for="listTagInput">목록 종류</label><select id="listTagInput"><option value="ul">불릿 목록 (UL)</option><option value="ol">순서 목록 (OL)</option></select>
+              <label for="listMarkerInput">불릿 / 번호 모양</label><select id="listMarkerInput"></select>
+              <label for="listStartInput">시작 번호</label><input id="listStartInput" type="number" value="1" step="1">
+              <label class="checkbox-label"><input id="listReversedInput" type="checkbox"> 역순 번호</label>
+              <button id="applyListConfigBtn" class="btn-pill" type="button">목록 설정 적용</button>
+            </div>
             <div id="headingLevelControls" class="setting-group" hidden><label>제목 계층</label><div><button id="headingPromoteBtn" class="btn-pill" type="button">◀ 상위</button> <button id="headingDemoteBtn" class="btn-pill" type="button">▶ 하위</button></div></div>
             <button id="removePageBreakBtn" class="btn-ghost" type="button" hidden>이 요소 앞의 페이지 자르기 해제</button>
             <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
@@ -194,6 +203,11 @@
         <h2 id="blockEditTitle">요소 편집</h2>
         <p>나뉜 요소도 전체 내용을 편집할 수 있습니다.</p>
       </div>
+      <div id="tableEditToolbar" class="table-edit-toolbar" hidden>
+        <button id="tableAddRowBtn" class="btn-pill" type="button">행 추가</button>
+        <button id="tableAddColumnBtn" class="btn-pill" type="button">열 추가</button>
+        <p id="tableEditHint" class="setting-hint">셀을 선택한 뒤 행·열을 추가할 수 있습니다.</p>
+      </div>
       <div id="blockEditContent" class="block-edit-content"></div>
       <textarea id="codeEditInput" aria-label="코드 내용" spellcheck="false" hidden></textarea>
       <div class="block-edit-actions">
@@ -202,6 +216,15 @@
       </div>
     </dialog>
 
+    <dialog id="pendingDesignDialog" aria-labelledby="pendingDesignTitle">
+      <h2 id="pendingDesignTitle">아직 적용하지 않은 디자인이 있습니다</h2>
+      <p>미리 본 디자인을 어떻게 처리할까요?</p>
+      <div class="block-edit-actions">
+        <button id="discardDesignBtn" class="btn-pill" type="button">변경 내역 버리기</button>
+        <button id="commitDesignSelectedBtn" class="btn-primary" type="button">선택 요소 적용</button>
+        <button id="commitDesignAllBtn" class="btn-primary" type="button">동일한 모든 태그에 적용</button>
+      </div>
+    </dialog>
     <dialog id="tocEditDialog" aria-labelledby="tocEditTitle">
       <h2 id="tocEditTitle">목차 항목 편집</h2>
       <div class="setting-group"><label for="tocEntryTitle">표시 제목</label><input id="tocEntryTitle" type="text"></div>

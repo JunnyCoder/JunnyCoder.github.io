@@ -98,3 +98,29 @@ load errors. Print preparation waits briefly for the cover image probe.
 TOC refresh preserves custom labels and manual entries using stable heading targets;
 hidden/deleted targets hide their linked entries and undo restores them. Hidden entries
 do not consume TOC numbering or appear in paginated TOC chunks.
+
+## Math, structured tables, and staged tag designs
+
+`js/pdf-maker/math.js` protects TeX before Markdown, including pipes in table formulas,
+backslash delimiters, display expressions, and shared equation macros. Code is excluded.
+Math wrappers retain TeX and display mode; draft/undo serialization stores that source,
+not the generated KaTeX layout. General editing restores delimiters, then regenerates
+math. Imported CSS selectors exclude KaTeX internals. See the official
+[KaTeX auto-render documentation](https://katex.org/docs/autorender).
+
+Table editing exposes individual cells rather than a contenteditable table shell.
+Sanitization receives the full table, because orphan row/cell markup becomes plain
+text when parsed without its table context. Row/column insertion uses a logical grid,
+expanding crossing merged cells and retaining header/body/footer structure.
+
+A pending tag design exists only on preview clones. Source, undo, and autosave retain
+committed styles. Other user actions are deferred by a discard/selected/all modal.
+Native printing uses committed styles and restores the pending preview afterward.
+Manual breaks can be removed through a toolbar mode or selected-element control.
+UL/OL conversion preserves nested content and element IDs; marker, start and reversed
+numbering are explicit settings, also retained in paginated list fragments.
+
+KaTeX inline positions, strut heights, and fraction rules are generated geometry,
+not original HTML presentation. `PdfHtmlStyles.prepare` must retain those styles
+in both preservation modes. Document image/SVG size rules also exclude KaTeX
+internals so stretchy radicals and other math SVGs retain their intrinsic layout.

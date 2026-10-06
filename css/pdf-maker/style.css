@@ -267,7 +267,7 @@ body {
 .pdf-header span:first-child { flex: 1; }
 .pdf-header span:last-child { max-width: 40%; }
 .pdf-content > * { max-width: 100%; box-sizing: border-box; }
-.pdf-content img, .pdf-content svg {
+.pdf-content img, .pdf-content svg:not(.katex *) {
   max-width: 100%; max-height: var(--page-content-height); object-fit: contain;
 }
 .pdf-content table { max-width: 100%; overflow-wrap: anywhere; }
@@ -363,3 +363,23 @@ body {
 .pdf-page > .pdf-content, .pdf-header, .pdf-footer { position: relative; z-index: 1; }
 .pdf-header, .pdf-footer { position: absolute; }
 @media print { .pdf-document-background { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+
+#pendingDesignDialog { width: min(600px, calc(100vw - 40px)); background: #252526; color: white; border: 1px solid #555; border-radius: 12px; padding: 20px; }
+#pendingDesignDialog::backdrop { background: #0009; }
+#pendingDesignDialog h2 { font-size: 18px; }
+#pendingDesignDialog .block-edit-actions { flex-wrap: wrap; }
+.table-edit-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.block-edit-content td[contenteditable], .block-edit-content th[contenteditable] { min-width: 40px; cursor: text; }
+.block-edit-content [contenteditable]:focus { outline: 2px solid #0284c7; }
+.edit-break-mode [data-manual-break="true"] { outline: 2px dashed #ffb703; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="disc"] { list-style-type: disc !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="circle"] { list-style-type: circle !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="square"] { list-style-type: square !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="none"] { list-style-type: none !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="decimal"] { list-style-type: decimal !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="decimal-leading-zero"] { list-style-type: decimal-leading-zero !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="lower-alpha"] { list-style-type: lower-alpha !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="upper-alpha"] { list-style-type: upper-alpha !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="lower-roman"] { list-style-type: lower-roman !important; }
+:is(.pdf-content,.block-edit-content) [data-list-marker="upper-roman"] { list-style-type: upper-roman !important; }
+@media print { #pendingDesignDialog, .table-edit-toolbar { display: none !important; } .edit-break-mode [data-manual-break] { outline: none; } }
