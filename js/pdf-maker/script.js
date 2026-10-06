@@ -1257,7 +1257,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('commitDesignAllBtn').addEventListener('click', () => finishPendingDesign('all'));
   $('pendingDesignDialog').addEventListener('cancel', event => { event.preventDefault(); deferredDesignAction = null; $('pendingDesignDialog').close(); });
   function guardDesign(event) {
-    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#applyToSelectedBtn,#applyToAllBtn')) return;
+    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle')) return;
     if (event.target.closest('#pdfPreviewContainer') && event.type === 'click' && event.target.closest('[data-element-id]')?.dataset.elementId === selectedId && mode === 'normal') return;
     if (!event.target.closest('button,input,select,label,#pdfPreviewContainer,#dropZone')) return;
     event.preventDefault(); event.stopImmediatePropagation();

@@ -8,114 +8,67 @@
   --page-margin-right: 15mm;
 }
 
+/* App layout, colors and toolbar controls: ../shared/editor-ui.css */
 /* ==========================================================================
-   1. 기본 사이트 레이아웃 & 초기화 (App UI)
+   2. 툴바 보조 텍스트 (공통 버튼/툴바: shared/editor-ui.css)
    ========================================================================== */
-body { 
-  margin: 0; 
-  background: #1e1e1e; 
-  color: #fff; 
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-  overflow: hidden; 
-}
-
-/* ==========================================================================
-   2. 툴바 & 버튼
-   ========================================================================== */
-.toolbar { 
-  display: flex; 
-  justify-content: space-between; 
-  align-items: center;
-  padding: 10px 20px; 
-  background: #2d2d2d; 
-}
-
-.sub-toolbar { 
-  display: flex; 
-  gap: 10px; 
-  padding: 8px 20px; 
-  background: #252526; 
-  border-bottom: 1px solid #444; 
-  align-items: center;
-}
-
-.btn-primary, .btn-pill, .btn-ghost { 
-  padding: 8px 12px; 
-  cursor: pointer; 
-  border-radius: 4px; 
-  border: 1px solid #555; 
-  font-size: 13px;
-  transition: all 0.15s ease-in-out;
-}
-
-.btn-primary { background: #007acc; border: none; color: white; }
-.btn-primary:hover { background: #0098ff; }
-
-.btn-pill { background: #3c3c3c; color: white; display: inline-block; }
-.btn-pill:hover { background: #4a4a4a; }
-
-.btn-ghost { background: transparent; color: #fff; }
-.btn-ghost:hover { background: rgba(255, 255, 255, 0.05); }
-.btn-ghost.active { background: #ff5555; border-color: #ff5555; }
-.btn-ghost:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.help-text { 
-  font-size: 12px; 
-  color: #888; 
-  margin-left: auto; 
+.help-text {
+  font-size: 12px;
+  color: var(--text-mute);
+  margin-left: auto;
 }
 
 /* ==========================================================================
    3. 패널 및 폼 제어
    ========================================================================== */
-.workspace { display: flex; height: calc(100vh - 95px); }
+.workspace { display: flex; flex: 1 1 auto; min-height: 0; }
 
-.panel { 
-  width: 320px; 
-  background: #252526; 
-  padding: 15px; 
-  overflow-y: auto; 
-  box-sizing: border-box; 
+.panel {
+  width: 320px;
+  background: var(--bg-panel);
+  padding: 15px;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
-.left-panel { border-right: 1px solid #444; }
-.right-panel { border-left: 1px solid #444; }
+.left-panel { border-right: 1px solid var(--border); }
+.right-panel { border-left: 1px solid var(--border); }
 
-.panel details { margin-bottom: 15px; background: #333; padding: 12px; border-radius: 6px; }
-.panel summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: #ddd; }
+.panel details { margin-bottom: 15px; background: var(--bg-elevated); padding: 12px; border-radius: 6px; }
+.panel summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: var(--text); }
 
 .setting-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
-.setting-group input, .setting-group select { 
-  padding: 8px; 
-  background: #2d2d2d; 
-  color: #fff; 
-  border: 1px solid #555; 
-  border-radius: 4px; 
+.setting-group input, .setting-group select {
+  padding: 8px;
+  background: var(--bg-input);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
 }
 
 .action-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
-.panel-divider { margin: 15px 0; border: none; border-top: 1px solid #444; }
+.panel-divider { margin: 15px 0; border: none; border-top: 1px solid var(--border); }
 
 /* 여백 조절 UI 그리드 */
 .margin-control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
-.margin-input-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #fff; }
-.margin-input-item input { width: 50px; padding: 4px; background: #2d2d2d; color: #fff; border: 1px solid #555; border-radius: 4px; }
+.margin-input-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text); }
+.margin-input-item input { width: 50px; padding: 4px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border-strong); border-radius: 4px; }
 
 /* ==========================================================================
    4. 미리보기 영역 & 용지(Paper) 렌더링
    ========================================================================== */
-.preview-panel { 
-  flex: 1; 
-  background: #333; 
+.preview-panel {
+  flex: 1;
+  background: var(--bg-app);
   overflow: auto;
   min-width: 0;
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  gap: 40px; 
-  padding: 40px; 
-  transition: background 0.2s; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  padding: 40px;
+  transition: background 0.2s;
 }
-.preview-panel.drag-over { background: #444; border: 3px dashed #4ade80; }
+.preview-panel.drag-over { background: var(--border); border: 3px dashed var(--blue); }
 
 #pdfPreviewContainer {
   display: flex;
@@ -204,14 +157,14 @@ body {
 }
 
 .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
-.preview-item { 
-  background: #2d2d2d; color: #fff; padding: 8px; text-align: center; 
-  border: 2px solid #555; cursor: pointer; border-radius: 6px; 
+.preview-item {
+  background: var(--bg-input); color: var(--text); padding: 8px; text-align: center;
+  border: 2px solid var(--border-strong); cursor: pointer; border-radius: 6px;
   height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-size: 11px; transition: all 0.15s ease;
 }
-.preview-item:hover { border-color: #4ade80; background: #383838; }
-.preview-item.active { border-color: #4ade80; background: #1f3d2b; font-weight: bold; }
+.preview-item:hover { border-color: var(--blue); background: var(--hover); }
+.preview-item.active { border-color: var(--blue); background: var(--blue-soft); font-weight: bold; }
 
 .style-preset-default { background: transparent; border: none; padding: 0; }
 .style-preset-highlight { background: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px 14px; border-radius: 4px; }
@@ -253,14 +206,13 @@ body {
 
 .edit-delete-mode .pdf-content > * { cursor: no-drop !important; }
 .edit-delete-mode .pdf-content > *:hover { outline: 2px solid #ff4444; background: rgba(255, 0, 0, 0.1); }
-.selected-element { outline: 3px solid #4ade80 !important; }
+.selected-element { outline: 2px solid var(--blue) !important; }
 
 /* ==========================================================================
    7. 인쇄 미디어 쿼리
    ========================================================================== */
 [hidden] { display: none !important; }
-.toolbar-right { display: flex; align-items: center; gap: 12px; }
-#documentStatus { color: #aaa; font-size: 12px; }
+#documentStatus { color: var(--text-dim); font-size: 12px; }
 .pdf-content { display: flow-root; overflow-wrap: anywhere; }
 .pdf-header { gap: 12px; }
 .pdf-header span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -283,19 +235,19 @@ body {
 .toc-action-popup {
   position: fixed; z-index: 50; display: flex; flex-wrap: wrap; gap: 4px;
   max-width: calc(100vw - 16px); padding: 7px;
-  background: #252526; border: 1px solid #555; border-radius: 8px;
+  background: var(--bg-panel); border: 1px solid var(--border-strong); border-radius: 8px;
   box-shadow: 0 6px 20px #0006;
 }
 .toc-action-popup button {
-  background: #3c3c3c; color: white; border: 0; border-radius: 4px; padding: 7px; cursor: pointer;
+  background: var(--bg-elevated); color: var(--text); border: 0; border-radius: 4px; padding: 7px; cursor: pointer;
 }
 #blockEditDialog {
   width: min(820px, calc(100vw - 40px)); max-height: 90vh; box-sizing: border-box;
-  background: #252526; color: white; border: 1px solid #555; border-radius: 12px; padding: 20px;
+  background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px;
 }
 #blockEditDialog::backdrop { background: #0009; }
-.block-edit-heading h2 { font-size: 18px; margin: 0 0 8px; color: white; }
-.block-edit-heading p { color: #aaa; font-size: 13px; }
+.block-edit-heading h2 { font-size: 18px; margin: 0 0 8px; color: var(--text); }
+.block-edit-heading p { color: var(--text-dim); font-size: 13px; }
 .block-edit-content {
   max-height: 60vh; overflow: auto; padding: 18px; border-radius: 6px;
   background: white; color: #111; font: 11pt/1.6 var(--font-family, sans-serif); overflow-wrap: anywhere;
@@ -303,7 +255,6 @@ body {
 .block-edit-content > [contenteditable] { outline: none; min-height: 80px; }
 .block-edit-content .cover-page { height: auto; padding: 24px; }
 .block-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
-.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
 @media (max-width: 1000px) {
   .toolbar, .sub-toolbar { flex-wrap: wrap; gap: 8px; }
   .panel { width: 250px; flex-shrink: 0; }
@@ -334,7 +285,7 @@ body {
 /* Tag samples contain actual typography rather than generic decorated boxes. */
 .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .checkbox-label input { width: auto; }
-.setting-hint { color: #babec5; font-size: 12px; line-height: 1.5; margin: 0; }
+.setting-hint { color: var(--text-dim); font-size: 12px; line-height: 1.5; margin: 0; }
 .preview-item { height: auto; min-height: 115px; gap: 8px; text-align: left; }
 .tag-style-sample { width: 100%; padding: 8px; box-sizing: border-box; background: #fff; color: #20252b; font-size: 10px; line-height: 1.4; }
 .tag-style-sample > :first-child { margin: 0; }
@@ -350,7 +301,7 @@ body {
 
 #confirmDocumentDialog, #tocEditDialog {
   width: min(480px, calc(100vw - 40px)); box-sizing: border-box;
-  background: #252526; color: white; border: 1px solid #555; border-radius: 12px; padding: 20px;
+  background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px;
 }
 #confirmDocumentDialog::backdrop, #tocEditDialog::backdrop { background: #0009; }
 #confirmDocumentDialog h2, #tocEditDialog h2 { font-size: 18px; }
@@ -364,7 +315,7 @@ body {
 .pdf-header, .pdf-footer { position: absolute; }
 @media print { .pdf-document-background { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
 
-#pendingDesignDialog { width: min(600px, calc(100vw - 40px)); background: #252526; color: white; border: 1px solid #555; border-radius: 12px; padding: 20px; }
+#pendingDesignDialog { width: min(600px, calc(100vw - 40px)); background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px; }
 #pendingDesignDialog::backdrop { background: #0009; }
 #pendingDesignDialog h2 { font-size: 18px; }
 #pendingDesignDialog .block-edit-actions { flex-wrap: wrap; }

@@ -42,3 +42,22 @@ pre.shared-code-block .hljs-strong { font-weight: 700; }
   pre.shared-code-block .code-language-select { display: none !important; }
   pre.shared-code-block .code-language-print { display: inline; color: #4b5663; }
 }
+
+/* Light Markdown preview uses the same readable syntax palette as PDF paper. */
+:root[data-ui-theme="light"] .preview-body pre.shared-code-block {
+  --code-syntax-keyword: #713c95;
+  --code-syntax-string: #266637;
+  --code-syntax-number: #914b14;
+  --code-syntax-comment: #56616d;
+  --code-syntax-title: #245d8d;
+  --code-syntax-attr: #75520c;
+  --code-syntax-tag: #9b3040;
+  --code-syntax-type: #246473;
+  --code-syntax-meta: #994051;
+}
+:root[data-ui-theme="light"] .preview-body pre.shared-code-block .code-language-select {
+  background: #fff;
+  color: #303a44;
+  border-color: #b7c1cb;
+  color-scheme: light;
+}

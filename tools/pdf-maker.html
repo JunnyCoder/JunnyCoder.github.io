@@ -2,6 +2,8 @@
 <html lang="ko">
   <head>
     <meta charset="UTF-8" />
+    <meta name="color-scheme" content="dark light">
+    <script src="../js/shared/editor-ui.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>pdf-maker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
@@ -34,18 +36,19 @@
     <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css" />
     <link rel="stylesheet" href="../css/shared/code-blocks.css" data-code-block-style>
 
+    <link rel="stylesheet" href="../css/shared/editor-ui.css">
   </head>
   <body>
     <div id="app">
       <header class="toolbar">
-        <div class="toolbar-left"><span>pdf-maker</span></div>
+        <div class="toolbar-left"><span class="tool-title">PDF Maker</span></div>
         <div class="toolbar-center">
           <label class="btn-pill" for="mdFileInput">.md 열기</label>
           <input type="file" id="mdFileInput" accept=".md" hidden />
           <label class="btn-pill" for="htmlFileInput">.html + CSS 열기</label>
           <input type="file" id="htmlFileInput" accept=".html,.htm,.css" multiple hidden />
         </div>
-        <div class="toolbar-right"><span id="documentStatus" role="status" aria-live="polite"></span><button class="btn-primary" id="downloadPdfBtn" disabled>PDF 출력</button></div>
+        <div class="toolbar-right"><button type="button" class="btn-ghost theme-toggle" id="uiThemeToggle" aria-label="라이트 모드로 전환" aria-pressed="false" title="라이트 모드로 전환"><span aria-hidden="true" data-theme-icon>☾</span><span data-theme-label>다크</span></button><span id="documentStatus" role="status" aria-live="polite"></span><button class="btn-primary" id="downloadPdfBtn" disabled>PDF 출력</button></div>
       </header>
 
       <div class="sub-toolbar">
@@ -63,7 +66,7 @@
             <summary>마크다운 연동</summary>
             <div class="setting-group">
               <label>임시저장 목록 불러오기</label>
-              <select id="mdHistorySelect" style="background: #2d2d2d;">
+              <select id="mdHistorySelect" style="background: var(--bg-input);">
                 <option value="">저장된 기록 없음</option>
               </select>
               <button id="loadMdHistoryBtn" class="btn-pill" style="margin-top: 5px;">불러오기</button>
@@ -91,7 +94,7 @@
             </div>
             <div class="setting-group"><label>폰트 크기 (pt)</label><input type="number" id="fontSize" value="11" /></div>
             <div class="setting-group"><label>전체 줄 간격</label><input type="number" id="globalLineHeight" value="1.6" step="0.1" /></div>
-            <hr style="margin: 10px 0; border-color: #444;">
+            <hr style="margin: 10px 0; border-color: var(--border);">
             <div class="setting-group" style="flex-direction: row; align-items: center; gap: 8px;">
               <input type="checkbox" id="enableHeaderFooter" style="width: auto;" />
               <label for="enableHeaderFooter" style="cursor: pointer; margin: 0;">헤더/푸터 표기</label>
@@ -133,8 +136,8 @@
             
             <div class="setting-group" style="margin-top: 15px;"><label for="tocTitleInput">목차 제목</label><input type="text" id="tocTitleInput" value="목차"></div>
             <label class="checkbox-label"><input type="checkbox" id="tocNumbering"> 목차 계층 번호 표시 (1 / 1.1 / 1.1.1)</label>
-            <div id="coverConfigPanel" hidden style="margin-top: 15px; border-top: 1px solid #444; padding-top: 10px;">
-              <label style="font-weight: bold; font-size: 12px; color: #aaa;">표지 세부 설정</label>
+            <div id="coverConfigPanel" hidden style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 10px;">
+              <label style="font-weight: bold; font-size: 12px; color: var(--text-dim);">표지 세부 설정</label>
               <div class="setting-group"><label for="coverTitleInput">표지 제목</label><input type="text" id="coverTitleInput" placeholder="문서 제목" /></div>
               <div class="setting-group" style="margin-top: 5px;"><label>부제목</label><input type="text" id="coverSubtitleInput" placeholder="SUBTITLE" /></div>
               <div class="setting-group"><label for="coverBgStyle">배경 스타일</label><select id="coverBgStyle">
@@ -165,7 +168,7 @@
 
         <aside class="panel right-panel" id="rightPanel" style="display:none;">
           <details open>
-            <summary>선택 요소: <span id="selectedTagType" style="color: #4ade80;"></span></summary>
+            <summary>선택 요소: <span id="selectedTagType" style="color: var(--blue);"></span></summary>
             <div id="listControls" class="setting-group" hidden>
               <label for="listTagInput">목록 종류</label><select id="listTagInput"><option value="ul">불릿 목록 (UL)</option><option value="ol">순서 목록 (OL)</option></select>
               <label for="listMarkerInput">불릿 / 번호 모양</label><select id="listMarkerInput"></select>
@@ -176,7 +179,7 @@
             <div id="headingLevelControls" class="setting-group" hidden><label>제목 계층</label><div><button id="headingPromoteBtn" class="btn-pill" type="button">◀ 상위</button> <button id="headingDemoteBtn" class="btn-pill" type="button">▶ 하위</button></div></div>
             <button id="removePageBreakBtn" class="btn-ghost" type="button" hidden>이 요소 앞의 페이지 자르기 해제</button>
             <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
-            <hr style="margin: 15px 0; border-color: #444;">
+            <hr style="margin: 15px 0; border-color: var(--border);">
             <label style="font-size: 13px; font-weight: bold;">태그별 디자인</label>
             <div class="preview-grid" id="stylePreviewGrid"></div>
             <button id="resetElementStyleBtn" class="btn-ghost" type="button">선택 요소를 템플릿 기본으로</button>
