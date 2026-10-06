@@ -16,11 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
   let settings = Object.fromEntries(settingIds.map(id => [id, $(id).type === 'checkbox' ? $(id).checked : $(id).value]));
   const defaultSettings = { ...settings };
   let activeCodeId = null, activeEditKind = 'block', pendingConfirmation = null;
-  let history = [], inputGroup = null, selectedId = null, selectedPreset = null;
+  let history = [], redoHistory = [], inputGroup = null, selectedId = null, selectedPreset = null;
   let tocEditor = null;
   let mode = 'normal', activeTocId = null, activeEditId = null;
   let renderTimer, saveTimer, scaledCount = 0, serial = 0;
-  let storageFailed = false;
+  let storageFailed = false, storageConflict = false, expectedDraft = null;
+  try { expectedDraft=localStorage.getItem(draftKey); } catch {}
+  let projectBusy=false, pageIndex=0;
   let documentVersion = 0, loadRequest = 0, imageRequest = 0;
   let coverImageProbe = null;
   let committedPrint = false, printPreparing = false;
@@ -67,9 +69,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const updateUndo = () => {
     $('undoBtn').disabled = history.length === 0;
     $('undoCount').textContent = history.length;
+    $('redoBtn').disabled=redoHistory.length===0;$('redoCount').textContent=redoHistory.length;
   };
   function saveHistory(group = null) {
     if (group && inputGroup === group) return;
+    redoHistory=[];
     const state = snapshot();
     if (JSON.stringify(history[history.length - 1]) !== JSON.stringify(state)) history.push(state);
     if (history.length > 30) history.shift();
@@ -108,9 +112,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if ($('tocEditDialog').open) $('tocEditDialog').close();
     tocEditor = null;
     sourceContent.replaceChildren();
+    $('dropZone').scrollTop=0;$('dropZone').scrollLeft=0;pageIndex=0;
     settings = { ...defaultSettings };
     importedStyles = { css: [], attributes: {}, missing: [], available: false };
-    history = [];
+    history = [];redoHistory=[];
     inputGroup = null;
     document.title = 'pdf-maker';
     clearSelection();
@@ -128,13 +133,17 @@ document.addEventListener('DOMContentLoaded', () => {
     clearTimeout(saveTimer);
     try {
       const state = snapshot();
-      localStorage.setItem(draftKey, JSON.stringify(state));
-      window.PdfImages?.releaseUnused([state.html, ...history.map(item => item.html)]);
-      storageFailed = false;
+      const actual=localStorage.getItem(draftKey);
+      if (storageConflict || actual!==expectedDraft) {
+        storageConflict=true;$('pdfConflict').hidden=false;$('documentStatus').textContent='다른 탭 변경 확인 필요 · 자동 저장 일시 중지';return false;
+      }
+      const serialized=JSON.stringify(state);localStorage.setItem(draftKey,serialized);expectedDraft=serialized;
+      window.PdfImages?.releaseUnused([state.html, ...history.map(item => item.html), ...redoHistory.map(item=>item.html)]);
+      storageFailed = false;return true;
     } catch (error) {
       storageFailed = true;
       $('documentStatus').textContent = '자동 저장 공간이 부족하거나 사용할 수 없습니다.';
-      console.error(error);
+      console.error(error);return false;
     }
   }
   function scheduleSave() {
@@ -352,8 +361,15 @@ document.addEventListener('DOMContentLoaded', () => {
     return preparePreview(clone);
   }
   function paginate() {
+    // Removing every page temporarily collapses the scroll area. Restore after
+    // rebuilding and applying screen zoom so style edits keep the current view.
+    const scrollPanel=$('dropZone');
+    const scrollPosition={top:scrollPanel.scrollTop,left:scrollPanel.scrollLeft};
+    const restoreScroll=()=>{scrollPanel.scrollTop=scrollPosition.top;scrollPanel.scrollLeft=scrollPosition.left;};
     clearTimeout(renderTimer);
     hidePopup();
+    // Measure A4 paper at its real size; zoom is only a screen presentation.
+    previewContainer.style.zoom='1';
     previewContainer.replaceChildren();
     synchronizeToc();
     designHeadingNumbers = new Map(); designFigureNumbers = new Map();
@@ -369,12 +385,13 @@ document.addEventListener('DOMContentLoaded', () => {
     sourceContent.querySelectorAll('figure').forEach(figure => { if (!hiddenInSource(figure) && !figure.closest('.cover-page')) designFigureNumbers.set(figure.dataset.elementId,String(++figureNumber)); });
     scaledCount = 0;
     $('discardDocumentBtn').disabled = !hasDocument();
+    $('saveProjectBtn').disabled=!hasDocument() || projectBusy;
     const visible = Array.from(sourceContent.children).filter(block => !hiddenInSource(block));
     if (!visible.length) {
       previewContainer.append(textNode('p', '문서가 비어 있습니다. .md 또는 .html 파일을 열어주세요.', 'placeholder-box'));
       $('downloadPdfBtn').disabled = true;
       $('documentStatus').textContent = '빈 문서';
-      scheduleSave();
+      updatePageNavigator();applyZoom();restoreScroll();scheduleSave();
       return;
     }
     $('downloadPdfBtn').disabled = printPreparing;
@@ -603,8 +620,8 @@ document.addEventListener('DOMContentLoaded', () => {
       paginate();
       if (selectedId === source.dataset.elementId) renderStyleChoices(source);
     });
-    highlightSelection();
-    if (!storageFailed) $('documentStatus').textContent = pages.length + '페이지 · 자동 저장' +
+    highlightSelection();updatePageNavigator();applyZoom();restoreScroll();
+    if (!storageFailed && !storageConflict) $('documentStatus').textContent = pages.length + '페이지 · 자동 저장' +
       (scaledCount ? ' · 큰 요소 ' + scaledCount + '개 축소' : '');
     scheduleSave();
   }
@@ -670,7 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     dropZone.classList.remove('drag-over');
     const files = Array.from(event.dataTransfer.files);
-    await readFile(files.find(file => /\.(md|html?)$/i.test(file.name)), files);
+    const project=files.find(file=>/\.(jpdf|json)$/i.test(file.name));
+    if(project)await openProject(project);else await readFile(files.find(file => /\.(md|html?)$/i.test(file.name)), files);
   });
   settingIds.forEach(id => {
     const input = $(id);
@@ -688,24 +706,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     input.addEventListener('blur', () => { inputGroup = null; applySettings(); });
   });
-  $('undoBtn').addEventListener('click', () => {
-    const state = history.pop();
-    if (!state) return;
-    documentVersion++; loadRequest++; imageRequest++;
-    sourceContent.innerHTML = safeDocumentHtml(state.html);
-    renderMath();
-    importedStyles = state.importedStyles || { css: [], attributes: {}, missing: [], available: false };
-    settings = normalizeSettings(state.settings);
-    document.title = state.title;
-    inputGroup = null;
-    clearSelection();
-    applySettings();
-    const imageLayer = sourceContent.querySelector('.cover-image-layer');
+  function restoreSnapshot(state) {
+    documentVersion++;loadRequest++;imageRequest++;
+    closeImageEditor();if ($('blockEditDialog').open) $('blockEditDialog').close();activeEditId=activeCodeId=null;
+    if ($('tocEditDialog').open) $('tocEditDialog').close();tocEditor=null;pendingDesign=null;
+    sourceContent.innerHTML=safeDocumentHtml(state.html);
+    importedStyles=state.importedStyles || {css:[],attributes:{},missing:[],available:false};
+    settings=normalizeSettings({...defaultSettings,...state.settings});document.title=state.title || 'pdf-export';
+    normalizeContent();renderMath();inputGroup=null;clearSelection();applySettings();
+    const imageLayer=sourceContent.querySelector('.cover-image-layer');
     checkCoverImage(imageLayer?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
-    updateUndo();
-    restoreBodyImages();
-    paginate();
-  });
+    updateUndo();restoreBodyImages();paginate();
+  }
+  $('undoBtn').addEventListener('click',()=>{const state=history.pop();if(!state)return;redoHistory.push(snapshot());restoreSnapshot(state);});
+  $('redoBtn').addEventListener('click',()=>{const state=redoHistory.pop();if(!state)return;history.push(snapshot());restoreSnapshot(state);});
   $('toggleBreakMode').addEventListener('click', () => { setMode(mode === 'break' ? 'normal' : 'break'); highlightSelection(); });
   $('toggleBreakCancelMode').addEventListener('click', () => { setMode(mode === 'breakCancel' ? 'normal' : 'breakCancel'); highlightSelection(); });
   $('toggleDeleteMode').addEventListener('click', () => { setMode(mode === 'delete' ? 'normal' : 'delete'); highlightSelection(); });
@@ -1301,7 +1315,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('commitDesignAllBtn').addEventListener('click', () => finishPendingDesign('all'));
   $('pendingDesignDialog').addEventListener('cancel', event => { event.preventDefault(); deferredDesignAction = null; $('pendingDesignDialog').close(); });
   function guardDesign(event) {
-    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#elementDesignOptions,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle')) return;
+    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#elementDesignOptions,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle,.pdf-navigation,#pageNavigator')) return;
     if (event.target.closest('#pdfPreviewContainer') && event.type === 'click' && event.target.closest('[data-element-id]')?.dataset.elementId === selectedId && mode === 'normal') return;
     if (!event.target.closest('button,input,select,label,#pdfPreviewContainer,#dropZone')) return;
     event.preventDefault(); event.stopImmediatePropagation();
@@ -1314,8 +1328,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropped = event.type === 'drop' ? Array.from(event.dataTransfer.files) : null;
     deferredDesignAction = () => {
       if (files?.length && target.id === 'coverImageFile') { target.dispatchEvent(new Event('change', { bubbles: true })); return; }
+      if (files?.length && target.id==='projectFileInput') { openProject(files[0]);target.value='';return; }
       if (files?.length) { readFile(files.find(file => /.(md|html?)$/i.test(file.name)), files); target.value = ''; return; }
-      if (dropped) { readFile(dropped.find(file => /.(md|html?)$/i.test(file.name)), dropped); return; }
+      if (dropped) { const project=dropped.find(file=>/\.(jpdf|json)$/i.test(file.name));if(project)openProject(project);else readFile(dropped.find(file => /\.(md|html?)$/i.test(file.name)), dropped); return; }
       const current = target.isConnected ? target : id ? Array.from(previewContainer.querySelectorAll('[data-element-id]')).find(node => node.dataset.elementId === id) : null;
       if (!current) return;
       if (input) { current.value = value; current.checked = checked; current.dispatchEvent(new Event(event.type, { bubbles: true })); }
@@ -1638,7 +1653,7 @@ document.addEventListener('DOMContentLoaded', () => {
       persist();
       if (previewContainer.querySelector('.pdf-page')) window.print();
     } finally {
-      printPreparing = false; $('downloadPdfBtn').disabled = !previewContainer.querySelector('.pdf-page');
+      printPreparing = false; $('downloadPdfBtn').disabled = !previewContainer.querySelector('.pdf-page'); applyZoom();
     }
   }
   $('downloadPdfBtn').addEventListener('click', preparePrint);
@@ -1651,6 +1666,96 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('afterprint', () => { committedPrint = false; paginate(); });
   window.addEventListener('pagehide', persist);
   document.fonts?.ready.then(requestPaginate);
+  /* Portable project files include source, settings and binary image assets. */
+  async function saveProject() {
+    if (projectBusy || !hasDocument()) return;
+    projectBusy=true;$('saveProjectBtn').disabled=true;$('projectStatus').textContent='작업 파일 저장 중…';
+    try {
+      if (activeEditId) closeEditor(true);
+      const state=snapshot();const assets=await PdfImages.exportAssets(state.html);
+      const blob=new Blob([JSON.stringify({format:'junny-pdf-project',version:1,state,assets})],{type:'application/json'});
+      if(blob.size>150*1024*1024)throw Error('작업 파일은 150MB까지 저장할 수 있습니다. 이미지나 문서 크기를 줄여주세요.');
+      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;
+      link.download=(state.title || 'document').replace(/[\/:*?"<>|]/g,'_')+'.jpdf.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      $('projectStatus').textContent='작업 파일 저장 완료 · 업로드 이미지 포함, URL 이미지는 주소 유지';
+    } catch(error) {$('projectStatus').textContent=error.message || '작업 파일 저장에 실패했습니다.';}
+    finally {projectBusy=false;$('saveProjectBtn').disabled=!hasDocument();}
+  }
+  async function openProject(file) {
+    if (!file || projectBusy) return;
+    if (file.size>150*1024*1024) {$('projectStatus').textContent='150MB 이하의 작업 파일을 선택해주세요.';return;}
+    projectBusy=true;$('saveProjectBtn').disabled=true;
+    let mapping=null,applied=false;
+    const before=JSON.stringify(snapshot()),request=++loadRequest;
+    try {
+      const project=JSON.parse(await file.text());
+      if (project.format!=='junny-pdf-project' || project.version!==1 || typeof project.state?.html!=='string' || !project.state.settings || typeof project.state.settings!=='object' || Array.isArray(project.state.settings)) throw Error('지원하는 PDF Maker 작업 파일이 아닙니다.');
+      const styles=project.state.importedStyles;
+      if (styles && (typeof styles!=='object' || !Array.isArray(styles.css) || styles.css.some(css=>typeof css!=='string') || (styles.attributes && (typeof styles.attributes!=='object' || Object.values(styles.attributes).some(value=>typeof value!=='string'))) || (styles.missing && (!Array.isArray(styles.missing) || styles.missing.some(value=>typeof value!=='string'))))) throw Error('작업 파일의 문서 스타일 정보가 올바르지 않습니다.');
+      if (request!==loadRequest || JSON.stringify(snapshot())!==before) throw Error('파일을 읽는 동안 문서가 변경됐습니다. 다시 열어주세요.');
+      if (hasDocument() && !await confirmDocument('작업 파일을 열면 현재 내용과 설정이 교체됩니다. 계속할까요?')) return;
+      $('projectStatus').textContent='문서와 이미지를 불러오는 중…';
+      mapping=await PdfImages.importAssets(project.assets);
+      if (request!==loadRequest || JSON.stringify(snapshot())!==before) throw Error('문서가 변경되어 불러오기를 취소했습니다.');
+      const staging=document.createElement('div');staging.innerHTML=safeDocumentHtml(project.state.html);
+      staging.querySelectorAll('img[data-image-asset]').forEach(image=>{
+        if(!mapping.has(image.dataset.imageAsset)) throw Error('작업 파일에 필요한 이미지가 없습니다.');
+        image.dataset.imageAsset=mapping.get(image.dataset.imageAsset);image.removeAttribute('src');image.removeAttribute('srcset');
+      });
+      resetDocument();history=[];redoHistory=[];restoreSnapshot({...project.state,html:staging.innerHTML});applied=true;persist();
+      $('projectStatus').textContent='작업 파일을 불러왔습니다.';
+    } catch(error) {$('projectStatus').textContent=error.message || '작업 파일을 읽지 못했습니다.';}
+    finally {if(mapping && !applied)await Promise.all(Array.from(mapping.values()).map(PdfImages.remove));projectBusy=false;$('saveProjectBtn').disabled=!hasDocument();}
+  }
+  $('saveProjectBtn').addEventListener('click',saveProject);
+  $('projectFileInput').addEventListener('change',event=>{openProject(event.target.files[0]);event.target.value='';});
+  function applyZoom() {
+    const container=$('pdfPreviewContainer'),pages=container.querySelectorAll('.pdf-page'),panel=$('dropZone');
+    const value=$('pdfZoom').value;const width=pages[0]?.offsetWidth || 794;
+    const style=getComputedStyle(panel),available=Math.max(1,panel.clientWidth-parseFloat(style.paddingLeft||0)-parseFloat(style.paddingRight||0));
+    const scale=committedPrint || printPreparing ? 1 : value==='fit'?Math.max(.15,Math.min(2,available/width)):Number(value)/100;
+    container.style.zoom=String(scale);container.dataset.zoom=String(scale);
+    panel.style.alignItems=width*scale>available?'flex-start':'center';
+  }
+  $('pdfZoom').addEventListener('change',applyZoom);
+  if(window.ResizeObserver)new ResizeObserver(()=>{if($('pdfZoom').value==='fit')applyZoom();}).observe($('dropZone'));
+  function jumpPage(index) {
+    const pages=Array.from(previewContainer.querySelectorAll('.pdf-page'));if(!pages.length)return;
+    pageIndex=Math.max(0,Math.min(pages.length-1,index));pages[pageIndex].scrollIntoView({block:'start',behavior:'smooth'});$('pageJump').value=pageIndex+1;
+    $('pageNavigator').querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-current',String(i===pageIndex)));
+  }
+  function updatePageNavigator() {
+    const pages=Array.from(previewContainer.querySelectorAll('.pdf-page'));pageIndex=Math.max(0,Math.min(pageIndex,pages.length-1));
+    $('pageTotal').textContent='/ '+pages.length;$('pageJump').max=Math.max(1,pages.length);$('pageJump').value=pages.length?pageIndex+1:1;
+    ['pageJump','jumpPageBtn','previousPageBtn','nextPageBtn'].forEach(id=>$(id).disabled=!pages.length);
+    $('pageNavigator').replaceChildren();
+    pages.forEach((page,index)=>{
+      const button=document.createElement('button');button.type='button';button.className='page-nav-item';button.setAttribute('aria-current',String(index===pageIndex));
+      const heading=page.querySelector('h1,h2,h3,h4,h5,h6');button.append(textNode('strong',String(index+1)+'페이지'),textNode('span',heading?.textContent.trim().slice(0,55) || page.querySelector('.pdf-content')?.textContent.trim().slice(0,55) || '그림·표'));
+      button.addEventListener('click',()=>jumpPage(index));$('pageNavigator').append(button);
+    });
+  }
+  $('jumpPageBtn').addEventListener('click',()=>jumpPage((Number($('pageJump').value)||1)-1));
+  $('pageJump').addEventListener('keydown',event=>{if(event.key==='Enter')jumpPage((Number(event.target.value)||1)-1);});
+  $('previousPageBtn').addEventListener('click',()=>jumpPage(pageIndex-1));$('nextPageBtn').addEventListener('click',()=>jumpPage(pageIndex+1));
+  $('dropZone').addEventListener('scroll',()=>{
+    const pages=Array.from(previewContainer.querySelectorAll('.pdf-page'));if(!pages.length)return;
+    const top=$('dropZone').getBoundingClientRect().top;
+    let nearest=0;for(let i=1;i<pages.length;i++)if(Math.abs(pages[i].getBoundingClientRect().top-top)<Math.abs(pages[nearest].getBoundingClientRect().top-top))nearest=i;
+    pageIndex=nearest;$('pageJump').value=nearest+1;$('pageNavigator').querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-current',String(i===nearest)));
+  });
+  window.addEventListener('storage',event=>{if((event.key===draftKey || event.key===null) && event.newValue!==expectedDraft){storageConflict=true;$('pdfConflict').hidden=false;}});
+  $('pdfKeepLocal').addEventListener('click',async()=>{if(!await confirmDocument('다른 탭에서 저장한 내용을 현재 내용으로 덮어씁니다. 계속할까요?'))return;try{expectedDraft=localStorage.getItem(draftKey);storageConflict=false;$('pdfConflict').hidden=true;persist();}catch{$('documentStatus').textContent='저장소를 사용할 수 없습니다.';}});
+  $('pdfLoadRemote').addEventListener('click',async()=>{
+    if(!await confirmDocument('다른 탭의 내용을 불러오면 현재 내용이 교체됩니다. 계속할까요?'))return;
+    try{const raw=localStorage.getItem(draftKey),state=JSON.parse(raw);if(typeof state?.html!=='string')throw Error();expectedDraft=raw;storageConflict=false;$('pdfConflict').hidden=true;history=[];redoHistory=[];restoreSnapshot(state);}
+    catch{$('documentStatus').textContent='다른 탭의 저장 내용을 읽지 못했습니다.';}
+  });
+  document.addEventListener('keydown',event=>{
+    if(event.target.closest('input,textarea,[contenteditable="true"]') || event.altKey || !(event.ctrlKey || event.metaKey))return;
+    if(event.key.toLowerCase()==='z'){event.preventDefault();$(event.shiftKey?'redoBtn':'undoBtn').click();}
+    else if(event.key.toLowerCase()==='y'){event.preventDefault();$('redoBtn').click();}
+  });
   refreshHistory();
   applySettings();
   try {
@@ -1673,8 +1778,7 @@ document.addEventListener('DOMContentLoaded', () => {
       (async () => {
         if (hasDocument() && !await confirmDocument('편집기 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
         renderDocument(parseMarkdown(transferred));
-        persist();
-        if (!storageFailed) localStorage.removeItem('pdfMakerTransfer');
+        if (persist()) localStorage.removeItem('pdfMakerTransfer');
       })();
     }
   } catch (error) {

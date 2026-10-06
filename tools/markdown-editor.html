@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark light">
-<script src="../js/shared/editor-ui.js?v=20261006-elements-2"></script>
+<script src="../js/shared/editor-ui.js?v=20261006-toolbar-6"></script>
 <title>Markdown 에디터</title>
 <link rel="shortcut icon" type="image/png" href="../assets/img/favicon_main.png">
 
@@ -12,10 +12,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-<script src="../js/shared/markdown-options.js?v=20261006-elements-2"></script>
+<script src="../js/shared/markdown-options.js?v=20261006-toolbar-6"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="../js/shared/code-blocks.js?v=20261006-elements-2"></script>
-<script src="../js/pdf-maker/templates.js?v=20261006-elements-2"></script>
+<script src="../js/shared/code-blocks.js?v=20261006-toolbar-6"></script>
+<script src="../js/pdf-maker/templates.js?v=20261006-toolbar-6"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <!-- KaTeX 스타일시트 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -25,50 +25,76 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
 
-<link rel="stylesheet" href="../css/markdown-editor/style.css?v=20261006-elements-2">
-<link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-elements-2" data-code-block-style>
-<link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-elements-2" data-element-style>
-<link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-elements-2">
+<link rel="stylesheet" href="../css/markdown-editor/style.css?v=20261006-toolbar-6">
+<link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-toolbar-6" data-code-block-style>
+<link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-toolbar-6" data-element-style>
+<link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-toolbar-6">
 </head>
 <body>
 <div id="app">
 
-  <header class="toolbar">
-    <div class="toolbar-left">
-      <span class="toolbar-label">보기</span>
-      <div class="segmented" id="viewSegment">
-        <button type="button" class="seg-btn active" data-mode="split">분할</button>
-        <button type="button" class="seg-btn" data-mode="editor">편집기</button>
-        <button type="button" class="seg-btn" data-mode="preview">미리보기</button>
+  <header class="toolbar md-toolbar" id="mdToolbar" aria-label="Markdown 편집 도구">
+    <div class="md-toolbar-row md-toolbar-files">
+      <span class="tool-title">Markdown Editor</span>
+      <div class="md-tool-group" role="group" aria-label="문서 불러오기">
+        <span class="toolbar-label">불러오기</span>
+        <button type="button" class="btn-pill" id="openMdBtn" title="Markdown 파일을 편집기에 불러오기">.md 열기</button>
+        <input id="openMdInput" type="file" accept=".md,.markdown,text/markdown" hidden>
+        <button type="button" class="btn-ghost" id="loadExampleBtn" title="렌더링 테스트 예제로 현재 문서 교체">예제 불러오기</button>
       </div>
-      <span class="toolbar-label">스크롤</span>
-      <div class="segmented" id="scrollSegment" aria-label="스크롤 방식">
-        <button type="button" class="seg-btn active" data-sync="on" aria-pressed="true" title="편집기와 미리보기를 함께 스크롤">동기화</button>
-        <button type="button" class="seg-btn" data-sync="off" aria-pressed="false" title="입력할 때만 미리보기가 따라옴">분리</button>
+      <div class="md-tool-group md-output-group" role="group" aria-label="문서 출력">
+        <span class="toolbar-label">출력</span>
+        <button type="button" class="btn-pill btn-accent" id="sendToPdfBtn" title="현재 문서를 PDF Maker로 보내 편집">PDF 편집</button>
+        <button type="button" class="btn-pill" id="downloadMdBtn" title="Markdown 원본 파일 저장">.md 저장</button>
+        <button type="button" class="btn-pill" id="downloadHtmlBtn" title="스타일이 포함된 HTML 파일 저장">.html 저장</button>
+        <button type="button" class="btn-ghost" id="copyHtmlBtn" title="렌더링된 HTML을 클립보드에 복사">HTML 복사</button>
       </div>
-    </div>
-    <div class="toolbar-center">
-      <button type="button" class="btn-pill btn-accent" id="sendToPdfBtn">PDF 편집</button>
-      <button type="button" class="btn-pill" id="downloadMdBtn">.md</button>
-      <button type="button" class="btn-pill" id="downloadHtmlBtn">.html</button>
-    </div>
-    <div class="toolbar-right">
-      <button type="button" class="btn-ghost theme-toggle" id="uiThemeToggle" aria-label="라이트 모드로 전환" aria-pressed="false" title="라이트 모드로 전환"><span aria-hidden="true" data-theme-icon>☾</span><span data-theme-label>다크</span></button>
-      <div class="shortcut-help">
-        <button type="button" class="btn-text shortcut-help-button" aria-describedby="shortcutTooltip">단축키 ?</button>
-        <div class="shortcut-popover" id="shortcutTooltip" role="tooltip">
-          <div class="shortcut-popover-title">단축키</div>
-          <div class="shortcut-list" id="shortcutList"></div>
+      <div class="md-tool-group md-toolbar-utilities" role="group" aria-label="화면 테마와 도움말">
+        <button type="button" class="btn-ghost theme-toggle" id="uiThemeToggle" aria-label="라이트 모드로 전환" aria-pressed="false" title="라이트 모드로 전환"><span aria-hidden="true" data-theme-icon>☾</span><span data-theme-label>다크</span></button>
+        <div class="shortcut-help">
+          <button type="button" class="btn-text shortcut-help-button" aria-describedby="shortcutTooltip">단축키 ?</button>
+          <div class="shortcut-popover" id="shortcutTooltip" role="tooltip">
+            <div class="shortcut-popover-title">단축키</div>
+            <div class="shortcut-list" id="shortcutList"></div>
+          </div>
         </div>
       </div>
-      <button type="button" class="btn-text" id="tempSaveBtn">임시저장</button>
-      <button type="button" class="btn-text" id="historyBtn">히스토리</button>
-      <button type="button" class="btn-text" id="loadExampleBtn">예제 불러오기</button>
-      <button type="button" class="btn-text" id="clearBtn">지우기</button>
+    </div>
+    <div class="md-toolbar-row md-toolbar-editing">
+      <div class="md-tool-group" role="group" aria-label="문서 조작">
+        <span class="toolbar-label">문서</span>
+        <button type="button" class="btn-ghost" id="findBtn" aria-controls="findPanel" aria-expanded="false">찾기·바꾸기</button>
+        <button type="button" class="btn-ghost" id="outlineBtn" aria-expanded="false" aria-controls="mdOutline">제목 탐색</button>
+        <button type="button" class="btn-ghost" id="clearBtn" title="확인 후 현재 문서 내용 모두 지우기">전체 내용 지우기</button>
+      </div>
+      <div class="md-tool-group" role="group" aria-label="브라우저 저장과 기록">
+        <span class="toolbar-label">기록</span>
+        <button type="button" class="btn-ghost" id="tempSaveBtn" title="현재 내용을 이 브라우저에 임시 저장">임시 저장</button>
+        <button type="button" class="btn-ghost" id="historyBtn" title="이 브라우저에 저장된 이전 문서 버전 확인">저장 기록</button>
+      </div>
+      <div class="md-tool-group" role="group" aria-label="화면 보기">
+        <span class="toolbar-label">보기</span>
+        <div class="segmented" id="viewSegment" aria-label="화면 구성">
+          <button type="button" class="seg-btn active" data-mode="split">분할</button>
+          <button type="button" class="seg-btn" data-mode="editor">편집기</button>
+          <button type="button" class="seg-btn" data-mode="preview">미리보기</button>
+        </div>
+      </div>
+      <div class="md-tool-group" role="group" aria-label="스크롤 방식">
+        <span class="toolbar-label">스크롤</span>
+        <div class="segmented" id="scrollSegment" aria-label="스크롤 방식">
+          <button type="button" class="seg-btn active" data-sync="on" aria-pressed="true" title="편집기와 미리보기를 함께 스크롤">동기화</button>
+          <button type="button" class="seg-btn" data-sync="off" aria-pressed="false" title="입력할 때만 미리보기가 따라옴">분리</button>
+        </div>
+      </div>
     </div>
   </header>
 
+  <div id="mdSaveStatus" class="editor-notice" role="status" aria-live="polite">저장 준비 중</div>
+  <div id="mdConflict" class="editor-notice" hidden><span>다른 탭에서 문서가 변경됐습니다. 현재 내용의 자동 저장을 잠시 멈췄습니다.</span><button id="mdLoadRemote" type="button" class="btn-pill">다른 탭 내용 불러오기</button><button id="mdKeepLocal" type="button" class="btn-pill">현재 내용으로 저장</button><button id="mdBackup" type="button" class="btn-pill">현재 내용 파일 저장</button></div>
+  <div id="findPanel" class="sub-toolbar" hidden><label for="findInput">찾기</label><input id="findInput" type="text"><label for="replaceInput">바꾸기</label><input id="replaceInput" type="text"><label><input id="findCase" type="checkbox"> 대소문자 구분</label><button id="findPrev" class="btn-pill" type="button">이전</button><button id="findNext" class="btn-pill" type="button">다음</button><button id="replaceOne" class="btn-pill" type="button">바꾸기</button><button id="replaceAll" class="btn-pill" type="button">모두 바꾸기</button><span id="findCount" role="status"></span><button id="findClose" class="btn-ghost" type="button">닫기</button></div>
   <main class="workspace" id="workspace">
+    <aside id="mdOutline" hidden aria-label="문서 제목 탐색"><div class="pane-header">제목 탐색</div><div id="mdOutlineList"></div></aside>
     <section class="pane pane-editor" id="paneEditor">
       <div class="pane-header">
         <span class="pane-title">MARKDOWN</span>
@@ -84,7 +110,6 @@
     <section class="pane pane-preview" id="panePreview">
       <div class="pane-header">
         <span class="pane-title">미리보기</span>
-        <button type="button" class="btn-ghost" id="copyHtmlBtn">HTML 복사</button>
       </div>
       <div class="pane-body">
         <div class="preview-body" id="previewHost"></div>
@@ -97,7 +122,7 @@
 <div class="modal-overlay" id="historyOverlay" hidden>
   <div class="modal-panel">
     <div class="modal-header">
-      <span>히스토리</span>
+      <span>저장 기록</span>
       <button type="button" class="modal-close" id="historyCloseBtn" aria-label="닫기">&times;</button>
     </div>
     <div class="modal-body" id="historyList"></div>
@@ -108,6 +133,6 @@
   </div>
 </div>
 
-<script src="../js/markdown-editor/script.js?v=20261006-elements-2"></script>
+<script src="../js/markdown-editor/script.js?v=20261006-toolbar-6"></script>
 </body>
 </html>

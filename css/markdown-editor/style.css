@@ -184,3 +184,31 @@
     .toolbar-left{flex-wrap:wrap;}
     .pane-editor{flex-basis:50%!important;}
   }
+.editor-notice { flex:0 0 auto; padding:5px 14px; color:var(--text-dim); font-size:12px; background:var(--bg-panel); }
+.editor-notice.save-failed { color:var(--preview-link,var(--blue)); font-weight:600; }
+#mdConflict { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+#mdConflict[hidden],#findPanel[hidden],#mdOutline[hidden] { display:none; }
+#findPanel { flex-wrap:wrap; font-size:12px; }
+#findPanel input[type="text"] { width:150px; padding:5px 8px; }
+#mdOutline { width:210px; flex:0 0 210px; overflow:auto; border-right:1px solid var(--border); background:var(--bg-panel); }
+.outline-entry { display:block; width:100%; text-align:left; padding:8px 12px; color:var(--text); border:0; background:transparent; font:12px/1.5 var(--sans); overflow-wrap:anywhere; cursor:pointer; }
+.outline-entry:hover { background:var(--blue-soft); }
+.md-search-match { background:var(--blue-soft); outline:1px solid var(--blue); }
+@media(max-width:760px){#mdOutline { position:absolute; z-index:15; top:0; bottom:0; max-width:70vw; box-shadow:5px 0 15px rgba(0,0,0,.25); }}
+
+/* File flow and editing controls occupy separate rows; each group keeps its label. */
+#mdToolbar { display:flex; flex-direction:column; align-items:stretch; gap:0; padding:0; }
+#mdToolbar .md-toolbar-row { display:flex; align-items:center; flex-wrap:wrap; gap:10px 18px; padding:9px 14px; min-width:0; }
+#mdToolbar .md-toolbar-editing { border-top:1px solid var(--border); background:var(--bg-panel-header); }
+#mdToolbar .md-tool-group { display:flex; align-items:center; flex-wrap:wrap; gap:6px; min-width:0; padding-left:14px; border-left:1px solid var(--border); }
+#mdToolbar .md-toolbar-editing .md-tool-group:first-child { padding-left:0; border-left:0; }
+#mdToolbar .toolbar-label { display:inline; margin-right:4px; font-size:11px; font-weight:600; }
+#mdToolbar .md-toolbar-utilities { margin-left:auto; border-left:0; padding-left:0; }
+#mdToolbar .btn-pill { font-family:var(--sans); }
+@media(max-width:760px) {
+  #mdToolbar .md-toolbar-row { padding:8px 10px; gap:8px 12px; }
+  #mdToolbar .md-tool-group { padding-left:0; border-left:0; }
+  #mdToolbar .md-toolbar-files .tool-title { width:100%; }
+  #mdToolbar .md-toolbar-utilities { margin-left:0; }
+  #mdToolbar :is(.btn-pill,.btn-ghost,.seg-btn) { padding:5px 9px; font-size:12px; }
+}

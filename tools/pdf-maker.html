@@ -3,48 +3,49 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="color-scheme" content="dark light">
-    <script src="../js/shared/editor-ui.js?v=20261006-elements-2"></script>
+    <script src="../js/shared/editor-ui.js?v=20261006-scroll-4"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>pdf-maker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-    <script src="../js/shared/markdown-options.js?v=20261006-elements-2"></script>
+    <script src="../js/shared/markdown-options.js?v=20261006-scroll-4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="../js/shared/code-blocks.js?v=20261006-elements-2"></script>
-    <script src="../js/pdf-maker/math.js?v=20261006-elements-2"></script>
-    <script src="../js/pdf-maker/images.js?v=20261006-elements-2"></script>
-    <script src="../js/pdf-maker/templates.js?v=20261006-elements-2"></script>
-    <script src="../js/pdf-maker/html-styles.js?v=20261006-elements-2"></script>
+    <script src="../js/shared/code-blocks.js?v=20261006-scroll-4"></script>
+    <script src="../js/pdf-maker/math.js?v=20261006-scroll-4"></script>
+    <script src="../js/pdf-maker/images.js?v=20261006-scroll-4"></script>
+    <script src="../js/pdf-maker/templates.js?v=20261006-scroll-4"></script>
+    <script src="../js/pdf-maker/html-styles.js?v=20261006-scroll-4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     
-    <link rel="stylesheet" href="../css/pdf-maker/style.css?v=20261006-elements-2" />
+    <link rel="stylesheet" href="../css/pdf-maker/style.css?v=20261006-scroll-4" />
     <!-- Elements -->
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/base.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/cover.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/toc.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/markdown.css?v=20261006-elements-2" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/base.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/cover.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/toc.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/markdown.css?v=20261006-scroll-4" />
 
     <!-- Themes -->
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/report.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/editorial.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/minimal.css?v=20261006-elements-2" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/report.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/editorial.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/minimal.css?v=20261006-scroll-4" />
 
-    <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css?v=20261006-elements-2" />
-    <link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-elements-2" data-code-block-style>
-    <link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-elements-2" data-element-style>
+    <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-scroll-4" data-code-block-style>
+    <link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-scroll-4" data-element-style>
 
-    <link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-elements-2">
+    <link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-scroll-4">
   </head>
   <body>
     <div id="app">
       <header class="toolbar">
         <div class="toolbar-left"><span class="tool-title">PDF Maker</span></div>
         <div class="toolbar-center">
+          <button id="saveProjectBtn" class="btn-pill" type="button" disabled>작업 파일 저장</button><label class="btn-pill" for="projectFileInput">작업 파일 열기</label><input id="projectFileInput" type="file" accept=".json,.jpdf" hidden>
           <label class="btn-pill" for="mdFileInput">.md 열기</label>
           <input type="file" id="mdFileInput" accept=".md" hidden />
           <label class="btn-pill" for="htmlFileInput">.html + CSS 열기</label>
@@ -60,11 +61,15 @@
         <button id="toggleDeleteMode" class="btn-ghost">🗑️ 요소 제거</button>
         <button id="discardDocumentBtn" class="btn-ghost" disabled>문서 작업 버리기</button>
         <button id="undoBtn" class="btn-ghost" disabled>↩️ 되돌리기 (<span id="undoCount">0</span>)</button>
+        <button id="redoBtn" class="btn-ghost" disabled>다시 실행 (<span id="redoCount">0</span>)</button>
         <span id="interactionHelpText" class="help-text">일반 모드: 텍스트 더블클릭 시 편집 가능 / 파일 드래그 앤 드롭 지원</span>
       </div>
 
+      <div id="pdfConflict" class="editor-notice" hidden><span>다른 탭에서 문서가 변경됐습니다. 자동 저장을 잠시 멈췄습니다.</span><button id="pdfLoadRemote" class="btn-pill" type="button">다른 탭 내용 불러오기</button><button id="pdfKeepLocal" class="btn-pill" type="button">현재 내용으로 저장</button><span>현재 작업은 작업 파일 저장으로 백업할 수 있습니다.</span></div>
+      <div class="sub-toolbar pdf-navigation"><label for="pdfZoom">확대</label><select id="pdfZoom"><option value="fit">본문 너비 맞춤</option><option value="50">50%</option><option value="75">75%</option><option value="100" selected>100%</option><option value="125">125%</option><option value="150">150%</option></select><button id="previousPageBtn" class="btn-ghost" type="button">이전 페이지</button><label for="pageJump">페이지</label><input id="pageJump" type="number" min="1" value="1"><span id="pageTotal">/ 0</span><button id="jumpPageBtn" class="btn-pill" type="button">이동</button><button id="nextPageBtn" class="btn-ghost" type="button">다음 페이지</button><span id="projectStatus" role="status" aria-live="polite"></span></div>
       <main class="workspace layout-pdf">
         <aside class="panel left-panel">
+          <details open><summary>페이지 탐색</summary><div id="pageNavigator" class="page-navigator"></div></details>
           <details open>
             <summary>마크다운 연동</summary>
             <div class="setting-group">
@@ -275,6 +280,6 @@
     </dialog>
     <div id="sourceContent" style="display: none;"></div>
     
-    <script type="module" src="../js/pdf-maker/script.js?v=20261006-elements-2"></script>
+    <script type="module" src="../js/pdf-maker/script.js?v=20261006-scroll-4"></script>
   </body>
 </html>

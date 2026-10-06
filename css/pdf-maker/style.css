@@ -355,3 +355,13 @@
 .tag-style-sample .code-display-line { font-size:inherit; }
 .tag-style-sample [data-style="text-dropcap"] { min-height:4em; }
 .tag-style-sample [data-style="figure-side"] { gap:.4em; }
+.pdf-navigation { font-size:12px; }
+.pdf-navigation #pageJump { width:65px; padding:4px 6px; }
+.pdf-navigation select { padding:4px 8px; }
+.page-navigator { display:grid; gap:6px; margin-top:8px; }
+.page-nav-item { text-align:left; display:grid; gap:4px; padding:9px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); border-radius:7px; cursor:pointer; font:12px/1.4 var(--sans); }
+.page-nav-item span { color:var(--text-dim); overflow-wrap:anywhere; }
+.page-nav-item[aria-current="true"] { border-color:var(--blue); background:var(--blue-soft); }
+#pdfConflict { flex:0 0 auto; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 14px; background:var(--bg-panel); color:var(--text); font-size:12px; }
+#pdfConflict[hidden] { display:none; }
+@media print { .pdf-navigation,#pdfConflict { display:none !important; } #pdfPreviewContainer { zoom:1 !important; } }

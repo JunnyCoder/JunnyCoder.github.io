@@ -101,5 +101,36 @@ window.PdfImages = (() => {
     htmls.forEach(html => { for (const match of html.matchAll(/data-image-asset="([^"]+)"/g)) retained.add(match[1]); });
     for (const [id, url] of urls) if (!retained.has(id)) { URL.revokeObjectURL(url); urls.delete(id); }
   }
-  return { fileAsset, probe, snapshotHtml, restore, remove, httpUrl, decorate, releaseUnused };
+  async function exportAssets(html) {
+    const root=document.createElement('div');root.innerHTML=html;
+    const ids=[...new Set(Array.from(root.querySelectorAll('img[data-image-asset]')).map(image=>image.dataset.imageAsset))];
+    if(ids.length>100) throw Error('작업 파일은 업로드 이미지 100개까지 저장할 수 있습니다.');
+    const assets=[];let totalBytes=0;
+    for (const id of ids) {
+      const record=await access('readonly',store=>store.get(id));
+      if (!record?.blob) throw Error('저장된 이미지를 찾을 수 없습니다. 이미지를 다시 추가한 뒤 작업 파일을 저장해주세요.');
+      totalBytes+=record.blob.size;
+      if(totalBytes>110*1024*1024)throw Error('작업 파일의 이미지 용량이 너무 큽니다. 이미지 크기를 줄여주세요.');
+      const data=await new Promise((resolve,reject)=>{
+        const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('이미지를 내보내지 못했습니다.'));reader.readAsDataURL(record.blob);
+      });
+      assets.push({id,name:record.name,type:record.blob.type,data});
+    }
+    return assets;
+  }
+  async function importAssets(assets) {
+    if (!Array.isArray(assets) || assets.length>100) throw Error('작업 파일의 이미지 목록이 올바르지 않습니다.');
+    const mapping=new Map();
+    try {
+      for (const asset of assets) {
+        if (!asset || typeof asset.id!=='string' || mapping.has(asset.id) || typeof asset.data!=='string' || asset.data.length>28*1024*1024 || !['image/png','image/jpeg','image/webp'].includes(asset.type)) throw Error('작업 파일의 이미지 정보가 올바르지 않습니다.');
+        let binary;try {binary=atob(asset.data);}catch {throw Error('작업 파일의 이미지가 손상됐습니다.');}
+        const bytes=Uint8Array.from(binary,char=>char.charCodeAt(0));
+        const file=new File([bytes],typeof asset.name==='string'?asset.name:'image',{type:asset.type});
+        const stored=await fileAsset(file);mapping.set(asset.id,stored.id);
+      }
+      return mapping;
+    } catch(error) {await Promise.all(Array.from(mapping.values()).map(remove));throw error;}
+  }
+  return { fileAsset, probe, snapshotHtml, restore, remove, httpUrl, decorate, releaseUnused, exportAssets, importAssets };
 })();
