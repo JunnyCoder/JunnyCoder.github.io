@@ -23,8 +23,9 @@ document.addEventListener('DOMContentLoaded', () => {
   let storageFailed = false;
   let documentVersion = 0, loadRequest = 0, imageRequest = 0;
   let coverImageProbe = null;
-  let committedPrint = false;
+  let committedPrint = false, printPreparing = false;
   let pendingDesign = null, deferredDesignAction = null, replayDesignAction = false;
+  let designHeadingNumbers = new Map(), designFigureNumbers = new Map();
   let activeTableId = null, tableEditCell = null;
   const uid = prefix => prefix + '-' + Date.now() + '-' + (++serial);
   const clean = html => DOMPurify.sanitize(html, { FORBID_ATTR: ['contenteditable'] });
@@ -58,7 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     return false;
   }
-  const snapshot = () => ({ html: window.PdfMath ? PdfMath.sourceHtml(sourceContent) : sourceContent.innerHTML, settings: { ...settings }, title: document.title, importedStyles });
+  function documentHtml() {
+    const html = window.PdfMath ? PdfMath.sourceHtml(sourceContent) : sourceContent.innerHTML;
+    return window.PdfImages ? PdfImages.snapshotHtml(html) : html;
+  }
+  const snapshot = () => ({ html: documentHtml(), settings: { ...settings }, title: document.title, importedStyles });
   const updateUndo = () => {
     $('undoBtn').disabled = history.length === 0;
     $('undoCount').textContent = history.length;
@@ -89,6 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function hasDocument() { return sourceContent.children.length > 0; }
   function resetDocument() {
     pendingDesign = null;
+    closeImageEditor();
+    $('imageLoadNotice').hidden = true;
     documentVersion++;
     loadRequest++;
     imageRequest++;
@@ -120,7 +127,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function persist() {
     clearTimeout(saveTimer);
     try {
-      localStorage.setItem(draftKey, JSON.stringify(snapshot()));
+      const state = snapshot();
+      localStorage.setItem(draftKey, JSON.stringify(state));
+      window.PdfImages?.releaseUnused([state.html, ...history.map(item => item.html)]);
       storageFailed = false;
     } catch (error) {
       storageFailed = true;
@@ -173,6 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function normalizeContent() {
     SharedCodeBlocks.normalize(sourceContent);
+    sourceContent.querySelectorAll('[data-design-auto-number]').forEach(node => { delete node.dataset.designAutoNumber; delete node.dataset.designNumber; });
+    sourceContent.querySelectorAll('[data-style] > figcaption').forEach(node => { delete node.dataset.designNumber;delete node.dataset.designSource; });
+    sourceContent.querySelectorAll('[data-style]').forEach(node => {
+      if (templates.designIds.has(node.dataset.style) && !templates.validDesign(node,node.dataset.style)) templates.writeDesign(node,'default');
+    });
     // Plain HTML text and the Markdown editor's exported article must also paginate.
     const exported = sourceContent.querySelector(':scope > article.preview-body');
     if (exported) exported.replaceWith(...exported.childNodes);
@@ -195,6 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!heading.dataset.headingId || headingIds.has(heading.dataset.headingId)) heading.dataset.headingId = uid('heading');
       headingIds.add(heading.dataset.headingId);
     });
+    if (sourceContent.querySelector('img[data-image-asset]')) restoreBodyImages();
   }
   function renderMath(root = sourceContent) {
     if (window.renderMathInElement) window.renderMathInElement(root, {
@@ -273,12 +288,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function preparePreview(node) {
     node = htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
+    window.PdfImages?.decorate(node);
     if (pendingDesign && !committedPrint) [node, ...node.querySelectorAll('[data-element-id]')].forEach(element => {
       if (element.dataset.elementId !== pendingDesign.id) return;
       ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => element.classList.remove(name));
-      if (pendingDesign.preset === 'default') delete element.dataset.style;
-      else element.dataset.style = pendingDesign.preset;
+      templates.writeDesign(element, pendingDesign.preset, pendingDesign.options);
     });
+    [node, ...node.querySelectorAll('[data-style]')].forEach(element => {
+      if (['heading-chapter','heading-index'].includes(element.dataset.style) && !element.dataset.designNumber)
+        element.dataset.designNumber = designHeadingNumbers.get(element.dataset.elementId) || '';
+      if (element.dataset.style === 'figure-book' && !element.dataset.designNumber)
+        element.dataset.designNumber = designFigureNumbers.get(element.dataset.elementId) || '';
+      if (element.dataset.style === 'figure-side') element.dataset.designNarrow = String(794 - 3.7795 * (Number(settings.marginLeft) + Number(settings.marginRight)) < 420);
+    });
+    templates.prepareDesign(node);
     return node;
   }
   function sliceBlock(block, start, end, total) {
@@ -308,6 +331,8 @@ document.addEventListener('DOMContentLoaded', () => {
     fragment.append(contents);
     fragment.classList.remove('page-break-before');
     fragment.dataset.fragment = 'true';
+    fragment.dataset.designContinuation = String(start > 0);
+    if (fragment.tagName === 'PRE') fragment.dataset.codeLineOffset = String((block.textContent.slice(0,start).match(/\n/g) || []).length);
     fragment.dataset.manualBreak = String(start === 0 && block.classList.contains('page-break-before'));
     if (fragment.tagName === 'OL') {
       const first = fragment.querySelector(':scope > li');
@@ -331,6 +356,17 @@ document.addEventListener('DOMContentLoaded', () => {
     hidePopup();
     previewContainer.replaceChildren();
     synchronizeToc();
+    designHeadingNumbers = new Map(); designFigureNumbers = new Map();
+    const designCounters = [0,0,0,0,0,0];
+    const tocNumbers = new Map(Array.from(sourceContent.querySelectorAll('.toc-item[data-heading-target]')).map(item => [item.dataset.headingTarget,item.querySelector('.toc-number')?.textContent.trim()]));
+    sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
+      if (heading.closest('.cover-page,.toc-wrapper') || hiddenInSource(heading)) return;
+      const level = Number(heading.tagName.slice(1)); designCounters[level-1]++; designCounters.fill(0,level);
+      const first = designCounters.findIndex(n => n > 0);
+      designHeadingNumbers.set(heading.dataset.elementId,templates.hasHeadingNumber(heading) ? '' : tocNumbers.get(heading.dataset.headingId) || designCounters.slice(first,level).map(n=>n || 1).join('.'));
+    });
+    let figureNumber = 0;
+    sourceContent.querySelectorAll('figure').forEach(figure => { if (!hiddenInSource(figure) && !figure.closest('.cover-page')) designFigureNumbers.set(figure.dataset.elementId,String(++figureNumber)); });
     scaledCount = 0;
     $('discardDocumentBtn').disabled = !hasDocument();
     const visible = Array.from(sourceContent.children).filter(block => !hiddenInSource(block));
@@ -341,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
       scheduleSave();
       return;
     }
-    $('downloadPdfBtn').disabled = false;
+    $('downloadPdfBtn').disabled = printPreparing;
     let current = null, inToc = false;
     const newPage = () => (current = createPage(false, !inToc));
     const ensurePage = () => current || newPage();
@@ -378,8 +414,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function splitText(block) {
       const total = block.textContent.length;
-      // Formula markup must remain intact; scaling is safer than cutting its DOM.
-      if (!total || block.matches('.katex') || block.querySelector('.katex')) {
+      // Keep formula and figure geometry intact, including the image's caption.
+      if (!total || block.matches('.katex,img,svg,figure,video,canvas,iframe') || block.querySelector('.katex')) {
         fitAtomic(block.cloneNode(true));
         return;
       }
@@ -563,7 +599,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!source || source.tagName !== 'PRE') return;
       saveHistory();
       SharedCodeBlocks.setLanguage(source, language);
+      if (!templates.validDesign(source,source.dataset.style || 'default')) templates.writeDesign(source,'default');
       paginate();
+      if (selectedId === source.dataset.elementId) renderStyleChoices(source);
     });
     highlightSelection();
     if (!storageFailed) $('documentStatus').textContent = pages.length + '페이지 · 자동 저장' +
@@ -665,6 +703,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const imageLayer = sourceContent.querySelector('.cover-image-layer');
     checkCoverImage(imageLayer?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
     updateUndo();
+    restoreBodyImages();
     paginate();
   });
   $('toggleBreakMode').addEventListener('click', () => { setMode(mode === 'break' ? 'normal' : 'break'); highlightSelection(); });
@@ -972,6 +1011,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (selectedId === id && pendingDesign) return;
     selectedId = id;
     configureListControls(source);
+    configureImageControls(source);
     $('selectedTagType').textContent = '<' + source.tagName.toLowerCase() + '>';
     $('elementLineHeight').value = source.style.lineHeight || '';
     $('rightPanel').style.display = 'block';
@@ -1069,6 +1109,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const target = event.target.closest('[data-block-id]');
     const source = target && blockById(target.dataset.blockId);
     if (!source) return;
+    const imageTarget = event.target.closest('img[data-element-id]');
+    if (imageTarget && !source.classList.contains('cover-page')) { const image = elementById(imageTarget.dataset.elementId); if (image) openImageEditor(image); return; }
     if (source.classList.contains('toc-wrapper')) {
       if (event.target.closest('.toc-heading')) openTocEditor('title');
       else { const item = event.target.closest('.toc-item'); if (item) { const original = Array.from(source.querySelectorAll('.toc-item')).find(node => node.dataset.tocId === item.dataset.tocId); if (original) openTocEditor('edit', original); } }
@@ -1094,6 +1136,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const copy = htmlStyles.prepare((activeTableId ? elementById(activeTableId) : activeEditKind === 'cover-meta' ? source.querySelector('.cover-meta-group') : source).cloneNode(true), settings.preserveHtmlCss && importedStyles.available);
     copy.classList.remove('page-break-before');
     window.PdfMath?.editable(copy);
+    window.PdfImages?.decorate(copy);
     if (activeTableId) {
       copy.contentEditable = 'false';
       copy.querySelectorAll('td,th,caption').forEach(cell => { cell.contentEditable = 'true'; });
@@ -1238,6 +1281,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (tag === 'ol') { next.setAttribute('start', start); next.toggleAttribute('reversed', reversed); }
     else { next.removeAttribute('start'); next.removeAttribute('reversed'); }
     next.innerHTML = source.innerHTML;
+    if (!templates.validDesign(next,next.dataset.style || 'default')) templates.writeDesign(next,'default');
     if (next.outerHTML === source.outerHTML) return;
     saveHistory(); source.replaceWith(next); paginate(); selectBlock(selectedId);
   });
@@ -1257,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('commitDesignAllBtn').addEventListener('click', () => finishPendingDesign('all'));
   $('pendingDesignDialog').addEventListener('cancel', event => { event.preventDefault(); deferredDesignAction = null; $('pendingDesignDialog').close(); });
   function guardDesign(event) {
-    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle')) return;
+    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#elementDesignOptions,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle')) return;
     if (event.target.closest('#pdfPreviewContainer') && event.type === 'click' && event.target.closest('[data-element-id]')?.dataset.elementId === selectedId && mode === 'normal') return;
     if (!event.target.closest('button,input,select,label,#pdfPreviewContainer,#dropZone')) return;
     event.preventDefault(); event.stopImmediatePropagation();
@@ -1281,49 +1325,77 @@ document.addEventListener('DOMContentLoaded', () => {
     $('pendingDesignDialog').showModal();
   }
   ['click', 'dblclick', 'input', 'change', 'drop'].forEach(type => document.addEventListener(type, guardDesign, true));
+  function designOptions() {
+    return Object.fromEntries(Array.from($('elementDesignOptions').querySelectorAll('input')).map(input => [input.dataset.key,input.value]));
+  }
+  function previewDesign(source) {
+    const candidate = source.cloneNode(true);
+    templates.writeDesign(candidate, selectedPreset, designOptions());
+    const options = templates.readDesign(candidate);
+    pendingDesign = selectedPreset === (source.dataset.style || 'default') && JSON.stringify(options) === JSON.stringify(templates.readDesign(source)) ? null : { id:source.dataset.elementId,preset:selectedPreset,options };
+    $('elementDesignStatus').textContent = pendingDesign ? '임시 미리보기 · 적용 버튼을 눌러 저장하세요.' : '';
+    paginate();
+  }
+  function renderDesignOptions(source, preset) {
+    const container = $('elementDesignOptions'); container.replaceChildren();
+    const fields = templates.designFields[preset] || [];
+    container.hidden = !fields.length;
+    fields.forEach(({key,label,placeholder,type}) => {
+      const input = document.createElement('input'); input.type = type; input.id = 'design-' + key; input.dataset.key = key;
+      if (type === 'number') { input.min = '1'; input.step = '1'; }
+      const title = textNode('label',label); title.htmlFor = input.id;
+      input.placeholder = placeholder;
+      input.value = source.dataset['design' + key[0].toUpperCase() + key.slice(1)] || '';
+      input.addEventListener('input',() => previewDesign(source));
+      container.append(title,input);
+    });
+  }
   function renderStyleChoices(source) {
     const family = templates.family(source.tagName);
     selectedPreset = source.dataset.style || 'default';
     $('stylePreviewGrid').replaceChildren();
-    templates.styles[family].forEach(([id, name]) => {
-      const button = document.createElement('button');
-      button.className = 'preview-item';
-      button.type = 'button';
-      button.classList.toggle('active', selectedPreset === id);
-      button.setAttribute('aria-pressed', String(selectedPreset === id));
-      const sample = document.createElement('div');
-      sample.className = 'tag-style-sample document-style';
-      sample.dataset.theme = settings.colorTheme;
-      sample.innerHTML = templates.samples[family];
-      sample.firstElementChild.dataset.style = id;
-      button.append(sample, textNode('span', name));
-      button.addEventListener('click', () => {
-        $('stylePreviewGrid').querySelectorAll('.preview-item').forEach(node => {
-          node.classList.toggle('active', node === button);
-          node.setAttribute('aria-pressed', String(node === button));
-        });
-        selectedPreset = id;
-        pendingDesign = id === (source.dataset.style || 'default') ? null : { id: source.dataset.elementId, preset: id };
-        paginate();
+    $('elementDesignStatus').textContent = '';
+    templates.styles[family].filter(([id]) => templates.validDesign(source,id)).forEach(([id,name,description]) => {
+      const button = document.createElement('button'); button.className = 'preview-item'; button.type = 'button';
+      button.classList.toggle('active',selectedPreset === id); button.setAttribute('aria-pressed',String(selectedPreset === id));
+      const sample = document.createElement('div'); sample.className = 'tag-style-sample document-style'; sample.dataset.theme = settings.colorTheme;
+      sample.innerHTML = templates.sampleFor(family,id,source.tagName); sample.firstElementChild.dataset.style = id;
+      if (family === 'code') SharedCodeBlocks.normalize(sample);
+      templates.prepareDesign(sample);
+      button.append(sample,textNode('span',name));
+      if (description) button.append(textNode('small',description,'design-description'));
+      button.addEventListener('click',() => {
+        $('stylePreviewGrid').querySelectorAll('.preview-item').forEach(node => { node.classList.toggle('active',node === button);node.setAttribute('aria-pressed',String(node === button)); });
+        selectedPreset = id; renderDesignOptions(source,id); previewDesign(source);
       });
       $('stylePreviewGrid').append(button);
     });
+    renderDesignOptions(source,selectedPreset);
   }
   function applyPreset(all) {
     const source = elementById(selectedId);
     if (!source || !selectedPreset) return;
-    const targets = Array.from(all ? sourceContent.querySelectorAll(source.tagName) : [source]).filter(target => !target.closest('.cover-page,.toc-wrapper'));
-    const changed = targets.some(target => (target.dataset.style || 'default') !== selectedPreset);
-    pendingDesign = null;
-    if (changed) saveHistory();
-    targets.forEach(target => {
-      if (target.closest('.cover-page,.toc-wrapper')) return;
-      ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => target.classList.remove(name));
-      if (selectedPreset === 'default') delete target.dataset.style;
-      else target.dataset.style = selectedPreset;
+    const candidates = Array.from(all ? sourceContent.querySelectorAll(source.tagName) : [source]).filter(target => !target.closest('.cover-page,.toc-wrapper'));
+    const targets = candidates.filter(target => templates.validDesign(target,selectedPreset));
+    const values = pendingDesign?.options || designOptions();
+    const plans = targets.map(target => {
+      const copy = target.cloneNode(true);
+      // Metadata belongs to its element. Whole-tag application retains each
+      // other element's own values rather than copying a filename or column index.
+      const own = Object.fromEntries((templates.designFields[selectedPreset] || []).map(({key}) => [key,target.dataset['design'+key[0].toUpperCase()+key.slice(1)] || '']));
+      templates.writeDesign(copy,selectedPreset,target === source ? values : own);
+      ['style-preset-default','style-preset-highlight','style-preset-bordered','style-preset-card'].forEach(name => copy.classList.remove(name));
+      return {target,copy};
     });
-    paginate();
-    renderStyleChoices(source);
+    const changes = plans.filter(({target,copy}) => target.outerHTML !== copy.outerHTML);
+    pendingDesign = null;
+    if (changes.length) saveHistory();
+    changes.forEach(({target,copy}) => {
+      templates.writeDesign(target,selectedPreset,templates.readDesign(copy));
+      ['style-preset-default','style-preset-highlight','style-preset-bordered','style-preset-card'].forEach(name => target.classList.remove(name));
+    });
+    paginate(); renderStyleChoices(source);
+    $('elementDesignStatus').textContent = all ? targets.length + '개에 적용 · 요소별 세부 설정 유지' + (targets.length < candidates.length ? ' · 구조가 다른 ' + (candidates.length-targets.length) + '개 제외' : '') : '선택 요소에 적용했습니다.';
   }
   $('applyToSelectedBtn').addEventListener('click', () => applyPreset(false));
   $('applyToAllBtn').addEventListener('click', () => applyPreset(true));
@@ -1331,7 +1403,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const source = elementById(selectedId);
     if (!source) return;
     saveHistory();
-    delete source.dataset.style;
+    templates.writeDesign(source,'default');
     resetLineHeight(source);
     ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => source.classList.remove(name));
     $('elementLineHeight').value = '';
@@ -1352,6 +1424,156 @@ document.addEventListener('DOMContentLoaded', () => {
     requestPaginate();
   });
   $('elementLineHeight').addEventListener('blur', () => { inputGroup = null; });
+
+  let imageEditor = null, bodyImageRequest = 0;
+  function selectedImage() {
+    const element = elementById(selectedId);
+    if (!element || element.closest('.cover-page,.toc-wrapper')) return null;
+    if (element.tagName === 'IMG') return element;
+    const candidates = element.tagName === 'FIGURE' ? element.querySelectorAll('img') : [];
+    return candidates.length === 1 ? candidates[0] : null;
+  }
+  function imageCaption(image) { return image.closest('figure')?.querySelector(':scope > figcaption')?.textContent || ''; }
+  function fillImageFields(prefix, image) {
+    $(prefix + 'Width').value = image?.dataset.imageWidth || '100';
+    $(prefix + 'Align').value = image?.dataset.imageAlign || 'center';
+    $(prefix + 'Alt').value = image?.getAttribute('alt') || '';
+    $(prefix + 'Caption').value = image ? imageCaption(image) : '';
+  }
+  function readImageFields(prefix) {
+    const width = Number($(prefix + 'Width').value);
+    if (!Number.isFinite(width) || width < 1 || width > 100) throw Error('이미지 너비는 1~100%로 입력해주세요.');
+    return { width, align: ['left', 'center', 'right'].includes($(prefix + 'Align').value) ? $(prefix + 'Align').value : 'center',
+      alt: $(prefix + 'Alt').value, caption: $(prefix + 'Caption').value.trim() };
+  }
+  function configureImageControls(source) {
+    const image = selectedImage();
+    $('imageControls').hidden = !image;
+    if (image) fillImageFields('selectedImage', image);
+  }
+  function imageFigure(image) {
+    const existing = image.closest('figure');
+    if (existing && existing.querySelectorAll('img').length === 1) return existing;
+    const paragraph = image.closest('p');
+    const target = paragraph && !existing && paragraph.querySelectorAll('img').length === 1 ? paragraph : image.closest('picture') || image;
+    const figure = document.createElement('figure');
+    if (target.dataset.blockId) { figure.dataset.blockId = target.dataset.blockId; delete target.dataset.blockId; }
+    if (target.classList.contains('page-break-before')) { figure.classList.add('page-break-before'); target.classList.remove('page-break-before'); }
+    target.replaceWith(figure); figure.append(target);
+    return figure;
+  }
+  function applyImageFields(image, fields) {
+    const figure = imageFigure(image);
+    image.dataset.pdfImage = 'true'; image.dataset.imageWidth = String(fields.width); image.dataset.imageAlign = fields.align;
+    image.setAttribute('alt', fields.alt);
+    let caption = figure.querySelector(':scope > figcaption');
+    if (fields.caption) { if (!caption) { caption = document.createElement('figcaption'); figure.append(caption); } caption.textContent = fields.caption; }
+    else caption?.remove();
+    return figure;
+  }
+  function closeImageEditor() {
+    bodyImageRequest++; imageEditor = null; $('imageDialog').close(); $('imageFileInput').value = ''; $('saveImageBtn').disabled = false;
+  }
+  function updateImageSourceFields() {
+    $('imageFileGroup').hidden = $('imageSourceType').value !== 'file';
+    $('imageUrlGroup').hidden = $('imageSourceType').value !== 'url';
+    $('imageDialogStatus').textContent = '';
+  }
+  function openImageEditor(image = null) {
+    if (activeEditId) closeEditor(true);
+    const selected = elementById(selectedId)?.closest('[data-block-id]');
+    imageEditor = { imageId: image?.dataset.elementId || null, blockId: selected?.dataset.blockId || null, version: documentVersion };
+    $('imageDialogTitle').textContent = image ? '이미지 편집' : '이미지 추가';
+    $('saveImageBtn').textContent = image ? '적용' : '추가'; $('saveImageBtn').disabled = false;
+    $('imageSourceType').querySelector('[value="keep"]').hidden = !image;
+    $('imageSourceType').value = image ? 'keep' : 'file';
+    $('imageFileInput').value = ''; $('imageUrlInput').value = '';
+    $('imageFileInfo').textContent = 'PNG, JPG, WebP · 파일당 최대 20MB · 원본 품질로 저장합니다.';
+    $('imagePositionGroup').hidden = Boolean(image);
+    ['before', 'after'].forEach(value => { $('imagePosition').querySelector('[value="' + value + '"]').disabled = !selected || Boolean(selected.closest('.cover-page,.toc-wrapper')); });
+    $('imagePosition').value = selected && !selected.closest('.cover-page,.toc-wrapper') ? 'after' : 'end';
+    fillImageFields('image', image); updateImageSourceFields(); $('imageDialog').showModal();
+  }
+  $('addImageBtn').addEventListener('click', () => openImageEditor());
+  $('replaceImageBtn').addEventListener('click', () => { const image = selectedImage(); if (image) openImageEditor(image); });
+  $('cancelImageBtn').addEventListener('click', closeImageEditor);
+  $('imageDialog').addEventListener('cancel', event => { event.preventDefault(); closeImageEditor(); });
+  $('imageSourceType').addEventListener('change', updateImageSourceFields);
+  $('imageFileInput').addEventListener('change', () => {
+    const file = $('imageFileInput').files[0];
+    $('imageFileInfo').textContent = file ? file.name + ' · ' + (file.size / 1024 / 1024).toFixed(2) + 'MB · 원본 품질로 저장합니다.' : 'PNG, JPG, WebP · 파일당 최대 20MB';
+    if (file && !$('imageAlt').value) $('imageAlt').value = file.name.replace(/\.[^.]+$/, '');
+  });
+  $('saveImageBtn').addEventListener('click', async () => {
+    const context = imageEditor, request = ++bodyImageRequest;
+    if (!context) return;
+    const current = () => imageEditor === context && request === bodyImageRequest && context.version === documentVersion;
+    let asset;
+    try {
+      const fields = readImageFields('image');
+      const kind = $('imageSourceType').value, position = $('imagePosition').value;
+      let url, dimensions;
+      $('saveImageBtn').disabled = true; $('imageDialogStatus').textContent = '이미지를 확인하고 있습니다…';
+      if (kind === 'file') { asset = await PdfImages.fileAsset($('imageFileInput').files[0]); url = asset.url; dimensions = asset; }
+      else if (kind === 'url') { url = PdfImages.httpUrl($('imageUrlInput').value); dimensions = await PdfImages.probe(url); }
+      else if (kind !== 'keep' || !context.imageId) throw Error('이미지를 선택해주세요.');
+      if (!current()) { if (asset) await PdfImages.remove(asset.id); return; }
+      const old = context.imageId && elementById(context.imageId);
+      if (context.imageId && !old) throw Error('편집할 이미지가 없습니다. 다시 선택해주세요.');
+      const image = old || document.createElement('img');
+      if (!url && image.dataset.pdfImage && Number(image.dataset.imageWidth) === fields.width && image.dataset.imageAlign === fields.align && image.alt === fields.alt && imageCaption(image) === fields.caption) { closeImageEditor(); return; }
+      saveHistory();
+      if (url) {
+        image.src = url; image.removeAttribute('srcset');
+        image.closest('picture')?.querySelectorAll('source').forEach(source => source.remove());
+        delete image.dataset.imageFailed;
+        if (asset) { image.dataset.imageAsset = asset.id; image.dataset.imageName = asset.name; }
+        else { delete image.dataset.imageAsset; delete image.dataset.imageName; }
+        image.setAttribute('width', dimensions.width); image.setAttribute('height', dimensions.height);
+      }
+      if (!old) {
+        const figure = document.createElement('figure'); figure.append(image);
+        const target = context.blockId && blockById(context.blockId);
+        if (target && position === 'before') target.before(figure);
+        else if (target && position === 'after') target.after(figure);
+        else sourceContent.append(figure);
+      }
+      applyImageFields(image, fields); normalizeContent();
+      const id = image.dataset.elementId;
+      closeImageEditor(); setMode('normal'); paginate(); selectBlock(id); persist(); updateImageLoadNotice();
+    } catch (error) {
+      if (asset) await PdfImages.remove(asset.id);
+      if (current()) { $('imageDialogStatus').textContent = error.message || '이미지를 추가하지 못했습니다.'; $('saveImageBtn').disabled = false; }
+    }
+  });
+  $('applyImageSettingsBtn').addEventListener('click', () => {
+    const image = selectedImage(); if (!image) return;
+    try {
+      const fields = readImageFields('selectedImage');
+      if (image.dataset.pdfImage && Number(image.dataset.imageWidth) === fields.width && image.dataset.imageAlign === fields.align && image.alt === fields.alt && imageCaption(image) === fields.caption) return;
+      saveHistory(); applyImageFields(image, fields); normalizeContent(); paginate(); selectBlock(image.dataset.elementId);
+    } catch (error) { alert(error.message); }
+  });
+  function updateImageLoadNotice() {
+    const failed = Array.from(sourceContent.querySelectorAll('img[data-image-failed="true"]')).filter(image => !hiddenInSource(image));
+    $('imageLoadNotice').hidden = failed.length === 0;
+    $('imageLoadMessage').textContent = failed.length ? '불러오지 못한 이미지가 ' + failed.length + '개 있습니다. 파일 또는 URL을 확인해주세요.' : '';
+  }
+  function restoreBodyImages() {
+    const version = documentVersion;
+    window.PdfImages?.restore(sourceContent).then(() => { if (version === documentVersion) { updateImageLoadNotice(); requestPaginate(); } });
+  }
+  $('retryImagesBtn').addEventListener('click', async () => {
+    const version = documentVersion;
+    $('retryImagesBtn').disabled = true;
+    await window.PdfImages?.restore(sourceContent);
+    if (version !== documentVersion) { $('retryImagesBtn').disabled = false; return; }
+    await Promise.all(Array.from(sourceContent.querySelectorAll('img[data-image-failed="true"]')).map(async image => {
+      const url = image.getAttribute('src'); if (!url) return;
+      try { await PdfImages.probe(url); if (sourceContent.contains(image)) { delete image.dataset.imageFailed; image.src = url; } } catch { /* Keep failure notice visible. */ }
+    }));
+    $('retryImagesBtn').disabled = false; if (version === documentVersion) { updateImageLoadNotice(); paginate(); }
+  });
 
   function getMarkdownHistory() {
     try {
@@ -1379,32 +1601,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
   window.addEventListener('storage', event => { if (event.key === 'mdeditor.history.v1') refreshHistory(); });
-  sourceContent.addEventListener('load', requestPaginate, true);
-  sourceContent.addEventListener('error', requestPaginate, true);
+  sourceContent.addEventListener('load', event => { if (event.target.tagName === 'IMG') { delete event.target.dataset.imageFailed; updateImageLoadNotice(); } requestPaginate(); }, true);
+  sourceContent.addEventListener('error', event => { if (event.target.tagName === 'IMG') { event.target.dataset.imageFailed = 'true'; updateImageLoadNotice(); } requestPaginate(); }, true);
   sourceContent.addEventListener('toggle', requestPaginate, true);
   async function preparePrint() {
-    const version = documentVersion;
-    if (activeEditId) closeEditor(true);
-    await document.fonts?.ready;
-    if (version !== documentVersion) return;
-    if (coverImageProbe?.promise) {
-      await new Promise(resolve => {
-        const timer = setTimeout(resolve, 3000);
-        coverImageProbe.promise.then(() => { clearTimeout(timer); resolve(); });
-      });
+    if (printPreparing) return;
+    printPreparing = true; $('downloadPdfBtn').disabled = true;
+    try {
+      const version = documentVersion;
+      if (activeEditId) closeEditor(true);
+      await document.fonts?.ready;
       if (version !== documentVersion) return;
+      if (coverImageProbe?.promise) {
+        await new Promise(resolve => {
+          const timer = setTimeout(resolve, 3000);
+          coverImageProbe.promise.then(() => { clearTimeout(timer); resolve(); });
+        });
+        if (version !== documentVersion) return;
+      }
+      await window.PdfImages?.restore(sourceContent);
+      if (version !== documentVersion) return;
+      const images = Array.from(sourceContent.querySelectorAll('img')).filter(image => !hiddenInSource(image) && !image.complete);
+      await Promise.all(images.map(image => new Promise(resolve => {
+        const done = () => { clearTimeout(timer); image.removeEventListener('load', done); image.removeEventListener('error', done); resolve(); };
+        const timer = setTimeout(done, 10000);
+        image.addEventListener('load', done, { once: true });
+        image.addEventListener('error', done, { once: true });
+        if (image.complete) done();
+      })));
+      if (version !== documentVersion) return;
+      const failed = Array.from(sourceContent.querySelectorAll('img')).filter(image => !hiddenInSource(image) && (!image.complete || !image.naturalWidth));
+      failed.forEach(image => { image.dataset.imageFailed = 'true'; }); updateImageLoadNotice();
+      if (failed.length && !await confirmDocument('이미지 ' + failed.length + '개를 불러오지 못했습니다. 해당 이미지가 표시되지 않은 상태로 출력하시겠습니까?')) return;
+      if (version !== documentVersion) return;
+      paginate();
+      persist();
+      if (previewContainer.querySelector('.pdf-page')) window.print();
+    } finally {
+      printPreparing = false; $('downloadPdfBtn').disabled = !previewContainer.querySelector('.pdf-page');
     }
-    const images = Array.from(sourceContent.querySelectorAll('img')).filter(image => !image.complete);
-    await Promise.all(images.map(image => new Promise(resolve => {
-      const timer = setTimeout(resolve, 3000);
-      const done = () => { clearTimeout(timer); resolve(); };
-      image.addEventListener('load', done, { once: true });
-      image.addEventListener('error', done, { once: true });
-    })));
-    if (version !== documentVersion) return;
-    paginate();
-    persist();
-    if (previewContainer.querySelector('.pdf-page')) window.print();
   }
   $('downloadPdfBtn').addEventListener('click', preparePrint);
   window.addEventListener('beforeprint', () => {
@@ -1429,6 +1664,7 @@ document.addEventListener('DOMContentLoaded', () => {
       normalizeContent();
       renderMath();
       applySettings();
+      restoreBodyImages();
       const background = sourceContent.querySelector('.cover-image-layer')?.style.backgroundImage;
       checkCoverImage(background?.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
     }

@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="../js/shared/code-blocks.js"></script>
     <script src="../js/pdf-maker/math.js"></script>
+    <script src="../js/pdf-maker/images.js"></script>
     <script src="../js/pdf-maker/templates.js"></script>
     <script src="../js/pdf-maker/html-styles.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
@@ -35,6 +36,7 @@
 
     <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css" />
     <link rel="stylesheet" href="../css/shared/code-blocks.css" data-code-block-style>
+    <link rel="stylesheet" href="../css/shared/element-designs.css" data-element-style>
 
     <link rel="stylesheet" href="../css/shared/editor-ui.css">
   </head>
@@ -52,6 +54,7 @@
       </header>
 
       <div class="sub-toolbar">
+        <button id="addImageBtn" class="btn-pill" type="button">이미지 추가</button>
         <button id="toggleBreakMode" class="btn-ghost">✂️ 페이지 자르기</button>
         <button id="toggleBreakCancelMode" class="btn-ghost">페이지 자르기 해제</button>
         <button id="toggleDeleteMode" class="btn-ghost">🗑️ 요소 제거</button>
@@ -159,6 +162,7 @@
         </aside>
 
         <section class="preview-panel" id="dropZone">
+          <div id="imageLoadNotice" class="image-load-notice" role="status" hidden><span id="imageLoadMessage"></span><button id="retryImagesBtn" class="btn-pill" type="button">이미지 다시 불러오기</button></div>
           <div id="pdfPreviewContainer">
             <div class="placeholder-box">
               <p>📄 마크다운(.md) 또는 HTML 파일을 여기에 드래그 앤 드롭하세요.</p>
@@ -169,6 +173,13 @@
         <aside class="panel right-panel" id="rightPanel" style="display:none;">
           <details open>
             <summary>선택 요소: <span id="selectedTagType" style="color: var(--blue);"></span></summary>
+            <div id="imageControls" hidden>
+              <div class="setting-group"><label for="selectedImageWidth">이미지 너비 (본문 대비 %)</label><input id="selectedImageWidth" type="number" min="1" max="100" value="100"></div>
+              <div class="setting-group"><label for="selectedImageAlign">정렬</label><select id="selectedImageAlign"><option value="left">왼쪽</option><option value="center">가운데</option><option value="right">오른쪽</option></select></div>
+              <div class="setting-group"><label for="selectedImageAlt">대체 텍스트</label><input id="selectedImageAlt" type="text"></div>
+              <div class="setting-group"><label for="selectedImageCaption">캡션</label><input id="selectedImageCaption" type="text"></div>
+              <div class="setting-group"><button id="applyImageSettingsBtn" class="btn-primary" type="button">이미지 설정 적용</button><button id="replaceImageBtn" class="btn-pill" type="button">이미지 교체 / 편집</button></div>
+            </div>
             <div id="listControls" class="setting-group" hidden>
               <label for="listTagInput">목록 종류</label><select id="listTagInput"><option value="ul">불릿 목록 (UL)</option><option value="ol">순서 목록 (OL)</option></select>
               <label for="listMarkerInput">불릿 / 번호 모양</label><select id="listMarkerInput"></select>
@@ -181,7 +192,10 @@
             <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
             <hr style="margin: 15px 0; border-color: var(--border);">
             <label style="font-size: 13px; font-weight: bold;">태그별 디자인</label>
+            <p class="setting-hint">요소의 구조에 맞는 디자인을 표시합니다. 클릭하면 본문에서 미리 볼 수 있습니다.</p>
             <div class="preview-grid" id="stylePreviewGrid"></div>
+            <div id="elementDesignOptions" class="setting-group" hidden></div>
+            <p id="elementDesignStatus" class="setting-hint" aria-live="polite"></p>
             <button id="resetElementStyleBtn" class="btn-ghost" type="button">선택 요소를 템플릿 기본으로</button>
             <div class="action-group">
               <button id="applyToSelectedBtn" class="btn-primary">선택 요소에 적용</button>
@@ -191,6 +205,20 @@
         </aside>
       </main>
     </div>
+
+    <dialog id="imageDialog" aria-labelledby="imageDialogTitle">
+      <h2 id="imageDialogTitle">이미지 추가</h2>
+      <div class="setting-group"><label for="imageSourceType">이미지 가져오기</label><select id="imageSourceType"><option value="keep" hidden>현재 이미지 유지</option><option value="file">파일 업로드</option><option value="url">이미지 URL</option></select></div>
+      <div id="imageFileGroup" class="setting-group"><label for="imageFileInput">이미지 파일</label><input id="imageFileInput" type="file" accept="image/png,image/jpeg,image/webp"><p id="imageFileInfo" class="setting-hint">PNG, JPG, WebP · 파일당 최대 20MB · 원본 품질로 저장합니다.</p></div>
+      <div id="imageUrlGroup" class="setting-group" hidden><label for="imageUrlInput">이미지 URL</label><input id="imageUrlInput" type="url" placeholder="https://example.com/image.png"></div>
+      <div id="imagePositionGroup" class="setting-group"><label for="imagePosition">삽입 위치</label><select id="imagePosition"><option value="after">선택한 본문 블록 뒤</option><option value="before">선택한 본문 블록 앞</option><option value="end">문서 끝</option></select></div>
+      <div class="setting-group"><label for="imageWidth">이미지 너비 (본문 대비 %)</label><input id="imageWidth" type="number" min="1" max="100" value="100"></div>
+      <div class="setting-group"><label for="imageAlign">정렬</label><select id="imageAlign"><option value="left">왼쪽</option><option value="center" selected>가운데</option><option value="right">오른쪽</option></select></div>
+      <div class="setting-group"><label for="imageAlt">대체 텍스트</label><input id="imageAlt" type="text" placeholder="이미지의 내용을 설명해주세요"></div>
+      <div class="setting-group"><label for="imageCaption">캡션</label><input id="imageCaption" type="text" placeholder="그림 설명 (선택)"></div>
+      <p id="imageDialogStatus" class="setting-hint" role="status" aria-live="polite"></p>
+      <div class="block-edit-actions"><button id="cancelImageBtn" class="btn-pill" type="button">취소</button><button id="saveImageBtn" class="btn-primary" type="button">추가</button></div>
+    </dialog>
 
     <!-- 목차 제어용 플로팅 툴바 -->
     <div id="tocActionPopup" class="toc-action-popup" hidden>

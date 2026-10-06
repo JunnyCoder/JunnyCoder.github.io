@@ -31,8 +31,17 @@ window.SharedCodeBlocks = (() => {
   }
   function renderCode(text, info) {
     const language = resolve(info);
+    const metadata = String(info || '');
+    const filename = metadata.match(/\bfilename="([^"]*)"/)?.[1];
+    const start = metadata.match(/\bstart=(\d+)/)?.[1];
+    const output = metadata.match(/\boutput=(\d+)/)?.[1];
+    const style = /(?:^|\s)linenums(?:\s|$)/.test(metadata) ? 'code-lines' : filename ? 'code-file' : output ? 'code-terminal' : language === 'diff' ? 'code-diff' : '';
+    const attributes = (style ? ' data-style="' + style + '"' : '') +
+      (filename ? ' data-design-filename="' + escape(filename.slice(0,500)) + '"' : '') +
+      (start ? ' data-design-start="' + start + '"' : '') +
+      (output ? ' data-design-output-from="' + output + '"' : '');
     return '<pre class="shared-code-block" data-code-origin="markdown" data-code-language="' + language +
-      '"><code class="hljs language-' + language + '">' + highlighted(text + (text.endsWith('\n') ? '' : '\n'), language) + '</code></pre>\n';
+      '"' + attributes + '><code class="hljs language-' + language + '">' + highlighted(text + (text.endsWith('\n') ? '' : '\n'), language) + '</code></pre>\n';
   }
   function configureRenderer(renderer) { renderer.code = renderCode; return renderer; }
   function codeText(root) {
@@ -68,8 +77,49 @@ window.SharedCodeBlocks = (() => {
       if (forcePlain || !pre.dataset.codeOrigin) pre.dataset.codeOrigin = 'html';
     });
   }
+  function format(pre) {
+    const code = pre.querySelector(':scope > code');
+    if (!code) return;
+    code.querySelectorAll('.code-display-line').forEach(line => line.replaceWith(...line.childNodes));
+    if (!['code-lines','code-terminal','code-diff'].includes(pre.dataset.style)) return;
+    const text = code.textContent;
+    const original = code.cloneNode(true);
+    const output = document.createDocumentFragment();
+    const lines = text.split('\n');
+    if (lines[lines.length-1] === '') lines.pop();
+    let offset = 0;
+    const locate = position => {
+      const walker = document.createTreeWalker(original, NodeFilter.SHOW_TEXT);
+      let node, used = 0, last;
+      while ((node=walker.nextNode())) {
+        last=node;
+        if (position <= used + node.length) return [node,position-used];
+        used+=node.length;
+      }
+      return last ? [last,last.length] : [original,0];
+    };
+    const base = Math.max(1,Number(pre.dataset.designStart) || 1) + (Number(pre.dataset.codeLineOffset) || 0);
+    lines.forEach((line,index) => {
+      const range = document.createRange();
+      range.setStart(...locate(offset));range.setEnd(...locate(offset+line.length));
+      const span = document.createElement('span');span.className='code-display-line';
+      span.dataset.lineNumber=String(base+index);
+      if (pre.dataset.style==='code-terminal') span.dataset.codePart=Number(pre.dataset.designOutputFrom)>0 && base+index>=Number(pre.dataset.designOutputFrom) ? 'output' : 'command';
+      if (pre.dataset.style==='code-diff') span.dataset.codePart=line.startsWith('+') ? 'added' : line.startsWith('-') ? 'removed' : 'context';
+      let contents=range.cloneContents();
+      let ancestor=range.commonAncestorContainer.nodeType===Node.ELEMENT_NODE ? range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
+      while (ancestor && ancestor!==original && original.contains(ancestor)) {
+        const shell=ancestor.cloneNode(false);shell.append(contents);contents=shell;ancestor=ancestor.parentElement;
+      }
+      span.append(contents);output.append(span);
+      offset+=line.length;
+      if (text[offset]==='\n') { output.append(document.createTextNode('\n'));offset++; }
+    });
+    code.replaceChildren(output);
+  }
   function decorate(root, onChange) {
     root.querySelectorAll('pre.shared-code-block').forEach(pre => {
+      format(pre);
       pre.querySelector(':scope > .code-block-controls')?.remove();
       const controls = document.createElement('span');
       controls.className = 'code-block-controls';
@@ -93,9 +143,19 @@ window.SharedCodeBlocks = (() => {
       pre.append(controls);
     });
   }
-  function exportHtml(root) {
+  function exportHtml(root, { sourceOnly = false } = {}) {
     const copy = root.cloneNode(true);
     copy.querySelectorAll('.code-block-controls').forEach(node => node.remove());
+    // Portable HTML retains display-only spans and calculated labels so static
+    // exports still show the same designs. Their numbers are CSS-generated,
+    // never part of the code text. Source consumers can request clean markup.
+    if (!sourceOnly) return copy.innerHTML;
+    copy.querySelectorAll('.code-display-line').forEach(node => node.replaceWith(...node.childNodes));
+    copy.querySelectorAll('figure[data-style] > figcaption').forEach(node => { delete node.dataset.designNumber;delete node.dataset.designSource; });
+    copy.querySelectorAll('[data-design-auto-number]').forEach(node => { delete node.dataset.designNumber;delete node.dataset.designAutoNumber; });
+    copy.querySelectorAll('*').forEach(node => {
+      ['data-design-display-label','data-design-step','data-design-checked','data-design-highlight','data-design-numeric','data-code-line-offset','data-design-continuation'].forEach(attr => node.removeAttribute(attr));
+    });
     return copy.innerHTML;
   }
   function exportCss() {
@@ -106,8 +166,12 @@ window.SharedCodeBlocks = (() => {
   // never enter this mapping, including HTML containing apparent Markdown fences.
   function markdownLocations(raw, tokens) {
     const locations = [];
-    let sourceLine = 0;
+    let sourceLine = 0, sourceOffset = 0;
     tokens.forEach(top => {
+      // Reference definitions are removed from lexer output. Locate each raw
+      // token in the source so later code controls still address the right fence.
+      const found = raw.indexOf(top.raw, sourceOffset);
+      if (found >= 0) { sourceLine = (raw.slice(0,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
       const lines = top.raw.split('\n');
       let cursor = 0;
       marked.walkTokens([top], token => {
@@ -125,10 +189,12 @@ window.SharedCodeBlocks = (() => {
     });
     return locations;
   }
-  function htmlLocations(tokens) {
+  function htmlLocations(tokens, raw = tokens.map(token => token.raw).join('')) {
     const locations = [];
-    let sourceLine = 0;
+    let sourceLine = 0, sourceOffset = 0;
     tokens.forEach(top => {
+      const found = raw.indexOf(top.raw, sourceOffset);
+      if (found >= 0) { sourceLine = (raw.slice(0,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
       const normalize = text => {
         let value = '', offset = 0;
         const indices = [];
@@ -177,6 +243,6 @@ window.SharedCodeBlocks = (() => {
     return locations;
   }
   return { languages, resolve, renderCode, configureRenderer, setLanguage, normalize, decorate,
-    exportHtml, exportCss, markdownLocations, htmlLocations };
+    format, exportHtml, exportCss, markdownLocations, htmlLocations };
 })();
 marked.use({ renderer: { code: window.SharedCodeBlocks.renderCode } });

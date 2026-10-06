@@ -61,3 +61,23 @@ pre.shared-code-block .hljs-strong { font-weight: 700; }
   border-color: #b7c1cb;
   color-scheme: light;
 }
+
+/* Display metadata and line numbers are outside the selectable code text. */
+pre.shared-code-block:is([data-style="code-file"],[data-style="code-lines"],[data-style="code-terminal"],[data-style="code-diff"]) { border-radius:0 !important; border:1px solid var(--border-color,#ccd3dc) !important; padding:3em 1em 1em !important; overflow-wrap:anywhere; }
+pre.shared-code-block[data-style="code-file"]::before { content:attr(data-design-filename); position:absolute; top:.6em; left:1em; right:13em; font: .8em/1.5 var(--code-font-family,monospace); white-space:normal; overflow-wrap:anywhere; }
+pre.shared-code-block[data-style="code-file"]:not([data-design-filename])::before { content:"코드 예제"; }
+pre.shared-code-block[data-style="code-file"] { padding-top:4.2em !important; }
+pre.shared-code-block .code-display-line { white-space:pre-wrap; overflow-wrap:anywhere; }
+pre.shared-code-block[data-style="code-lines"] .code-display-line { position:relative; display:inline-block; width:100%; padding-left:3.7em; vertical-align:top; min-height:1em; }
+pre.shared-code-block[data-style="code-lines"] .code-display-line::before { content:attr(data-line-number); position:absolute; left:0; top:0; width:3em; padding-right:.6em; border-right:1px solid var(--border-color,#ccd3dc); text-align:right; color:var(--code-syntax-comment); font-variant-numeric:tabular-nums; user-select:none; }
+pre.shared-code-block[data-style="code-terminal"] .code-display-line { display:inline-block; width:100%; padding:.25em .5em; }
+pre.shared-code-block[data-style="code-terminal"] [data-code-part="command"] { border-left:2px solid var(--code-syntax-title); }
+pre.shared-code-block[data-style="code-terminal"] [data-code-part="output"] { border-left:2px dashed var(--code-syntax-comment); color:var(--code-syntax-comment); }
+pre.shared-code-block[data-style="code-diff"] .code-display-line { display:inline-block; width:100%; padding:0 .5em; }
+pre.shared-code-block[data-style="code-diff"] [data-code-part="added"] { background:color-mix(in srgb,var(--code-syntax-string) 9%,transparent); }
+pre.shared-code-block[data-style="code-diff"] [data-code-part="removed"] { background:color-mix(in srgb,var(--code-syntax-meta) 9%,transparent); }
+/* File titles grow with long paths so they cannot overlap code or the language picker. */
+pre.shared-code-block[data-style="code-file"]::before { position:static; display:block; margin-bottom:.8em; padding-bottom:.6em; border-bottom:1px solid var(--border-color,#ccd3dc); font-size:.85em; }
+pre.shared-code-block[data-style="code-file"] { padding-top:3em !important; }
+/* Standalone HTML exports have a static language label in place of the picker. */
+pre.shared-code-block:not(:has(> .code-block-controls))::after { content:attr(data-code-language); position:absolute; right:1em; top:.6em; font:11px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--code-syntax-comment); }
