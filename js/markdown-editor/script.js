@@ -781,7 +781,8 @@
     var clean = window.DOMPurify ? DOMPurify.sanitize(html) : html;
     previewHost.innerHTML = clean;
     SharedCodeBlocks.normalize(previewHost);
-    window.PdfTemplates?.prepareDesign(previewHost);
+    // Optional design enhancements must tolerate a cached older template script.
+    window.PdfTemplates?.prepareDesign?.(previewHost);
     var locations = SharedCodeBlocks.markdownLocations(raw, tokens);
     previewHost.querySelectorAll('pre[data-code-origin="markdown"]').forEach(function(pre, index){
       var location = locations[index];
@@ -1109,7 +1110,7 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
       '<title>Markdown Export</title>\n' +
       '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">\n' +
-      '<style>\n' + EXPORT_CSS + '\n' + SharedCodeBlocks.exportCss() + '\n' + (window.PdfTemplates?.exportCss() || '') + '\n</style>\n</head>\n<body>\n' +
+      '<style>\n' + EXPORT_CSS + '\n' + SharedCodeBlocks.exportCss() + '\n' + (window.PdfTemplates?.exportCss?.() || '') + '\n</style>\n</head>\n<body>\n' +
       '<article class="preview-body">\n' + SharedCodeBlocks.exportHtml(previewHost) + '\n</article>\n</body>\n</html>';
     downloadFile(deriveFilename('html'), doc, 'text/html;charset=utf-8');
   });

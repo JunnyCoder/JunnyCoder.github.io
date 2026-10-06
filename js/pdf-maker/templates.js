@@ -146,7 +146,7 @@ window.PdfTemplates = {
           else delete caption.dataset.designSource;
         }
       }
-      if (node.tagName==='PRE') window.SharedCodeBlocks?.format(node);
+      if (node.tagName==='PRE') window.SharedCodeBlocks?.format?.(node);
     });
     return root;
   };
