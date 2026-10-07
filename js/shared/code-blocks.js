@@ -23,13 +23,17 @@ window.SharedCodeBlocks = (() => {
     return languages().includes(id) ? id : languages().find(language =>
       window.hljs?.getLanguage(language)?.aliases?.includes(id)) || 'plaintext';
   }
+  const highlightCache = window.EditorRuntime?.cache({entries: 256, bytes: 2 * 1024 * 1024});
   function highlighted(text, language) {
+    const key=language+'\0'+text;
+    const cached=highlightCache?.get(key);if(cached!==undefined)return cached;
     if (language !== 'plaintext' && window.hljs?.getLanguage(language)) {
-      try { return hljs.highlight(text, { language, ignoreIllegals: true }).value; } catch { /* Retain literal code. */ }
+      try { const html=hljs.highlight(text, { language, ignoreIllegals: true }).value;highlightCache?.set(key,html);return html; } catch { /* Retain literal code. */ }
     }
     return escape(text);
   }
   function renderCode(text, info) {
+    if (String(info || "").trim() === "junny-html" && window.SharedHtmlBlocks) return SharedHtmlBlocks.renderFence(text);
     const language = resolve(info);
     const metadata = String(info || '');
     const filename = metadata.match(/\bfilename="([^"]*)"/)?.[1];
@@ -59,16 +63,20 @@ window.SharedCodeBlocks = (() => {
     root.childNodes.forEach(visit);
     return result;
   }
+  const normalized = new WeakMap();
   function setLanguage(pre, info) {
     const language = resolve(info);
     let code = pre.querySelector(':scope > code');
     const text = codeText(code || pre);
+    const stamp=language+'\0'+text;
+    if(code && normalized.get(pre)===stamp && code.classList.contains('language-'+language))return pre;
     if (!code) { code = document.createElement('code'); pre.replaceChildren(code); }
     code.className = code.className.replace(/(?:^|\s)(?:hljs|language-[\w+#-]+)(?=\s|$)/g, '').trim();
     code.classList.add('hljs', 'language-' + language);
     code.innerHTML = highlighted(text, language);
     pre.classList.add('shared-code-block');
     pre.dataset.codeLanguage = language;
+    normalized.set(pre,stamp);
     return pre;
   }
   function normalize(root, { forcePlain = false } = {}) {
@@ -117,8 +125,12 @@ window.SharedCodeBlocks = (() => {
     });
     code.replaceChildren(output);
   }
+  const decorated = new WeakMap();
   function decorate(root, onChange) {
     root.querySelectorAll('pre.shared-code-block').forEach(pre => {
+      pre.codeChangeHandler=onChange;
+      const stamp=JSON.stringify([pre.dataset.codeLanguage,pre.dataset.style,pre.dataset.designStart,pre.dataset.designOutputFrom,pre.dataset.codeLineOffset,pre.querySelector(':scope > code')?.innerHTML]);
+      if(decorated.get(pre)===stamp && pre.querySelector(':scope > .code-block-controls'))return;
       format(pre);
       pre.querySelector(':scope > .code-block-controls')?.remove();
       const controls = document.createElement('span');
@@ -134,13 +146,14 @@ window.SharedCodeBlocks = (() => {
         select.append(option);
       });
       select.value = resolve(pre.dataset.codeLanguage);
-      select.addEventListener('change', () => onChange(pre, select.value));
+      select.addEventListener('change', () => pre.codeChangeHandler(pre, select.value));
       const printLabel = document.createElement('span');
       printLabel.className = 'code-language-print';
       printLabel.textContent = labels[select.value] || select.value;
       controls.append(select, printLabel);
       ['click', 'dblclick', 'mousedown', 'keydown'].forEach(type => controls.addEventListener(type, event => event.stopPropagation()));
       pre.append(controls);
+      decorated.set(pre,JSON.stringify([pre.dataset.codeLanguage,pre.dataset.style,pre.dataset.designStart,pre.dataset.designOutputFrom,pre.dataset.codeLineOffset,pre.querySelector(':scope > code')?.innerHTML]));
     });
   }
   function exportHtml(root, { sourceOnly = false } = {}) {
@@ -160,7 +173,7 @@ window.SharedCodeBlocks = (() => {
   }
   function exportCss() {
     const sheet = document.querySelector('link[data-code-block-style]')?.sheet;
-    try { return Array.from(sheet?.cssRules || []).map(rule => rule.cssText).join('\n'); } catch { return ''; }
+    try { return Array.from(sheet?.cssRules || []).map(rule => rule.cssText).join('\n')+'\n'+(window.SharedHtmlBlocks?.exportCss() || ''); } catch { return ''; }
   }
   // Match parsed code tokens within their top-level source block. Raw HTML pre blocks
   // never enter this mapping, including HTML containing apparent Markdown fences.
@@ -171,11 +184,11 @@ window.SharedCodeBlocks = (() => {
       // Reference definitions are removed from lexer output. Locate each raw
       // token in the source so later code controls still address the right fence.
       const found = raw.indexOf(top.raw, sourceOffset);
-      if (found >= 0) { sourceLine = (raw.slice(0,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
+      if (found >= 0) { sourceLine += (raw.slice(sourceOffset,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
       const lines = top.raw.split('\n');
       let cursor = 0;
       marked.walkTokens([top], token => {
-        if (token.type !== 'code') return;
+        if (token.type !== 'code' || (window.SharedHtmlBlocks && String(token.lang || '').trim()==='junny-html')) return;
         const opening = token.raw.trimStart().split('\n')[0].trim();
         for (; cursor < lines.length; cursor++) {
           const match = lines[cursor].match(/^([\t ]*(?:>[\t ]*)*(?:(?:[-+*]|\d+[.)])[\t ]+)?)(`{3,}|~{3,})(.*)$/);
@@ -194,7 +207,7 @@ window.SharedCodeBlocks = (() => {
     let sourceLine = 0, sourceOffset = 0;
     tokens.forEach(top => {
       const found = raw.indexOf(top.raw, sourceOffset);
-      if (found >= 0) { sourceLine = (raw.slice(0,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
+      if (found >= 0) { sourceLine += (raw.slice(sourceOffset,found).match(/\n/g) || []).length; sourceOffset = found + top.raw.length; }
       const normalize = text => {
         let value = '', offset = 0;
         const indices = [];

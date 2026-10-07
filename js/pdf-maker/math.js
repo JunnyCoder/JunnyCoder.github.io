@@ -32,7 +32,7 @@ window.PdfMath = (() => {
     tokenizer(source) { const token = match(source); if (!token || (level === 'block' && !token.display)) return; return { type: this.name || 'pdfMath' + level, ...token }; },
     renderer: markup
   })) });
-  function parse(markdown) {
+  function parse(markdown, links) {
     let protectedText = '', cursor = 0;
     while (cursor < markdown.length) {
       const rest = markdown.slice(cursor);
@@ -59,7 +59,10 @@ window.PdfMath = (() => {
       if (rest[0] === '\\' && /[\\$]/.test(rest[1] || '')) { protectedText += rest.slice(0, 2); cursor += 2; continue; }
       protectedText += rest[0]; cursor++;
     }
-    return marked.parse(protectedText);
+    const lexer = new marked.Lexer();
+    if (links) lexer.tokens.links = links;
+    const tokens = lexer.lex(protectedText);
+    return marked.parser(tokens);
   }
   function adopt(root) {
     root.querySelectorAll('.katex').forEach(node => {
@@ -85,12 +88,27 @@ window.PdfMath = (() => {
       node.replaceWith(document.createTextNode(delimiter + node.dataset.mathSource + delimiter));
     });
   }
+  const rendered = new WeakMap();
+  const mathCache = window.EditorRuntime?.cache({entries: 256, bytes: 2 * 1024 * 1024});
   function render(root) {
     adopt(root);
     const macros = {};
     root.querySelectorAll('.pdf-math[data-math-source]').forEach(node => {
       if (!window.katex) return;
-      katex.render(node.dataset.mathSource, node, { displayMode: node.dataset.mathDisplay === 'true', throwOnError: false, trust: false, macros });
+      const tex = node.dataset.mathSource, displayMode = node.dataset.mathDisplay === 'true';
+      // Definitions mutate the shared macro context. Always execute them in order;
+      // cache only formulas without a document macro context.
+      const cacheable = Object.keys(macros).length === 0 && !/\\(?:gdef|def|newcommand|renewcommand|let|global)\b/.test(tex);
+      const key = JSON.stringify([tex, displayMode]);
+      if (cacheable && rendered.get(node) === key && node.childNodes.length) return;
+      const cached = cacheable && mathCache?.get(key);
+      if (cached !== undefined && cached !== false) node.innerHTML = cached;
+      else {
+        katex.render(tex, node, {displayMode, throwOnError: false, trust: false, macros});
+        if (cacheable && Object.keys(macros).length === 0) mathCache?.set(key, node.innerHTML);
+      }
+      if (cacheable && Object.keys(macros).length === 0) rendered.set(node, key);
+      else rendered.delete(node);
     });
   }
   return { parse, render, adopt, editable, sourceHtml };

@@ -365,3 +365,5 @@
 #pdfConflict { flex:0 0 auto; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 14px; background:var(--bg-panel); color:var(--text); font-size:12px; }
 #pdfConflict[hidden] { display:none; }
 @media print { .pdf-navigation,#pdfConflict { display:none !important; } #pdfPreviewContainer { zoom:1 !important; } }
+
+.shared-html-block { contain:layout style; display:flow-root; position:relative; max-width:100%; margin:1em 0; color:#222; background:#fff; overflow-wrap:anywhere; }

@@ -104,6 +104,15 @@
     "",
     "긴 단어 중간의 줄바꿈 후보: very<wbr>long<wbr>word.",
     "",
+    "## HTML 고유 블록 · PDF용",
+    "",
+    "Markdown으로 표현하기 어려운 병합 표는 HTML 허용 모드에서 하나의 블록으로 보존합니다.",
+    "",
+    "```junny-html",
+    "<style>table{width:100%;border-collapse:collapse}td,th{border:1px solid #8b95a5;padding:10px}th{background:#e8eef8}</style>",
+    "<table><tr><th colspan=\"2\">병합된 제목</th></tr><tr><td>왼쪽</td><td>오른쪽</td></tr></table>",
+    "```",
+    "",
     "## 3. 목록과 체크리스트",
     "",
     "- 불릿 항목",
@@ -785,18 +794,26 @@
   /* ================= Preview rendering and source positions ================= */
   var previewBlocks = [];
   var languagePreviewScroll = null;
+  var previewRenderer = window.MdPreviewRenderer?.create(previewHost);
+  var previewTokens = null;
   function renderPreview(){
     var raw = editor.getValue();
     if (!raw.trim()){
       previewHost.innerHTML = '<p class="empty-state">편집기에 마크다운을 입력하면 여기에 미리보기가 표시됩니다.</p>';
       previewBlocks = [];
+      previewTokens = null; previewRenderer?.reset();
       return;
     }
 
-    var tokens = marked.lexer(raw);
-    var html = marked.parser(tokens);
-    var clean = window.DOMPurify ? DOMPurify.sanitize(html) : html;
-    previewHost.innerHTML = clean;
+    var rendered = previewRenderer?.update(raw);
+    var tokens = rendered ? rendered.tokens : marked.lexer(raw);
+    previewTokens = {raw: raw, tokens: tokens};
+    if (!rendered) {
+      var html = window.PdfMath ? PdfMath.parse(raw) : marked.parser(tokens);
+      previewHost.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
+    }
+    window.SharedHtmlBlocks?.hydrate(previewHost);
+    window.PdfMath?.render(previewHost);
     SharedCodeBlocks.normalize(previewHost);
     // Optional design enhancements must tolerate a cached older template script.
     window.PdfTemplates?.prepareDesign?.(previewHost);
@@ -852,27 +869,13 @@
       });
     }
 
-    // Each top-level Markdown token corresponds to its rendered top-level elements.
-    previewBlocks = [];
-    var sourceLine = 0;
-    var elementIndex = 0;
-    var probe = document.createElement('div');
-    tokens.forEach(function(token){
-      var startLine = sourceLine;
-      var newlines = (token.raw.match(/\n/g) || []).length;
-      sourceLine += newlines;
-      var endLine = Math.max(startLine, sourceLine - (/\n$/.test(token.raw) ? 1 : 0));
-      var single = [token];
-      single.links = tokens.links;
-      var part = marked.parser(single);
-      probe.innerHTML = window.DOMPurify ? DOMPurify.sanitize(part) : part;
-      for (var i = 0; i < probe.children.length; i++){
-        if (previewHost.children[elementIndex]){
-          previewBlocks.push({line: startLine, endLine: endLine, element: previewHost.children[elementIndex]});
-        }
-        elementIndex++;
-      }
-    });
+    if (rendered) previewBlocks = rendered.blocks;
+    else {
+      // Safe compatibility path when an older cached page lacks the new module.
+      previewBlocks = Array.from(previewHost.children, function(element){
+        return {line: 0, endLine: editor.lineCount() - 1, element: element};
+      });
+    }
   }
 
   var pendingPreviewScroll = null;
@@ -1234,11 +1237,18 @@
       mdSaveConflict=true;document.getElementById('mdConflict').hidden=false;mdStatus('다른 탭 변경 확인 필요 · 자동 저장 일시 중지',true);
     }
   });
+  var outlineSignature = null;
   function updateOutline(){
+    if (document.getElementById('mdOutline').hidden) return;
+    var raw=editor.getValue();
+    var outlineTokens=previewTokens?.raw===raw ? previewTokens.tokens : marked.lexer(raw);
+    // Include source line positions: inserting body text can shift heading targets.
+    if (outlineSignature===raw) return;
+    outlineSignature=raw;
     var list=document.getElementById('mdOutlineList');list.replaceChildren();
-    var raw=editor.getValue(),offset=0;
+    var offset=0;
     var headings=[];
-    marked.lexer(raw).forEach(function(token){
+    outlineTokens.forEach(function(token){
       var start=raw.indexOf(token.raw,offset);if(start<0)return;offset=start+token.raw.length;
       if(token.type==='heading')headings.push({start:start,depth:token.depth,html:marked.parseInline(token.text)});
       else if(token.type==='html'){
@@ -1301,5 +1311,7 @@
   function closeFind(){document.getElementById('findPanel').hidden=true;document.getElementById('findBtn').setAttribute('aria-expanded','false');updateFindMatches();editor.focus();}
   document.getElementById('findClose').addEventListener('click',closeFind);
   document.getElementById('findPanel').addEventListener('keydown',function(e){if(e.key==='Escape'){e.preventDefault();closeFind();}else if(e.key==='Enter'){e.preventDefault();goFind(e.shiftKey?-1:1);}});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',renderPreview,{once:true});
   updateOutline();
+  window.MdHtmlImporter?.install({editor:editor,backup:function(){maybeTakeSnapshot(true);},status:mdStatus});
 })();

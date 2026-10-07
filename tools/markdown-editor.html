@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="dark light">
-<script src="../js/shared/editor-ui.js?v=20261006-toolbar-6"></script>
+<script src="../js/shared/editor-ui.js?v=20261007-optimize-9"></script>
 <title>Markdown 에디터</title>
 <link rel="shortcut icon" type="image/png" href="../assets/img/favicon_main.png">
 
@@ -12,10 +12,15 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-<script src="../js/shared/markdown-options.js?v=20261006-toolbar-6"></script>
+<script src="../js/shared/render-runtime.js?v=20261007-optimize-9"></script>
+<script src="../js/shared/markdown-options.js?v=20261007-optimize-9"></script>
+<script src="../js/pdf-maker/math.js?v=20261007-optimize-9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-<script src="../js/shared/code-blocks.js?v=20261006-toolbar-6"></script>
-<script src="../js/pdf-maker/templates.js?v=20261006-toolbar-6"></script>
+<script src="../js/shared/html-blocks.js?v=20261007-optimize-9"></script>
+<script src="../js/shared/html-import-structures.js?v=20261007-optimize-9"></script>
+<script src="../js/shared/html-to-markdown.js?v=20261007-optimize-9"></script>
+<script src="../js/shared/code-blocks.js?v=20261007-optimize-9"></script>
+<script src="../js/pdf-maker/templates.js?v=20261007-optimize-9"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
 <!-- KaTeX 스타일시트 -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -25,10 +30,10 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
 
-<link rel="stylesheet" href="../css/markdown-editor/style.css?v=20261006-toolbar-6">
-<link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-toolbar-6" data-code-block-style>
-<link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-toolbar-6" data-element-style>
-<link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-toolbar-6">
+<link rel="stylesheet" href="../css/markdown-editor/style.css?v=20261007-optimize-9">
+<link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261007-optimize-9" data-code-block-style>
+<link rel="stylesheet" href="../css/shared/element-designs.css?v=20261007-optimize-9" data-element-style>
+<link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261007-optimize-9">
 </head>
 <body>
 <div id="app">
@@ -39,6 +44,7 @@
       <div class="md-tool-group" role="group" aria-label="문서 불러오기">
         <span class="toolbar-label">불러오기</span>
         <button type="button" class="btn-pill" id="openMdBtn" title="Markdown 파일을 편집기에 불러오기">.md 열기</button>
+        <button type="button" class="btn-pill" id="htmlImportBtn">HTML → Markdown</button>
         <input id="openMdInput" type="file" accept=".md,.markdown,text/markdown" hidden>
         <button type="button" class="btn-ghost" id="loadExampleBtn" title="렌더링 테스트 예제로 현재 문서 교체">예제 불러오기</button>
       </div>
@@ -133,6 +139,24 @@
   </div>
 </div>
 
-<script src="../js/markdown-editor/script.js?v=20261006-toolbar-6"></script>
+<dialog id="htmlImportDialog" class="html-import-dialog" aria-labelledby="htmlImportTitle">
+  <div class="html-import-heading"><div><h2 id="htmlImportTitle">HTML → Markdown</h2><p>일반 내용은 Markdown으로 변환하고, 표현하기 어려운 구조만 직접 선택합니다.</p></div><button id="htmlImportCancel" class="btn-ghost" type="button">닫기</button></div>
+  <div class="html-import-settings">
+    <div><span>입력 방식</span><div class="segmented"><button class="seg-btn active" data-input-mode="paste" type="button" aria-pressed="true">HTML 입력</button><button class="seg-btn" data-input-mode="file" type="button" aria-pressed="false">파일 업로드</button></div></div>
+    <div><span>변환 모드</span><div class="segmented"><button class="seg-btn active" data-convert-mode="strict" type="button" aria-pressed="true">Strict MD (for AI)</button><button class="seg-btn" data-convert-mode="html" type="button" aria-pressed="false">Allow HTML (for PDF)</button></div></div>
+  </div>
+  <div id="htmlImportPaste"><label for="htmlImportSource">원본 HTML</label><textarea id="htmlImportSource" spellcheck="false" placeholder="HTML을 붙여넣으세요."></textarea></div>
+  <div id="htmlImportUpload" hidden><label for="htmlImportFile">HTML 파일 선택</label><input id="htmlImportFile" type="file" accept=".html,.htm,text/html"><p>10MB 이하. 상대 경로 이미지·외부 CSS는 파일만으로 불러올 수 없으므로 주소와 스타일을 확인해주세요.</p></div>
+  <button id="htmlImportAnalyze" class="btn-primary" type="button">분석·변환</button>
+  <div class="html-import-previews"><section><h3>원본 HTML · 클릭하여 요소 선택</h3><iframe id="htmlImportOriginalPreview" title="원본 HTML 미리보기" sandbox="allow-same-origin"></iframe></section><section><h3>변환 결과</h3><iframe id="htmlImportResultPreview" title="변환 Markdown 미리보기" sandbox="allow-same-origin"></iframe></section></div>
+  <div class="html-import-review"><section><h3>변환 검토</h3><p>스타일·색상만 다른 요소는 Markdown으로 변환합니다. HTML 허용 모드에서는 복합 구조를 고유 블록으로 유지합니다.</p><button id="htmlImportAutoAll" class="btn-pill" type="button" disabled>미해결 항목 자동 적용</button><p id="htmlImportAutoSummary" role="status"></p><div id="htmlImportIssues"></div></section><section id="htmlImportSelection" hidden><h3>선택 요소 수정</h3><p id="htmlImportSelectedLabel"></p><label for="htmlImportMapping">변환 유형</label><select id="htmlImportMapping"><option value="auto">자동</option><option value="p">문단</option><option value="h1">H1</option><option value="h2">H2</option><option value="h3">H3</option><option value="h4">H4</option><option value="h5">H5</option><option value="h6">H6</option><option value="blockquote">인용</option><option value="ul">불릿 목록</option><option value="ol">번호 목록</option><option value="numbered-text">번호를 텍스트로 유지</option><option value="table">표 (병합·셀 내부 배치 단순화)</option><option value="code">코드</option><option value="flatten">감싸는 태그 제거</option><option value="text">텍스트만 유지</option><option value="html" disabled>고유 HTML 블록 유지</option><option value="omit">제외</option></select><label for="htmlImportLanguage">코드 언어</label><input id="htmlImportLanguage" value="plaintext" placeholder="plaintext / javascript / python"><label><input id="htmlImportMapAll" type="checkbox"> 같은 태그 전체에 적용</label><button id="htmlImportMapApply" class="btn-pill" type="button">변환 유형 적용</button></section></div>
+  <label for="htmlImportOutput">변환된 Markdown · 직접 수정 가능</label><textarea id="htmlImportOutput" spellcheck="false"></textarea>
+  <div class="html-import-footer"><div class="segmented"><button class="seg-btn active" data-apply-mode="replace" type="button" aria-pressed="true">현재 문서 교체</button><button class="seg-btn" data-apply-mode="insert" type="button" aria-pressed="false">커서 위치에 삽입</button></div><span id="htmlImportStatus" role="status" aria-live="polite">HTML을 입력하고 분석·변환을 눌러주세요.</span><button id="htmlImportApply" class="btn-primary" type="button" disabled>편집기에 적용</button></div>
+</dialog>
+
+<script src="../js/markdown-editor/preview-renderer.js?v=20261007-optimize-9"></script>
+<script src="../js/markdown-editor/import-preview.js?v=20261007-optimize-9"></script>
+<script src="../js/markdown-editor/html-import.js?v=20261007-optimize-9"></script>
+<script src="../js/markdown-editor/script.js?v=20261007-optimize-9"></script>
 </body>
 </html>

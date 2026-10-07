@@ -46,8 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (className) node.className = className;
     return node;
   };
-  const blockById = id => Array.from(sourceContent.children).find(block => block.dataset.blockId === id);
-  const elementById = id => Array.from(sourceContent.querySelectorAll('[data-element-id]')).find(node => node.dataset.elementId === id);
+  const sourceState = window.PdfDocumentState?.create(sourceContent);
+  const pageReflow = window.PdfPageReflow && sourceState ? PdfPageReflow.create(previewContainer,sourceState) : null;
+  const blockIndex = window.EditorRuntime?.index(sourceContent,'data-block-id');
+  const elementIndex = window.EditorRuntime?.index(sourceContent,'data-element-id');
+  const blockById = id => blockIndex ? blockIndex.get(id) : Array.from(sourceContent.children).find(block => block.dataset.blockId === id);
+  const elementById = id => elementIndex ? elementIndex.get(id) : Array.from(sourceContent.querySelectorAll('[data-element-id]')).find(node => node.dataset.elementId === id);
   function resetLineHeight(source) {
     if ('pdfOriginalLineHeight' in source.dataset) {
       source.style.lineHeight = source.dataset.pdfOriginalLineHeight;
@@ -62,8 +66,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return false;
   }
   function documentHtml() {
+    const serialize = () => {
     const html = window.PdfMath ? PdfMath.sourceHtml(sourceContent) : sourceContent.innerHTML;
     return window.PdfImages ? PdfImages.snapshotHtml(html) : html;
+    };
+    return sourceState ? sourceState.html(serialize) : serialize();
   }
   const snapshot = () => ({ html: documentHtml(), settings: { ...settings }, title: document.title, importedStyles });
   const updateUndo = () => {
@@ -75,8 +82,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (group && inputGroup === group) return;
     redoHistory=[];
     const state = snapshot();
-    if (JSON.stringify(history[history.length - 1]) !== JSON.stringify(state)) history.push(state);
-    if (history.length > 30) history.shift();
+    const previous = history[history.length - 1];
+    if (!(sourceState ? sourceState.same(previous,state) : previous && JSON.stringify(previous)===JSON.stringify(state))) history.push(state);
+    if (sourceState) sourceState.trim(history);
+    else if (history.length > 30) history.shift();
     inputGroup = group;
     updateUndo();
   }
@@ -112,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if ($('tocEditDialog').open) $('tocEditDialog').close();
     tocEditor = null;
     sourceContent.replaceChildren();
+    sourceState?.clear();pageReflow?.reset();
     $('dropZone').scrollTop=0;$('dropZone').scrollLeft=0;pageIndex=0;
     settings = { ...defaultSettings };
     importedStyles = { css: [], attributes: {}, missing: [], available: false };
@@ -190,6 +200,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return next;
   }
   function normalizeContent() {
+    window.SharedHtmlBlocks?.hydrate(sourceContent);
     SharedCodeBlocks.normalize(sourceContent);
     sourceContent.querySelectorAll('[data-design-auto-number]').forEach(node => { delete node.dataset.designAutoNumber; delete node.dataset.designNumber; });
     sourceContent.querySelectorAll('[data-style] > figcaption').forEach(node => { delete node.dataset.designNumber;delete node.dataset.designSource; });
@@ -209,12 +220,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const headingIds = new Set();
     const elementIds = new Set();
-    sourceContent.querySelectorAll(templates.selector).forEach(node => {
+    sourceContent.querySelectorAll(templates.selector+",[data-html-block]").forEach(node => {
+      if(node.closest("[data-html-block]") && !node.matches("[data-html-block]")){delete node.dataset.elementId;return;}
       if (!node.dataset.elementId || elementIds.has(node.dataset.elementId)) node.dataset.elementId = uid('element');
       elementIds.add(node.dataset.elementId);
     });
     sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      if (heading.closest('.cover-page,.toc-wrapper')) return;
+      if (heading.closest('.cover-page,.toc-wrapper,[data-html-block]')) return;
       if (!heading.dataset.headingId || headingIds.has(heading.dataset.headingId)) heading.dataset.headingId = uid('heading');
       headingIds.add(heading.dataset.headingId);
     });
@@ -296,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return node;
   }
   function preparePreview(node) {
+    if(node.matches('[data-html-block]'))return node;
     node = htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
     window.PdfImages?.decorate(node);
     if (pendingDesign && !committedPrint) [node, ...node.querySelectorAll('[data-element-id]')].forEach(element => {
@@ -360,7 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
     clone.append(body);
     return preparePreview(clone);
   }
-  function paginate() {
+  function paginate(changedId = null) {
     // Removing every page temporarily collapses the scroll area. Restore after
     // rebuilding and applying screen zoom so style edits keep the current view.
     const scrollPanel=$('dropZone');
@@ -370,13 +383,12 @@ document.addEventListener('DOMContentLoaded', () => {
     hidePopup();
     // Measure A4 paper at its real size; zoom is only a screen presentation.
     previewContainer.style.zoom='1';
-    previewContainer.replaceChildren();
     synchronizeToc();
     designHeadingNumbers = new Map(); designFigureNumbers = new Map();
     const designCounters = [0,0,0,0,0,0];
     const tocNumbers = new Map(Array.from(sourceContent.querySelectorAll('.toc-item[data-heading-target]')).map(item => [item.dataset.headingTarget,item.querySelector('.toc-number')?.textContent.trim()]));
     sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      if (heading.closest('.cover-page,.toc-wrapper') || hiddenInSource(heading)) return;
+      if (heading.closest('.cover-page,.toc-wrapper,[data-html-block]') || hiddenInSource(heading)) return;
       const level = Number(heading.tagName.slice(1)); designCounters[level-1]++; designCounters.fill(0,level);
       const first = designCounters.findIndex(n => n > 0);
       designHeadingNumbers.set(heading.dataset.elementId,templates.hasHeadingNumber(heading) ? '' : tocNumbers.get(heading.dataset.headingId) || designCounters.slice(first,level).map(n=>n || 1).join('.'));
@@ -387,6 +399,9 @@ document.addEventListener('DOMContentLoaded', () => {
     $('discardDocumentBtn').disabled = !hasDocument();
     $('saveProjectBtn').disabled=!hasDocument() || projectBusy;
     const visible = Array.from(sourceContent.children).filter(block => !hiddenInSource(block));
+    const reflow=pageReflow?.begin(visible,JSON.stringify([settings,importedStyles,committedPrint,document.title,localDate()]),typeof changedId==='string' && !printPreparing && !committedPrint?changedId:null,pendingDesign);
+    if (!reflow) previewContainer.replaceChildren();
+    scaledCount=reflow?.scaled || 0;
     if (!visible.length) {
       previewContainer.append(textNode('p', '문서가 비어 있습니다. .md 또는 .html 파일을 열어주세요.', 'placeholder-box'));
       $('downloadPdfBtn').disabled = true;
@@ -432,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function splitText(block) {
       const total = block.textContent.length;
       // Keep formula and figure geometry intact, including the image's caption.
-      if (!total || block.matches('.katex,img,svg,figure,video,canvas,iframe') || block.querySelector('.katex')) {
+      if (!total || block.matches('.katex,img,svg,figure,video,canvas,iframe,[data-html-block]') || block.querySelector('.katex')) {
         fitAtomic(block.cloneNode(true));
         return;
       }
@@ -540,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ensurePage();
       });
     }
-    visible.forEach(block => {
+    visible.slice(reflow?.start || 0).forEach(block => {
       if (block.classList.contains('cover-page')) {
         current = createPage(true);
         const cover = block.cloneNode(true);
@@ -562,7 +577,7 @@ document.addEventListener('DOMContentLoaded', () => {
           (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
         clone.remove();
         const splittable = !section && Boolean(block.textContent.length) &&
-          !block.matches('img,svg,figure,video,canvas,iframe') && !block.querySelector('.katex') &&
+          !block.matches('img,svg,figure,video,canvas,iframe,[data-html-block]') && !block.querySelector('.katex') &&
           (block.tagName !== 'TABLE' || !Array.from(block.querySelectorAll('td,th')).some(cell => cell.rowSpan > 1));
         const large = height >= current.content.clientHeight * .3;
         if (current.content.children.length && (!large || !splittable)) newPage();
@@ -617,7 +632,7 @@ document.addEventListener('DOMContentLoaded', () => {
       saveHistory();
       SharedCodeBlocks.setLanguage(source, language);
       if (!templates.validDesign(source,source.dataset.style || 'default')) templates.writeDesign(source,'default');
-      paginate();
+      paginate(source.closest('[data-block-id]')?.dataset.blockId);
       if (selectedId === source.dataset.elementId) renderStyleChoices(source);
     });
     highlightSelection();updatePageNavigator();applyZoom();restoreScroll();
@@ -718,8 +733,8 @@ document.addEventListener('DOMContentLoaded', () => {
     checkCoverImage(imageLayer?.style.backgroundImage.match(/^url\(["']?(.*?)["']?\)$/)?.[1] || null);
     updateUndo();restoreBodyImages();paginate();
   }
-  $('undoBtn').addEventListener('click',()=>{const state=history.pop();if(!state)return;redoHistory.push(snapshot());restoreSnapshot(state);});
-  $('redoBtn').addEventListener('click',()=>{const state=redoHistory.pop();if(!state)return;history.push(snapshot());restoreSnapshot(state);});
+  $('undoBtn').addEventListener('click',()=>{const state=history.pop();if(!state)return;redoHistory.push(snapshot());sourceState?.trim(redoHistory);restoreSnapshot(state);});
+  $('redoBtn').addEventListener('click',()=>{const state=redoHistory.pop();if(!state)return;history.push(snapshot());sourceState?.trim(history);restoreSnapshot(state);});
   $('toggleBreakMode').addEventListener('click', () => { setMode(mode === 'break' ? 'normal' : 'break'); highlightSelection(); });
   $('toggleBreakCancelMode').addEventListener('click', () => { setMode(mode === 'breakCancel' ? 'normal' : 'breakCancel'); highlightSelection(); });
   $('toggleDeleteMode').addEventListener('click', () => { setMode(mode === 'delete' ? 'normal' : 'delete'); highlightSelection(); });
@@ -736,7 +751,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   $('generateTocBtn').addEventListener('click', () => {
     const headings = Array.from(sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6')).filter(heading =>
-      !heading.closest('.cover-page,.toc-wrapper') && !hiddenInSource(heading));
+      !heading.closest('.cover-page,.toc-wrapper,[data-html-block]') && !hiddenInSource(heading));
     if (!headings.length) { alert('목차로 만들 H1~H6 제목이 없습니다.'); return; }
     const existing = sourceContent.querySelector('.toc-wrapper');
     const previous = Array.from(existing?.querySelectorAll('.toc-item') || []);
@@ -925,7 +940,7 @@ document.addEventListener('DOMContentLoaded', () => {
     select.replaceChildren(textNode('option', '직접 페이지 지정 (연결 없음)'));
     select.firstChild.value = '';
     sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      if (heading.closest('.cover-page,.toc-wrapper') || hiddenInSource(heading)) return;
+      if (heading.closest('.cover-page,.toc-wrapper,[data-html-block]') || hiddenInSource(heading)) return;
       const option = textNode('option', heading.tagName + ' · ' + heading.textContent.trim());
       option.value = heading.dataset.headingId;
       select.append(option);
@@ -1026,6 +1041,7 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedId = id;
     configureListControls(source);
     configureImageControls(source);
+    $('htmlBlockControls').hidden=!source.matches('[data-html-block]');
     $('selectedTagType').textContent = '<' + source.tagName.toLowerCase() + '>';
     $('elementLineHeight').value = source.style.lineHeight || '';
     $('rightPanel').style.display = 'block';
@@ -1079,7 +1095,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const edited = $('blockEditContent').firstElementChild;
     const tableSource = activeTableId && elementById(activeTableId);
     const codeSource = activeCodeId && elementById(activeCodeId);
-    if (save && codeSource) {
+    if(save && source?.matches('[data-html-block]') && activeEditKind==='html'){
+      const raw=$('codeEditInput').value;
+      if(raw!==SharedHtmlBlocks.sourceOf(source)){saveHistory();SharedHtmlBlocks.update(source,raw);normalizeContent();}
+    } else if (save && codeSource) {
       const text = $('codeEditInput').value;
       const oldText = codeSource.querySelector('code')?.textContent ?? codeSource.textContent;
       if (text !== oldText) {
@@ -1131,6 +1150,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     activeEditId = source.dataset.blockId;
+    if(source.matches('[data-html-block]')){
+      activeEditKind='html';activeCodeId=activeTableId=null;$('tableEditToolbar').hidden=true;
+      $('codeEditInput').hidden=false;$('blockEditContent').hidden=true;
+      $('codeEditInput').value=SharedHtmlBlocks.sourceOf(source);$('codeEditInput').setAttribute('aria-label','HTML 블록 원본');
+      $('blockEditDialog').showModal();$('codeEditInput').focus();return;
+    }
+    $('codeEditInput').setAttribute('aria-label','코드 내용');
     activeTableId = event.target.closest('table[data-element-id]')?.dataset.elementId || null;
     tableEditCell = null;
     $('tableEditToolbar').hidden = !activeTableId;
@@ -1349,7 +1375,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const options = templates.readDesign(candidate);
     pendingDesign = selectedPreset === (source.dataset.style || 'default') && JSON.stringify(options) === JSON.stringify(templates.readDesign(source)) ? null : { id:source.dataset.elementId,preset:selectedPreset,options };
     $('elementDesignStatus').textContent = pendingDesign ? '임시 미리보기 · 적용 버튼을 눌러 저장하세요.' : '';
-    paginate();
+    paginate(source.closest('[data-block-id]')?.dataset.blockId);
   }
   function renderDesignOptions(source, preset) {
     const container = $('elementDesignOptions'); container.replaceChildren();
@@ -1366,6 +1392,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   function renderStyleChoices(source) {
+    const htmlBlock=source.matches('[data-html-block]');
+    ['applyToSelectedBtn','applyToAllBtn','resetElementStyleBtn','elementLineHeight'].forEach(id=>$(id).disabled=htmlBlock);
+    if(htmlBlock){selectedPreset=null;$('stylePreviewGrid').replaceChildren(textNode('p','HTML과 CSS가 하나의 고유 블록으로 유지됩니다. 더블클릭으로 원본을 수정하세요.'));$('elementDesignOptions').hidden=true;return;}
+
     const family = templates.family(source.tagName);
     selectedPreset = source.dataset.style || 'default';
     $('stylePreviewGrid').replaceChildren();
@@ -1409,9 +1439,10 @@ document.addEventListener('DOMContentLoaded', () => {
       templates.writeDesign(target,selectedPreset,templates.readDesign(copy));
       ['style-preset-default','style-preset-highlight','style-preset-bordered','style-preset-card'].forEach(name => target.classList.remove(name));
     });
-    paginate(); renderStyleChoices(source);
+    paginate(all?null:source.closest('[data-block-id]')?.dataset.blockId); renderStyleChoices(source);
     $('elementDesignStatus').textContent = all ? targets.length + '개에 적용 · 요소별 세부 설정 유지' + (targets.length < candidates.length ? ' · 구조가 다른 ' + (candidates.length-targets.length) + '개 제외' : '') : '선택 요소에 적용했습니다.';
   }
+  ['htmlBlockMoveUp','htmlBlockMoveDown'].forEach((id,index)=>$(id).addEventListener('click',()=>{const block=elementById(selectedId);if(!block?.matches('[data-html-block]'))return;const other=index?block.nextElementSibling:block.previousElementSibling;if(!other)return;saveHistory();if(index)other.after(block);else other.before(block);paginate();}));
   $('applyToSelectedBtn').addEventListener('click', () => applyPreset(false));
   $('applyToAllBtn').addEventListener('click', () => applyPreset(true));
   $('resetElementStyleBtn').addEventListener('click', () => {

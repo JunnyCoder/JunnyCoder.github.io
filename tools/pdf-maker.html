@@ -3,42 +3,46 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="color-scheme" content="dark light">
-    <script src="../js/shared/editor-ui.js?v=20261006-scroll-4"></script>
+    <script src="../js/shared/editor-ui.js?v=20261007-optimize-9"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>pdf-maker</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-    <script src="../js/shared/markdown-options.js?v=20261006-scroll-4"></script>
+    <script src="../js/shared/render-runtime.js?v=20261007-optimize-9"></script>
+<script src="../js/shared/markdown-options.js?v=20261007-optimize-9"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="../js/shared/code-blocks.js?v=20261006-scroll-4"></script>
-    <script src="../js/pdf-maker/math.js?v=20261006-scroll-4"></script>
-    <script src="../js/pdf-maker/images.js?v=20261006-scroll-4"></script>
-    <script src="../js/pdf-maker/templates.js?v=20261006-scroll-4"></script>
-    <script src="../js/pdf-maker/html-styles.js?v=20261006-scroll-4"></script>
+    <script src="../js/shared/html-blocks.js?v=20261007-optimize-9"></script>
+    <script src="../js/shared/code-blocks.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/math.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/document-state.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/page-reflow.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/images.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/templates.js?v=20261007-optimize-9"></script>
+    <script src="../js/pdf-maker/html-styles.js?v=20261007-optimize-9"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
     
-    <link rel="stylesheet" href="../css/pdf-maker/style.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/style.css?v=20261007-optimize-9" />
     <!-- Elements -->
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/base.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/cover.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/toc.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/markdown.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/base.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/cover.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/toc.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/elements/markdown.css?v=20261007-optimize-9" />
 
     <!-- Themes -->
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/report.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/editorial.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/minimal.css?v=20261006-scroll-4" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/modern.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/tech.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/academic.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/report.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/editorial.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/pdf-maker/templates/themes/minimal.css?v=20261007-optimize-9" />
 
-    <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css?v=20261006-scroll-4" />
-    <link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261006-scroll-4" data-code-block-style>
-    <link rel="stylesheet" href="../css/shared/element-designs.css?v=20261006-scroll-4" data-element-style>
+    <link rel="stylesheet" href="../css/pdf-maker/templates/tags.css?v=20261007-optimize-9" />
+    <link rel="stylesheet" href="../css/shared/code-blocks.css?v=20261007-optimize-9" data-code-block-style>
+    <link rel="stylesheet" href="../css/shared/element-designs.css?v=20261007-optimize-9" data-element-style>
 
-    <link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261006-scroll-4">
+    <link rel="stylesheet" href="../css/shared/editor-ui.css?v=20261007-optimize-9">
   </head>
   <body>
     <div id="app">
@@ -194,6 +198,7 @@
             </div>
             <div id="headingLevelControls" class="setting-group" hidden><label>제목 계층</label><div><button id="headingPromoteBtn" class="btn-pill" type="button">◀ 상위</button> <button id="headingDemoteBtn" class="btn-pill" type="button">▶ 하위</button></div></div>
             <button id="removePageBreakBtn" class="btn-ghost" type="button" hidden>이 요소 앞의 페이지 자르기 해제</button>
+            <div id="htmlBlockControls" hidden><p class="setting-hint">HTML 블록 · 더블클릭하여 HTML/CSS 편집. 페이지보다 크면 전체를 축소합니다.</p><button id="htmlBlockMoveUp" class="btn-pill" type="button">위로 이동</button><button id="htmlBlockMoveDown" class="btn-pill" type="button">아래로 이동</button></div>
             <div class="setting-group"><label>개별 줄 간격</label><input type="number" id="elementLineHeight" step="0.1" placeholder="기본값 적용 중" /></div>
             <hr style="margin: 15px 0; border-color: var(--border);">
             <label style="font-size: 13px; font-weight: bold;">태그별 디자인</label>
@@ -280,6 +285,6 @@
     </dialog>
     <div id="sourceContent" style="display: none;"></div>
     
-    <script type="module" src="../js/pdf-maker/script.js?v=20261006-scroll-4"></script>
+    <script type="module" src="../js/pdf-maker/script.js?v=20261007-optimize-9"></script>
   </body>
 </html>

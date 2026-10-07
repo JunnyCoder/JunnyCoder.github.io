@@ -1,0 +1,11 @@
+{
+  "name": "junny-editor-qa",
+  "private": true,
+  "scripts": {
+    "test": "node correctness.cjs"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "katex": "0.16.8"
+  }
+}
