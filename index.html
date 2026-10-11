@@ -1,755 +1,586 @@
 <!doctype html>
-<html lang="ko" class="scroll-smooth">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Junny's Dev world</title>
-    <link rel="shortcut icon" type="image/png" href="assets/img/favicon_main.png">
-    <!-- 1. Fonts Load -->
-    <link
-      rel="stylesheet"
-      as="style"
-      crossorigin
-      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-    />
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="김준호의 개발자 포트폴리오. Back to the Basics — MES 현장 경험을 바탕으로 C# 소프트웨어 설계와 시스템 통합을 공부하고 구현합니다.">
+  <meta name="theme-color" content="#183538">
+  <meta property="og:title" content="Welcome to Junny Coder World">
+  <meta property="og:description" content="현장을 이해하고, 코드로 개선합니다. Back to the Basics.">
+  <title>Welcome to Junny Coder World</title>
+  <link rel="canonical" href="https://junny.dev/">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://junny.dev/">
+  <link rel="icon" href="assets/img/favicon_main.png">
+  <style>
+    :root { color-scheme:light; --ink:#193338; --ink-2:#345458; --muted:#70817f; --paper:#f7f7f2; --white:#fff; --line:#dde2db; --line-dark:#385559; --pine:#17363a; --pine-2:#234b4d; --mint:#b8d7c0; --coral:#ec9b72; --sand:#eee9dc; --shadow:0 20px 50px rgba(20,47,47,.08); --radius:18px; --font:system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+    *,*::before,*::after{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:96px}
+    body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.75;word-break:keep-all;-webkit-font-smoothing:antialiased}
+    body.modal-open{overflow:hidden}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    a{color:inherit;text-decoration:none}
+    img{max-width:100%;display:block}
+    button:focus-visible,a:focus-visible,[tabindex]:focus-visible,summary:focus-visible{outline:3px solid #db8b5d;outline-offset:4px}
+    ::selection{background:#cee3d6;color:#123237}
+    .wrap{width:min(1180px,calc(100% - 88px));margin:0 auto}
+    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+    .skip-link{position:fixed;top:-90px;left:24px;z-index:999;padding:12px 18px;background:var(--pine);color:#fff;border-radius:10px}
+    .skip-link:focus{top:10px}
+    .eyebrow{display:inline-flex;align-items:center;gap:11px;color:#71847e;font-size:10px;letter-spacing:.19em;font-weight:800;text-transform:uppercase;margin:0}
+    .eyebrow::before{content:"";width:23px;height:1px;background:var(--coral)}
+    .section{padding:98px 0}
+    .section-heading{display:flex;justify-content:space-between;gap:30px;align-items:end;margin-bottom:38px}
+    .section-heading h2{font-size:clamp(29px,3.3vw,45px);line-height:1.27;letter-spacing:-.065em;margin:13px 0 0;font-weight:750}
+    .section-heading h2 em{color:#7f9b8b;font-style:normal}
+    .section-heading>p{color:#758582;font-size:14px;margin:0 0 4px;max-width:335px}
+    .section-heading .eyebrow::before{display:none}
+    .section-heading .eyebrow{letter-spacing:.16em;color:#8b9992}
+    .button{display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:46px;padding:11px 20px;border-radius:5px;border:1px solid transparent;font-size:12px;font-weight:800;line-height:1.3;transition:transform .2s,background .2s,color .2s,box-shadow .2s}
+    .button:hover{transform:translateY(-2px)}
+    .button.primary{background:var(--pine);color:#fff;box-shadow:0 9px 25px rgba(25,50,52,.08)}
+    .button.primary:hover{background:#2b5352}
+    .button.light{background:var(--white);border-color:var(--line);color:var(--ink)}
+    .button.outline{background:transparent;border-color:#97aea9;color:var(--ink)}
+    .text-link{font-size:12px;font-weight:800;display:inline-flex;gap:11px;align-items:center;border-bottom:1px solid #a3b2a9;padding:0 0 6px;white-space:nowrap}
+    .text-link:hover{color:#578471;border-color:#578471}
+    .tags{display:flex;flex-wrap:wrap;gap:7px}
+    .tags span{font-size:10px;font-weight:750;color:#556d68;background:#eaf0e9;border:1px solid #e0e9e0;border-radius:3px;padding:5px 8px;line-height:1.3}
+    .status-dot{width:6px;height:6px;display:inline-block;border-radius:50%;background:#9edab4;box-shadow:0 0 0 4px rgba(156,218,180,.13)}
+    .note-small{color:var(--muted);font-size:11px;line-height:1.7}
+    .tag-line{color:#688079;font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:850}
+    /* navigation */
+    .site-header{height:78px;display:flex;align-items:center;position:sticky;top:0;z-index:20;background:rgba(247,247,242,.94);border-bottom:1px solid rgba(218,224,215,.92);backdrop-filter:blur(18px)}
+    .header-inner{width:min(1320px,calc(100% - 64px));margin:auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
+    .brand{display:inline-flex;align-items:center;gap:11px;font-weight:900;letter-spacing:-.025em;font-size:15px;white-space:nowrap}
+    .brand-mark{width:34px;height:34px;border:1.5px solid var(--ink);border-radius:6px;display:grid;place-items:center;font-size:19px;line-height:1;font-family:Georgia,serif;font-style:italic}
+    .brand-mark span{color:var(--coral)}
+    .brand-sub{display:block;font-size:8px;letter-spacing:.22em;color:#8c9a93;font-weight:800;line-height:1.3;margin-top:2px}
+    .header-nav{display:flex;align-items:center;gap:28px;font-size:12px;font-weight:700;color:#5b716e}
+    .header-nav a{padding:8px 0;transition:color .2s}
+    .header-nav a:hover{color:var(--ink)}
+    .header-contact{font-size:11px;font-weight:800;display:inline-flex;gap:10px;align-items:center;border:1px solid #bdccc3;padding:9px 15px;border-radius:5px;white-space:nowrap}
+    .header-contact:hover{background:#e8efe9}
+    .mobile-toggle{display:none;width:40px;height:40px;border:1px solid var(--line);background:transparent;border-radius:6px;font-size:20px}
+    /* hero */
+    .hero{display:grid;grid-template-columns:1.02fr .98fr;align-items:center;gap:65px;padding:98px 0 95px;min-height:570px}
+    .hero h1{font-size:clamp(42px,5vw,73px);font-weight:800;line-height:1.19;letter-spacing:-.077em;margin:24px 0 22px}
+    .hero h1 em{font-style:normal;color:#759b86}
+    .hero .lead{font-size:16px;line-height:1.85;color:#5c706d;margin:0 0 9px}
+    .motto{font-size:13px;color:#355b52;font-weight:750;margin:0 0 27px;letter-spacing:-.01em}
+    .hero-actions{display:flex;align-items:center;flex-wrap:wrap;gap:25px;margin-top:28px}
+    .hero-meta{border-top:1px solid var(--line);display:flex;gap:24px;flex-wrap:wrap;margin-top:48px;padding-top:22px;font-size:10px;color:#7f918a}
+    .hero-meta strong{display:block;color:#325651;font-size:11px;letter-spacing:.04em}
+    .workbench{background:var(--pine);color:#e8f4ed;border-radius:12px;box-shadow:0 26px 50px rgba(18,51,49,.14);padding:28px 30px;position:relative;overflow:hidden;min-height:438px}
+    .workbench::after{content:"";position:absolute;width:320px;height:320px;right:-160px;top:44px;border:1px solid #406362;border-radius:50%;box-shadow:0 0 0 60px rgba(128,161,143,.028),0 0 0 120px rgba(128,161,143,.018);pointer-events:none}
+    .workbench-head,.workbench-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;color:#8faea5;font-size:10px;letter-spacing:.12em;font-weight:700;position:relative;z-index:1}
+    .workbench-head .pill{border:1px solid #496b67;padding:5px 10px;border-radius:16px;color:#b3d5bd;font-size:9px}
+    .workbench h2{font-size:29px;letter-spacing:-.055em;line-height:1.3;margin:39px 0 7px;position:relative;z-index:1}
+    .workbench .subtitle{font-size:12px;color:#93aaa3;position:relative;z-index:1}
+    .bench-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:30px 0;position:relative;z-index:1}
+    .bench-step{border:1px solid #3d5d5b;padding:13px 10px 11px;min-height:101px;background:rgba(255,255,255,.025)}
+    .bench-step span{display:block;color:var(--coral);font:12px Georgia,serif;margin-bottom:11px}
+    .bench-step b{font-size:12px;line-height:1.55;display:block;font-weight:700}
+    .bench-quote{border-left:2px solid #b1d0ba;padding-left:15px;font-size:13px;color:#d5e6da;line-height:1.6;margin:15px 0 30px;position:relative;z-index:1}
+    .workbench-foot{border-top:1px solid #3b5958;padding-top:18px;letter-spacing:.06em}
+    .focus-strip{background:#e9efe8;border-block:1px solid #dce6db}
+    .focus-inner{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:17px 0}
+    .focus-inner>span{font-size:10px;letter-spacing:.18em;color:#779087;font-weight:800}
+    .focus-inner div{display:flex;align-items:center;gap:21px;flex-wrap:wrap;color:#325d51;font-size:12px;font-weight:800}
+    .focus-inner i{color:#a3b9a6;font-style:normal;font-size:17px;font-weight:300}
+    /* about */
+    .about-grid{display:grid;grid-template-columns:.77fr 1.23fr;gap:85px;align-items:start}
+    .about-left h2{font-size:clamp(34px,4vw,52px);line-height:1.23;letter-spacing:-.066em;margin:18px 0 17px}
+    .about-left h2 em{color:#87a794;font-style:normal}
+    .about-left .about-caption{font-size:13px;color:#778983;max-width:335px}
+    .about-lead{font-size:17px;font-weight:700;letter-spacing:-.03em;margin:3px 0 17px;line-height:1.7}
+    .about-story p{font-size:13px;color:#62736e;margin:0 0 13px;line-height:1.95}
+    .philosophy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:35px}
+    .value-card{background:#fff;border:1px solid var(--line);padding:22px 16px 20px;min-height:178px;border-radius:5px}
+    .value-card .num{font:italic 20px Georgia,serif;color:#b6cbbc}
+    .value-card h3{font-size:20px;letter-spacing:-.04em;margin:11px 0 6px}
+    .value-card p{font-size:11px;color:#768680;line-height:1.75;margin:0}
+    /* projects */
+    .projects-section{background:#fff;border-block:1px solid #ebeee9}
+    .project-tabs{display:flex;gap:8px;border-bottom:1px solid var(--line);margin-bottom:28px}
+    .project-tabs button{appearance:none;background:none;border:0;border-bottom:3px solid transparent;min-height:52px;margin-bottom:-1px;font-size:13px;padding:12px 20px;color:#7a8b83;font-weight:800}
+    .project-tabs button[aria-selected="true"]{color:var(--pine);border-color:var(--pine)}
+    .project-tabs .count{font-size:9px;background:#ebf0ea;padding:3px 6px;border-radius:3px;margin-left:6px;color:#728781}
+    .project-pane[hidden]{display:none}
+    .project-panel-intro{color:#74857c;font-size:12px;max-width:720px;margin-bottom:27px}
+    .project-feature{display:grid;grid-template-columns:1.05fr .95fr;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#fff;margin-bottom:18px}
+    .project-visual{background:#e9f0e9;min-height:405px;padding:20px;display:flex;flex-direction:column;gap:12px}
+    .visual-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.1em;font-weight:800;color:#58736c}
+    .visual-top .type-chip{background:#d4e5d9;color:#3b6252;font-size:9px;border-radius:2px;padding:5px 8px;letter-spacing:.06em}
+    .visual-stage{flex:1;min-height:310px;position:relative;display:grid;place-items:center;border:1px solid #cbdbd0;background:linear-gradient(140deg,#f4f7f1 0%,#e4ede7 100%);border-radius:5px;overflow:hidden}
+    .visual-stage.dark-stage{background:#193d41;border-color:#325a5a}
+    .visual-stage::before{content:"";position:absolute;inset:0;background-image:linear-gradient(#3e69550c 1px,transparent 1px),linear-gradient(90deg,#3e69550c 1px,transparent 1px);background-size:24px 24px}
+    .visual-fallback{text-align:center;padding:30px;position:relative;z-index:1;max-width:390px}
+    .visual-fallback .screen-symbol{width:65px;height:52px;border:2px solid #94b2a2;border-radius:6px;display:grid;place-items:center;margin:0 auto 20px;font-size:27px;color:#8faf9b;box-shadow:0 9px 0 -6px #9db6a6}
+    .visual-fallback strong{display:block;font-size:16px;letter-spacing:-.025em;color:#34584f}
+    .visual-fallback p{font-size:11px;color:#80948b;margin:9px auto 0;max-width:280px}
+    .visual-fallback .slot-path{font:10px ui-monospace,Consolas,monospace;display:inline-block;color:#789086;border:1px dashed #b9cfc0;padding:5px 8px;margin-top:15px;border-radius:4px;word-break:break-all}
+    .visual-stage.has-image .visual-fallback{display:none}
+    .visual-stage img.visual-real{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#dce6dc;display:none}
+    .visual-stage.has-image img.visual-real{display:block}
+    .visual-bottom{color:#768b81;display:flex;justify-content:space-between;gap:10px;font-size:10px}
+    .visual-bottom i{font-style:normal;color:#617f71}
+    .project-copy{padding:35px 37px 32px;display:flex;flex-direction:column;align-items:start}
+    .project-kicker{font-size:10px;letter-spacing:.13em;color:#6e9181;font-weight:850;line-height:1.6}
+    .status-label{border:1px solid #d1e4d2;color:#48705c;background:#eff6ee;letter-spacing:0;padding:4px 7px;border-radius:3px;margin-left:8px;white-space:nowrap;font-size:9px}
+    .status-label.blue{background:#eaf0f0;border-color:#d6e5e4;color:#4f7779}
+    .project-copy h3{font-size:31px;line-height:1.2;letter-spacing:-.055em;margin:17px 0 8px}
+    .project-copy .project-catch{font-size:20px;font-weight:800;letter-spacing:-.055em;line-height:1.45;margin:6px 0 18px}
+    .project-copy .description{font-size:13px;color:#6d7d77;margin:0 0 22px;line-height:1.85}
+    .project-copy .mini-facts{width:100%;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);margin:20px 0 20px;padding-top:19px;gap:14px}
+    .mini-facts span{color:#87978d;font-size:10px;display:block;margin-bottom:7px}
+    .mini-facts strong{font-size:11px;line-height:1.55;font-weight:750;display:block}
+    .project-actions{display:flex;flex-wrap:wrap;gap:11px;align-items:center;margin-top:auto}
+    .project-copy .note-small{margin:19px 0 0}
+    .can-visual{background:#e5eae9}
+    .can-topology{display:flex;align-items:center;justify-content:center;gap:11px;position:relative;z-index:1;width:95%}
+    .can-node{border:1px solid #6d9491;background:#21484b;min-width:83px;padding:15px 11px 13px;text-align:center;color:#c4ded0}
+    .can-node b{font-size:15px;display:block;letter-spacing:.08em}
+    .can-node span{font-size:8px;color:#9dbbb3;letter-spacing:.09em}
+    .can-wire{flex:1;border-top:1px dashed #77a297;max-width:53px;position:relative}
+    .can-wire::after{content:"→";position:absolute;top:-15px;right:-2px;color:#accdb5;font-size:18px}
+    .can-description{position:relative;z-index:1;color:#8cafa4;font-size:10px;letter-spacing:.05em;text-align:center;margin-top:20px}
+    .dark-stage .design-caption{position:absolute;left:15px;bottom:12px;color:#97b0a5;font-size:9px;letter-spacing:.08em}
+    .web-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+    .web-card{border:1px solid var(--line);border-radius:7px;overflow:hidden;background:#fff;display:flex;flex-direction:column}
+    .web-thumb{height:204px;background:#ecf1eb;padding:18px;display:flex;flex-direction:column;position:relative;overflow:hidden}
+    .web-thumb .thumb-top{display:flex;justify-content:space-between;color:#7a9486;font-size:9px;font-weight:850;letter-spacing:.1em;position:relative;z-index:1;margin-bottom:14px}
+    .web-thumb .thumb-window{flex:1;background:#fff;border:1px solid #d6e1d8;box-shadow:0 10px 24px #36574a12;border-radius:5px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+    .thumb-window .bar{height:19px;background:#f9faf7;border-bottom:1px solid #e2e7df;display:flex;align-items:center;gap:4px;padding:0 9px}
+    .bar i{width:4px;height:4px;border-radius:50%;background:#becac0}
+    .thumb-editor{display:grid;grid-template-columns:1fr 1fr;flex:1;min-height:0}
+    .thumb-editor>div{padding:12px;border-right:1px solid #e7ebe5}
+    .thumb-line{height:4px;background:#e3ebe3;margin:7px 0;border-radius:3px}
+    .thumb-line.short{width:55%}.thumb-line.medium{width:76%}.thumb-line.green{background:#abc7b2}
+    .thumb-editor strong{font-size:12px;color:#6d8a75}
+    .thumb-pdf{flex:1;background:#e9eee9;display:grid;place-items:center}
+    .paper-sim{width:87px;height:109px;background:#fff;border:1px solid #d9e0d8;box-shadow:5px 6px 12px #2c443e16;padding:15px 11px}
+    .paper-sim b{font:9px Georgia,serif;color:#48655d;display:block;margin-bottom:7px}
+    .thumb-quiz{padding:17px;flex:1}
+    .thumb-quiz strong{display:block;font-size:9px;color:#5f7d69;margin-bottom:10px}
+    .thumb-quiz span{display:block;border:1px solid #e1e8df;padding:4px 8px;font-size:8px;color:#778e7a;border-radius:3px;margin-bottom:5px}
+    .thumb-quiz span:nth-of-type(2){background:#e3eee5;border-color:#b0cbb4;color:#407055}
+    .web-thumb>img{display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:2}
+    .web-thumb.has-image>img{display:block}
+    .web-card-body{padding:22px 23px 23px;display:flex;flex-direction:column;flex:1}
+    .web-card-body .index{font-size:9px;letter-spacing:.14em;color:#7d9585;font-weight:800}
+    .web-card-body h3{font-size:20px;letter-spacing:-.045em;margin:8px 0 8px;line-height:1.35}
+    .web-card-body p{font-size:12px;color:#74847a;margin:0 0 15px;flex:1;line-height:1.85}
+    .web-card-body .tags span{font-size:9px}
+    .web-actions{display:flex;gap:14px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:16px;margin-top:20px}
+    .web-actions a,.web-actions button{border:0;background:transparent;font-size:11px;font-weight:800;padding:0;color:#355d51}
+    .web-actions a:hover,.web-actions button:hover{text-decoration:underline}
+    /* devlog */
+    .log-section{background:#f0f2ed;border-block:1px solid var(--line)}
+    .log-list{border-top:1px solid #d3dfd5}
+    .log-row{appearance:none;display:grid;grid-template-columns:124px 1fr 26px;align-items:center;gap:25px;width:100%;background:transparent;border:0;border-bottom:1px solid #d3dfd5;text-align:left;padding:24px 6px;color:inherit;transition:background .2s,padding .2s}
+    .log-row:hover{background:#e8eee7;padding-left:16px}
+    .log-row time{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:#7b8d81}
+    .log-tag{display:block;font-size:9px;letter-spacing:.13em;color:#799382;font-weight:850;margin-bottom:6px}
+    .log-row h3{font-size:18px;letter-spacing:-.04em;line-height:1.4;margin:0 0 4px}
+    .log-row p{font-size:12px;color:#819189;margin:0}
+    .log-arrow{font-size:23px;font-weight:300;color:#789587}
+    /* experience */
+    .experience-grid{display:grid;grid-template-columns:.89fr 1.11fr;gap:65px}
+    .timeline{border-left:1px solid #d5dfd6;padding-left:28px;margin-left:7px}
+    .timeline article{position:relative;padding:2px 0 36px}
+    .timeline article:last-child{padding-bottom:0}
+    .timeline article::before{content:"";position:absolute;left:-35px;top:9px;width:13px;height:13px;border-radius:50%;background:#f7f7f2;border:3px solid #789f8d}
+    .timeline time{color:#779084;font-size:11px;font-family:ui-monospace,Consolas,monospace}
+    .timeline h3{font-size:21px;margin:8px 0 6px;letter-spacing:-.04em}
+    .timeline .company{font-size:12px;font-weight:750;color:#365f55;line-height:1.65}
+    .timeline p:not(.company){font-size:12px;line-height:1.85;color:#71837b}
+    .case-panel{background:#fff;border:1px solid var(--line);border-radius:6px;padding:25px 27px}
+    .case-panel>.eyebrow{margin:0 0 16px}
+    .case-panel>.eyebrow::before{display:none}
+    .case{border-top:1px solid var(--line);padding:0}
+    .case summary{list-style:none;cursor:pointer;padding:20px 0;display:flex;align-items:center;gap:15px;font-size:13px;font-weight:800;line-height:1.55}
+    .case summary::-webkit-details-marker{display:none}
+    .case summary .case-num{color:#a7baac;font:italic 17px Georgia,serif}
+    .case summary span:nth-child(2){flex:1}
+    .case summary .plus{color:#95ad9d;transition:transform .2s;font-size:18px}
+    .case[open] summary .plus{transform:rotate(45deg)}
+    .case .case-body{padding:0 0 22px 33px}
+    .case-body p{font-size:12px;color:#72847c;line-height:1.9;margin:0 0 12px}
+    .case-body strong{color:#456e5c}
+    .case-role{font-size:10px;color:#627e6e;background:#eef5ed;border-left:2px solid #a2c6a8;padding:10px 13px;line-height:1.75}
+    .field-notes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:34px}
+    .field-note{border:1px solid var(--line);padding:20px 22px;background:#fff;min-height:158px}
+    .field-note .tag-line{font-size:9px}
+    .field-note h3{font-size:16px;letter-spacing:-.04em;margin:8px 0}
+    .field-note p{font-size:11px;color:#7b8d83;line-height:1.8;margin:0}
+    /* skills */
+    .skills-section{background:#18363a;color:#e4ede6}
+    .skills-section .section-heading h2{color:#f5f7f1}
+    .skills-section .section-heading>p{color:#94afa4}
+    .skill-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    .skill-card{border:1px solid #39565a;background:#204046;border-radius:6px;padding:24px 21px;min-height:235px}
+    .skill-card .skill-cat{font-size:9px;letter-spacing:.13em;color:#91b7a4;font-weight:900}
+    .skill-card h3{font-size:19px;line-height:1.42;letter-spacing:-.04em;margin:17px 0 13px}
+    .skill-card p{font-size:11px;color:#a8bbb2;line-height:1.9;margin:0}
+    .skill-card .skill-foot{font-size:10px;color:#add4b9;font-weight:750;display:block;margin-top:15px}
+    .skill-note{font-size:12px;color:#b3c9ba;margin-top:24px}
+    /* education + roadmap */
+    .learning-section{background:#fff;border-bottom:1px solid var(--line)}
+    .education-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}
+    .edu-card{border:1px solid var(--line);background:#fcfdfa;padding:25px 25px 28px;min-height:285px;display:flex;flex-direction:column}
+    .edu-top{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#819188}
+    .edu-top .edu-state{color:#39705d;background:#eaf3e9;padding:4px 7px;border-radius:3px}
+    .edu-card h3{font-size:21px;letter-spacing:-.05em;line-height:1.4;margin:24px 0 3px}
+    .edu-en{font-size:10px;letter-spacing:.14em;color:#91a398;font-weight:700}
+    .edu-card p{font-size:12px;color:#74877a;line-height:1.85;margin:19px 0 15px}
+    .edu-bottom{border-top:1px solid var(--line);padding-top:12px;margin-top:auto;font-size:11px;color:#5b7e69;font-weight:800}
+    .roadmap-heading{margin-top:90px}
+    .roadmap{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .roadmap-item{border-top:2px solid #789a86;padding:22px 16px 10px}
+    .roadmap-item span{font-size:10px;letter-spacing:.15em;color:#799582;font-weight:800}
+    .roadmap-item h3{font-size:19px;letter-spacing:-.04em;margin:11px 0}
+    .roadmap-item p{font-size:12px;color:#7a897e;margin:0;line-height:1.85}
+    /* contact */
+    .contact{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+    .contact h2{font-size:clamp(32px,3.8vw,50px);letter-spacing:-.06em;line-height:1.35;margin:15px 0 10px}
+    .contact p:not(.eyebrow){color:#76897e;font-size:13px}
+    .contact-links{justify-self:end;width:min(100%,440px)}
+    .email-link{display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid #9fb1a5;font-size:clamp(18px,2.1vw,26px);letter-spacing:-.04em;font-weight:750;padding-bottom:18px;overflow-wrap:anywhere}
+    .email-link:hover{color:#4a816b}
+    .socials{display:flex;flex-wrap:wrap;gap:20px;margin-top:20px}
+    .socials a,.socials button{border:0;background:none;padding:0;color:#45675a;font-size:12px;font-weight:800}
+    .socials a:hover,.socials button:hover{text-decoration:underline}
+    #copy-status{height:12px;font-size:11px;color:#598068}
+    .site-footer{display:flex;justify-content:space-between;gap:16px;padding:23px 0 27px;border-top:1px solid var(--line);font-size:10px;color:#819389}
+    /* detail modal */
+    .detail-dialog{position:fixed;inset:3.5vh auto auto;box-sizing:border-box;width:min(920px,calc(100vw - 36px));max-height:93vh;overflow-y:auto;background:#fafbf7;color:var(--ink);border:1px solid #dbe6de;border-radius:10px;padding:0;box-shadow:0 30px 100px rgba(0,25,25,.3)}
+    .detail-dialog::backdrop{background:rgba(10,35,34,.73);backdrop-filter:blur(5px)}
+    .dialog-header{position:sticky;top:0;z-index:4;background:#fafbf7;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:17px 28px}
+    .dialog-header span{color:#7c9586;font-size:10px;letter-spacing:.13em;font-weight:800}
+    .dialog-close{display:flex;gap:9px;align-items:center;border:1px solid var(--line);background:#fff;border-radius:5px;padding:7px 11px;font-size:11px;color:#597266}
+    .dialog-close:hover{background:#eaf0e9}
+    .dialog-body{padding:38px 44px 44px}
+    .dialog-type{color:#718b7b;letter-spacing:.14em;font-size:10px;font-weight:800}
+    .dialog-title{font-size:clamp(28px,4vw,39px);letter-spacing:-.06em;margin:8px 0 11px;line-height:1.35}
+    .dialog-intro{max-width:730px;font-size:13px;color:#718378;line-height:1.85;margin:0 0 25px}
+    .dialog-tabs{display:flex;flex-wrap:wrap;border-bottom:1px solid var(--line);gap:4px;margin-bottom:25px}
+    .dialog-tabs button{background:none;border:0;border-bottom:2px solid transparent;margin-bottom:-1px;padding:12px 17px;font-size:12px;font-weight:750;color:#778b7f}
+    .dialog-tabs button[aria-selected="true"]{border-color:#316854;color:#245748}
+    .detail-content{font-size:13px;color:#576d63;line-height:1.95;min-height:210px}
+    .detail-content h3{font-size:19px;color:#274c42;letter-spacing:-.035em;line-height:1.45;margin:0 0 15px}
+    .detail-content h4{font-size:14px;color:#335d4e;margin:18px 0 5px}
+    .detail-content p{margin:0 0 14px}
+    .detail-content ul{margin:10px 0 22px;padding-left:20px}
+    .detail-content li{padding-left:3px;margin:4px 0}
+    .detail-content strong{color:#254f42}
+    .detail-card-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:19px 0}
+    .detail-card{background:#fff;border:1px solid #dfe9df;padding:17px 19px;border-radius:5px}
+    .detail-card b{display:block;color:#355f4c;font-size:12px;margin-bottom:5px}
+    .detail-card p{font-size:11px;color:#788b7d;margin:0;line-height:1.75}
+    .diagram{display:flex;align-items:stretch;gap:7px;margin:25px 0;padding:23px 13px;background:#eaf0e9;border-radius:7px;overflow-x:auto}
+    .diagram-node{background:#fff;border:1px solid #c8dacf;padding:14px 13px;min-width:125px;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:5px;line-height:1.4}
+    .diagram-node b{color:#315e4b;font-size:12px}
+    .diagram-node small{color:#7e9484;font-size:10px}
+    .diagram-arrow{display:flex;align-items:center;justify-content:center;min-width:14px;color:#70a080;font-size:18px}
+    .diagram-caption{font-size:10px;color:#7b9483;margin-top:-16px;margin-bottom:18px}
+    .slot-box{border:1px dashed #a4bcab;background:#eff4ed;border-radius:6px;padding:24px;text-align:center;margin:13px 0 20px}
+    .slot-box .slot-icon{font-size:23px;color:#80a28d}
+    .slot-box strong{display:block;margin:9px 0 3px;font-size:13px;color:#426852}
+    .slot-box p{font-size:11px;color:#81968b;margin:0}
+    .slot-box code{font-size:10px;word-break:break-all}
+    .detail-notice{border-left:3px solid #bbd0bd;padding:11px 17px;background:#f0f5ef;color:#668070;font-size:12px;line-height:1.85;margin:18px 0}
+    .phase-line{border-left:2px solid #d0dfd2;margin:18px 0;padding:0 0 0 20px}
+    .phase-line>div{position:relative;padding:0 0 14px}
+    .phase-line>div:before{content:"";position:absolute;top:9px;left:-26px;width:10px;height:10px;background:#7eac8c;border-radius:50%}
+    .phase-line b{color:#315746;font-size:12px}
+    .phase-line p{color:#738778;font-size:12px;margin:4px 0}
+    .dialog-footer{border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:28px;padding-top:19px;color:#7c9082;font-size:11px}
+    .dialog-footer a{font-size:11px;color:#315d4b;font-weight:800;text-decoration:underline;text-underline-offset:4px}
+    .dialog-footer .muted{font-size:10px;border:1px dashed #c7d5c6;padding:5px 9px;border-radius:4px;color:#93a498}
+    @media(max-width:1050px){.wrap{width:min(100% - 52px,1180px)}.hero{gap:34px}.hero h1{font-size:56px}.project-copy{padding:30px}.web-grid{gap:11px}.web-card-body{padding:18px}.experience-grid{gap:36px}.skill-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:760px){.wrap{width:calc(100% - 34px)}.header-inner{width:calc(100% - 30px)}.site-header{height:68px}.header-nav{display:none;position:absolute;left:0;right:0;top:68px;background:#f6f7f2;border-bottom:1px solid var(--line);padding:16px 24px 25px;flex-direction:column;align-items:start;gap:12px;box-shadow:0 10px 18px #193d3814}.site-header.menu-open .header-nav{display:flex}.header-contact{margin-left:auto}.mobile-toggle{display:grid;place-items:center}.section{padding:69px 0}.section-heading{display:block}.section-heading>p{margin-top:15px}.hero{grid-template-columns:1fr;gap:33px;padding:58px 0 55px;min-height:unset}.hero h1{font-size:clamp(41px,10vw,58px)}.hero-meta{margin-top:30px;gap:14px}.workbench{min-height:0}.focus-inner{display:block}.focus-inner div{margin-top:9px;gap:9px 16px}.about-grid{grid-template-columns:1fr;gap:17px}.philosophy-grid{grid-template-columns:repeat(2,1fr)}.project-feature{grid-template-columns:1fr}.project-visual{min-height:320px}.visual-stage{min-height:245px}.project-copy{padding:28px 24px}.web-grid{grid-template-columns:1fr}.web-thumb{height:220px}.web-card-body{padding:22px}.experience-grid{grid-template-columns:1fr;gap:34px}.education-grid{grid-template-columns:1fr}.edu-card{min-height:230px}.roadmap{grid-template-columns:1fr}.contact{grid-template-columns:1fr;gap:20px}.contact-links{justify-self:start}.site-footer{flex-wrap:wrap}.detail-dialog{inset:2vh auto auto;max-height:96vh;width:calc(100vw - 18px)}.dialog-body{padding:27px 20px 30px}.dialog-header{padding:12px 17px}.diagram{flex-direction:column}.diagram-arrow{transform:rotate(90deg);min-height:13px}.detail-card-grid{grid-template-columns:1fr}}
+    @media(max-width:470px){.header-contact{display:none}.hero-actions{gap:16px}.hero-meta{flex-direction:column;gap:10px}.bench-steps{grid-template-columns:repeat(2,1fr)}.workbench{padding:24px 21px}.focus-inner div{gap:5px 11px}.focus-inner div span{font-size:11px}.project-tabs button{padding:13px 10px;font-size:11px}.project-visual{padding:13px}.visual-stage{min-height:245px}.project-copy .mini-facts{grid-template-columns:1fr}.philosophy-grid{gap:9px}.value-card{padding:16px 13px;min-height:168px}.log-row{grid-template-columns:1fr 23px;gap:10px}.log-row time{grid-column:1/-1;font-size:10px}.log-row h3{font-size:16px}.field-notes{grid-template-columns:1fr}.skill-grid{grid-template-columns:1fr}.detail-dialog .dialog-tabs button{padding:10px 9px;font-size:11px}.diagram-node{min-width:0}}
+    @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 
-    <!-- 2. Tailwind CSS Engine Load -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    .academic-note{margin:24px 0 0;padding:20px 0;border-top:1px solid var(--line);color:#50665e;font-size:13px}.academic-note strong{margin-right:14px}
+    /* Publication polish: consistent imagery, readable text and reserved project space. */
+    [hidden]{display:none!important}
+    .can-reserved{min-height:270px;display:grid;align-content:center;justify-items:center;gap:12px;color:#b8d7c0}
+    .can-reserved>span{font-size:72px;line-height:1.2;letter-spacing:.12em;font-weight:250;opacity:.65}
+    .can-reserved>div{font-size:10px;letter-spacing:.2em;opacity:.65}
+    .can-placeholder .project-copy{align-self:center}
+    .project-feature,.web-card{scroll-margin-top:105px}
+    .web-thumb.has-image>img{object-fit:cover;object-position:top left}
+    .visual-stage.has-image{background:#e9eeea}
+    .visual-stage.has-image .visual-real{object-fit:contain}
+    .description,.project-panel-intro,.about-story p,.dialog-intro{color:#50665e}
+    .note-small,.skill-note,.edu-bottom{color:#63786c}
+    .detail-content figure{margin:22px 0}.detail-content figure img{width:100%;border:1px solid #dbe4dc;border-radius:6px}.detail-content figcaption{font-size:11px;margin-top:8px;color:#657b70}
+    @media(max-width:760px){.can-reserved{min-height:205px}.can-placeholder .project-visual{min-height:245px}.project-tabs{overflow-x:auto;overflow-y:hidden;padding-bottom:1px}.project-tabs button{white-space:nowrap}.dialog-title{overflow-wrap:anywhere}}
+    @media(min-width:761px) and (max-width:1050px){.hero h1{font-size:44px}.hero{gap:28px}.workbench{padding:28px 23px}}
+    @media(max-width:470px){.hero h1{font-size:clamp(30px,9vw,41px)}}
+    @media print{.site-header,.hero-actions,.project-tabs,.project-actions,.web-actions,.log-section,.detail-dialog,.socials{display:none!important}.project-pane[hidden]{display:block!important}.section{padding:25px 0}.wrap{width:100%}.project-feature,.web-card,.edu-card{break-inside:avoid}.hero{min-height:0}.workbench{display:none}.hero{display:block}.project-feature{grid-template-columns:1fr 1fr}body{background:white}}
+    .detail-dialog{inset:auto;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);max-height:calc(100dvh - 40px)}
+    @media(max-width:760px){.detail-dialog{inset:auto;top:50%;left:50%;margin:0;width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}}
 
-    <!-- 3. Stylesheet & External Configs -->
-    <link rel="stylesheet" href="css/style.css" />
-  </head>
-
-  <body class="overflow-x-hidden w-full min-h-screen flex flex-col bg-brandSub">
-    <!-- STREAMING_CHUNK: Rendering navigation header -->
-    <header
-      class="fixed top-0 left-0 w-full z-50 bg-[#040D2D]/90 backdrop-blur-md border-b border-brandMain/50 text-white shadow-lg"
-    >
-      <div
-        class="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex justify-between items-center"
-      >
-        <!-- Logo -->
-        <a href="#hero" class="flex items-center space-x-3 group">
-          <div
-            class="w-8 h-8 sm:w-10 sm:h-10 rounded bg-brandMain flex items-center justify-center border border-brandPoint/40 group-hover:border-brandPoint transition duration-300 shadow-[0_0_10px_rgba(88,200,240,0.2)]"
-          >
-            <i
-              class="fa-solid fa-microchip text-brandPoint text-sm sm:text-base"
-            ></i>
-          </div>
-          <div>
-            <span
-              class="font-head font-bold text-base sm:text-lg tracking-wide block leading-none"
-              >KIM JUNHO</span
-            >
-            <span
-              class="font-code text-[10px] sm:text-xs text-brandPoint tracking-widest block mt-1"
-              >MES_ENG::ACTIVE</span
-            >
-          </div>
-        </a>
-
-        <!-- Desktop Nav -->
-        <nav class="hidden md:flex space-x-8 text-sm font-medium">
-          <a
-            href="#hero"
-            class="text-gray-300 hover:text-brandPoint transition-colors duration-200"
-            >HOME</a
-          >
-          <a
-            href="#intro"
-            class="text-gray-300 hover:text-brandPoint transition-colors duration-200"
-            >STORY</a
-          >
-          <a
-            href="#simulator"
-            class="text-gray-300 hover:text-brandPoint transition-colors duration-200"
-            >AI FLOW</a
-          >
-          <a
-            href="#strengths"
-            class="text-gray-300 hover:text-brandPoint transition-colors duration-200"
-            >TECH PILLARS</a
-          >
-          <a
-            href="#contact"
-            class="text-gray-300 hover:text-brandPoint transition-colors duration-200"
-            >CONTACT</a
-          >
-        </nav>
-
-        <!-- Resume CTA Button & Mobile Menu Toggle -->
-        <div class="flex items-center space-x-4">
-          <button
-            id="resume-open-btn-header"
-            class="hidden sm:flex bg-brandPoint text-brandDark font-bold text-xs sm:text-sm px-4 py-2 rounded transition duration-300 hover:bg-white shadow-[0_0_15px_rgba(88,200,240,0.4)]"
-          >
-            <i class="fa-regular fa-file-pdf mr-2 mt-0.5"></i> 이력서 보기 /
-            Resume
-          </button>
-          <button
-            id="mobile-menu-btn"
-            class="md:hidden text-white text-2xl focus:outline-none p-2"
-            aria-label="메뉴 열기"
-          >
-            <i class="fa-solid fa-bars"></i>
-          </button>
-        </div>
-      </div>
-
-      <!-- Mobile Nav Dropdown -->
-      <div
-        id="mobile-menu"
-        class="hidden md:hidden bg-[#040D2D] border-t border-brandMain/50"
-      >
-        <div class="flex flex-col px-6 py-4 space-y-4">
-          <a
-            href="#hero"
-            class="text-gray-300 hover:text-brandPoint text-sm font-medium"
-            >HOME</a
-          >
-          <a
-            href="#intro"
-            class="text-gray-300 hover:text-brandPoint text-sm font-medium"
-            >STORY</a
-          >
-          <a
-            href="#simulator"
-            class="text-gray-300 hover:text-brandPoint text-sm font-medium"
-            >AI FLOW</a
-          >
-          <a
-            href="#strengths"
-            class="text-gray-300 hover:text-brandPoint text-sm font-medium"
-            >TECH PILLARS</a
-          >
-          <a
-            href="#contact"
-            class="text-gray-300 hover:text-brandPoint text-sm font-medium"
-            >CONTACT</a
-          >
-          <button
-            id="resume-open-btn-mobile"
-            class="w-full text-center bg-brandPoint text-brandDark font-bold text-sm py-2.5 rounded transition duration-300 hover:bg-white shadow-[0_0_15px_rgba(88,200,240,0.4)]"
-          >
-            <i class="fa-regular fa-file-pdf mr-2"></i> Resume 보기 (KR/EN)
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- STREAMING_CHUNK: Hero Section -->
-    <section
-      id="hero"
-      class="pt-24 pb-16 min-h-screen bg-brandDark text-white relative flex items-center w-full overflow-hidden"
-    >
-      <div
-        class="absolute inset-0 bg-[linear-gradient(to_right,#0D2971_1px,transparent_1px),linear-gradient(to_bottom,#0D2971_1px,transparent_1px)] bg-[size:3rem_3rem] opacity-20"
-      ></div>
-      <div
-        class="absolute top-1/4 right-0 w-[500px] h-[500px] bg-brandPoint/10 rounded-full blur-[120px] pointer-events-none"
-      ></div>
-
-      <div
-        class="max-w-7xl mx-auto px-6 w-full relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center"
-      >
-        <!-- Hero Text -->
-        <div class="lg:col-span-6 space-y-8">
-          <div
-            class="inline-flex items-center space-x-2 bg-brandMain/40 border border-brandPoint/30 px-3 py-1.5 rounded-full text-xs text-brandPoint font-code"
-          >
-            <span
-              class="w-2 h-2 rounded-full bg-brandPoint animate-pulse"
-            ></span>
-            <span>System Status: Online</span>
-          </div>
-
-          <h1
-            class="font-head text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight break-keep"
-          >
-            현장의 흐름을<br />
-            <span
-              class="text-transparent bg-clip-text bg-gradient-to-r from-brandPoint to-blue-400"
-              >데이터로 잇다</span
-            >
-          </h1>
-
-          <p
-            class="text-gray-400 text-base sm:text-lg max-w-lg leading-relaxed break-keep"
-          >
-            안녕하세요, 스마트팩토리 개발자 김준호입니다.<br />
-            글로벌 완성차 거점(미국 현대모비스 조지아)에서 대규모 시스템을
-            안정적으로 운영하며, 공장의 단 1초 멈춤도 허용하지 않는 치열한 MES
-            설계를 지향합니다.
-          </p>
-
-          <div class="flex flex-wrap gap-4 pt-4">
-            <button
-              id="resume-open-btn-hero"
-              class="bg-brandPoint text-brandDark font-bold px-6 py-3 rounded hover:bg-white transition-all duration-300 shadow-[0_0_20px_rgba(88,200,240,0.3)] flex items-center"
-            >
-              <i class="fa-solid fa-file-invoice mr-2"></i> 이력서(영문/국문)
-              보기
-            </button>
-            <a
-              href="#simulator"
-              class="border border-gray-500 text-gray-300 font-bold px-6 py-3 rounded hover:border-brandPoint hover:text-brandPoint transition-all duration-300"
-            >
-              공정 시뮬레이터
-            </a>
-          </div>
-        </div>
-
-        <!-- Hero Visual (Terminal Simulator) -->
-        <div class="lg:col-span-6 w-full mt-10 lg:mt-0">
-          <div
-            class="bg-[#020817] rounded-lg border border-brandMain shadow-2xl overflow-hidden w-full max-w-xl mx-auto"
-          >
-            <div
-              class="bg-[#0B1529] px-4 py-2 border-b border-brandMain flex items-center justify-between"
-            >
-              <div class="flex space-x-2">
-                <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-                <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-                <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-              </div>
-              <span class="font-code text-[10px] text-gray-500"
-                >factory-ai-engine.sh</span
-              >
-            </div>
-            <div
-              class="p-4 sm:p-6 h-[320px] font-code text-xs sm:text-sm overflow-y-hidden relative"
-            >
-              <div
-                class="absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-[#020817] to-transparent z-10"
-              ></div>
-              <div
-                id="terminal-content"
-                class="space-y-2 flex flex-col justify-end h-full w-full"
-              ></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STREAMING_CHUNK: Intro / Story Section -->
-    <section id="intro" class="py-24 bg-white relative w-full">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="mb-16">
-          <span
-            class="font-code text-brandPoint font-bold tracking-widest text-xs"
-            >HERO STORY</span
-          >
-          <h2
-            class="font-head text-3xl sm:text-4xl font-bold text-brandMain mt-2"
-          >
-            1초의 다운타임도 허용하지 않는 치열함
-          </h2>
-          <div class="w-16 h-1 bg-brandPoint mt-4"></div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <!-- Visual Dashboard Card -->
-          <div
-            class="bg-brandSub p-6 sm:p-8 rounded-2xl border border-gray-200 shadow-xl relative order-2 lg:order-1"
-          >
-            <div
-              class="absolute -top-4 -right-4 bg-green-100 text-green-700 font-bold px-3 py-1 rounded-full text-xs shadow-sm flex items-center"
-            >
-              <span
-                class="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"
-              ></span>
-              LIVE
-            </div>
-            <h3 class="font-head text-sm font-bold text-brandMain mb-6">
-              HMA 조지아 공장 시스템 모니터링 뷰 (Mockup)
-            </h3>
-
-            <div class="grid grid-cols-2 gap-4 mb-6">
-              <div
-                class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"
-              >
-                <p class="text-gray-500 text-xs mb-1">설비 가동률</p>
-                <p class="font-head font-bold text-2xl text-brandMain">99.9%</p>
-              </div>
-              <div
-                class="bg-white p-4 rounded-lg shadow-sm border border-gray-100"
-              >
-                <p class="text-gray-500 text-xs mb-1">AI 예측 방어 건수</p>
-                <p class="font-head font-bold text-2xl text-brandPoint">
-                  1,402
-                </p>
-              </div>
-            </div>
-
-            <!-- Flow Visualization -->
-            <div
-              class="bg-brandDark rounded-lg p-4 h-32 flex items-end space-x-2 overflow-hidden relative"
-            >
-              <div
-                class="w-full absolute top-2 left-4 font-code text-[10px] text-gray-500"
-              >
-                REALTIME DATA THROUGHPUT
-              </div>
-              <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
-              <div class="flex-1 bg-brandMain rounded-t-sm h-[60%]"></div>
-              <div class="flex-1 bg-brandMain rounded-t-sm h-[50%]"></div>
-              <div
-                class="flex-1 bg-brandPoint shadow-[0_0_10px_#58C8F0] rounded-t-sm h-[90%]"
-              ></div>
-              <div class="flex-1 bg-brandMain rounded-t-sm h-[70%]"></div>
-              <div class="flex-1 bg-brandMain rounded-t-sm h-[40%]"></div>
-            </div>
-          </div>
-
-          <!-- Story Text -->
-          <div class="space-y-6 order-1 lg:order-2">
-            <h3
-              class="text-xl sm:text-2xl font-bold text-brandMain leading-snug break-keep"
-            >
-              "거대한 제조 벨트 위에서 작은 예외 하나가 막대한 기회비용을
-              만듭니다."
-            </h3>
-            <p
-              class="text-gray-600 leading-relaxed text-sm sm:text-base break-keep"
-            >
-              저는 글로벌 협력업체인 현대모비스 미국 조지아 완성차 핵심 공장에서
-              MES를 직접 유지보수하며, 예기치 못한 에러와 생산 지연을 방어해
-              냈습니다.
-            </p>
-            <p
-              class="text-gray-600 leading-relaxed text-sm sm:text-base break-keep"
-            >
-              단순한 시스템 개발에 멈추지 않습니다. 현장의 작업자와 치열하게
-              소통하며 요구사항을 파악하고, 대용량 로그 분석과 지능형 에러 통제
-              솔루션을 통해
-              <strong class="text-brandMain font-bold"
-                >오작동을 선제적으로 예방</strong
-              >하는 것을 최우선 가치로 삼습니다.
-            </p>
-
-            <div
-              class="p-4 bg-brandSub border-l-4 border-brandPoint rounded-r-lg mt-6"
-            >
-              <p class="font-medium text-brandMain text-sm break-keep">
-                💡 " 단순 소프트웨어 개발자를 넘어, 공장 설비 전체를
-                유기적인 하나의 소프트웨어로 바라봅니다."
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STREAMING_CHUNK: Process Simulator Section -->
-    <section
-      id="simulator"
-      class="py-24 bg-brandDark text-white relative w-full overflow-hidden border-t border-brandMain/30"
-    >
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <span
-            class="font-code text-brandPoint font-bold tracking-widest text-xs"
-            >AI PREDICTIVE CONTROL</span
-          >
-          <h2 class="font-head text-3xl sm:text-4xl font-bold text-white mt-2">
-            공정 병목 예측 및 자동 최적화
-          </h2>
-          <div class="w-16 h-1 bg-brandPoint mt-4 mx-auto"></div>
-          <p
-            class="text-gray-400 mt-4 max-w-2xl mx-auto text-sm sm:text-base break-keep"
-          >
-            데이터 기반의 실시간 모니터링을 통해 병목(Bottleneck) 현상을
-            감지하고, AI 알고리즘이 작업을 재배치하여 생산 라인의 흐름을
-            즉각적으로 복구하는 시뮬레이션입니다.
-          </p>
-        </div>
-
-        <!-- Simulator UI -->
-        <div
-          class="bg-[#020817] border border-brandMain/50 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden"
-        >
-          <div
-            id="sim-success-overlay"
-            class="absolute inset-0 bg-brandMain/20 z-30 hidden flex items-center justify-center backdrop-blur-sm transition-opacity duration-1000 opacity-0"
-          >
-            <div
-              class="bg-brandDark border border-brandPoint text-brandPoint px-8 py-4 rounded-xl font-head font-bold text-xl sm:text-2xl flex items-center shadow-[0_0_30px_rgba(88,200,240,0.4)] transform scale-90 transition-transform duration-500"
-              id="sim-success-box"
-            >
-              <i class="fa-solid fa-check-circle mr-3"></i> AI 공정 최적화 완료
-            </div>
-          </div>
-
-          <div
-            id="sim-tables"
-            class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8"
-          ></div>
-
-          <!-- Dynamic Conveyor Line -->
-          <div
-            class="relative h-48 md:h-28 w-full bg-[#0B1529] rounded-lg border border-brandMain/50 overflow-hidden shadow-inner flex items-center"
-          >
-            <div
-              id="track-line-desktop"
-              class="absolute left-0 right-0 h-[2px] bg-gray-700 top-1/2 -translate-y-1/2 z-0 hidden md:block"
-            ></div>
-            <div
-              id="track-line-mobile-1"
-              class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[25%] -translate-y-1/2 z-0 block md:hidden"
-            ></div>
-            <div
-              id="track-line-mobile-2"
-              class="absolute left-[10%] right-[10%] h-[2px] bg-gray-700 top-[75%] -translate-y-1/2 z-0 block md:hidden"
-            ></div>
-            <div
-              id="track-line-mobile-link"
-              class="absolute right-[10%] w-[2px] top-[25%] bottom-[25%] bg-gray-700 z-0 block md:hidden"
-            ></div>
-            <div
-              id="sim-warning-line"
-              class="absolute h-[2px] bg-red-500 top-1/2 -translate-y-1/2 z-10 opacity-0 shadow-[0_0_10px_red] transition-all duration-700 pointer-events-none"
-            ></div>
-
-            <div
-              id="conveyor-node-container"
-              class="absolute inset-0 z-10 pointer-events-none w-full h-full"
-            >
-              <div
-                id="node-p1"
-                class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"
-              >
-                <span
-                  class="absolute -top-6 text-[10px] text-gray-500 font-code"
-                  >P1</span
-                >
-              </div>
-              <div
-                id="node-p2"
-                class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"
-              >
-                <span
-                  class="absolute -top-6 text-[10px] text-gray-500 font-code"
-                  >P2</span
-                >
-              </div>
-              <div
-                id="node-p3"
-                class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"
-              >
-                <span
-                  class="absolute -top-6 text-[10px] text-gray-500 font-code"
-                  >P3</span
-                >
-              </div>
-              <div
-                id="node-p4"
-                class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"
-              >
-                <span
-                  class="absolute -top-6 text-[10px] text-gray-500 font-code"
-                  >P4</span
-                >
-              </div>
-              <div
-                id="node-p5"
-                class="absolute rounded-full border-2 border-brandMain bg-[#020817] w-5 h-5 flex items-center justify-center transition-all duration-500"
-              >
-                <span
-                  class="absolute -top-6 text-[10px] text-gray-500 font-code"
-                  >P5</span
-                >
-              </div>
-            </div>
-
-            <div
-              id="sim-track"
-              class="absolute inset-0 z-20 w-full h-full pointer-events-none"
-            ></div>
-          </div>
-
-          <!-- Action Button -->
-          <div class="mt-8 flex justify-center relative z-40">
-            <button
-              id="btn-optimize"
-              class="group relative px-6 py-3 sm:px-8 sm:py-4 bg-[#0B1529] border border-brandPoint/50 text-brandPoint font-bold rounded-lg overflow-hidden transition-all hover:border-brandPoint hover:shadow-[0_0_20px_rgba(88,200,240,0.3)] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-            >
-              <div
-                class="absolute inset-0 bg-brandPoint/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out"
-              ></div>
-              <span
-                class="relative z-10 flex items-center font-head text-sm sm:text-base"
-              >
-                <i class="fa-solid fa-microchip mr-2"></i> AI 공정 최적화 실행
-              </span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STREAMING_CHUNK: Technical Pillars Section -->
-    <section id="strengths" class="py-24 bg-brandSub relative w-full">
-      <div class="max-w-7xl mx-auto px-6">
-        <div class="text-center mb-16">
-          <span
-            class="font-code text-brandPoint font-bold tracking-widest text-xs"
-            >TECH PILLARS</span
-          >
-          <h2
-            class="font-head text-3xl sm:text-4xl font-bold text-brandMain mt-2"
-          >
-            공정을 혁신하는 4대 핵심 역량
-          </h2>
-          <div class="w-16 h-1 bg-brandPoint mt-4 mx-auto"></div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-          <div
-            class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
-          >
-            <div
-              class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors"
-            >
-              <i class="fa-solid fa-chart-line"></i>
-            </div>
-            <h3 class="font-head text-xl font-bold text-brandMain mb-3">
-              데이터 중심의 스마트 에러 예방
-            </h3>
-            <p class="text-gray-600 text-sm leading-relaxed break-keep">
-              실시간 모니터링과 정밀한 예외 처리를 통해 제조 공정의 다운타임을
-              최소화합니다. 방대한 이벤트 로그를 파싱하여 병목을 찾아내고, 생산
-              효율을 극대화하는 데이터 파이프라인을 설계합니다.
-            </p>
-          </div>
-
-          <div
-            class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
-          >
-            <div
-              class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors"
-            >
-              <i class="fa-solid fa-users-gear"></i>
-            </div>
-            <h3 class="font-head text-xl font-bold text-brandMain mb-3">
-              현장 밀착형 소통 및 문제 해결
-            </h3>
-            <p class="text-gray-600 text-sm leading-relaxed break-keep">
-              모니터 뒤에만 머물지 않습니다. 생산 라인 작업자 및 관리자들과 직접
-              부딪히며 소통하여 현장의 숨겨진 페인 포인트(Pain Point)를 정확히
-              짚어내고, 직관적인 솔루션을 제시합니다.
-            </p>
-          </div>
-
-          <div
-            class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
-          >
-            <div
-              class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors"
-            >
-              <i class="fa-solid fa-globe"></i>
-            </div>
-            <h3 class="font-head text-xl font-bold text-brandMain mb-3">
-              글로벌 완성차 대용량 MES 운영
-            </h3>
-            <p class="text-gray-600 text-sm leading-relaxed break-keep">
-              미국 거점 공장에서의 실무 경험을 바탕으로, 글로벌 수준의 대규모
-              제조 트랜잭션을 능숙하게 제어합니다. 복잡한 시스템에서도 안정성을
-              담보하는 글로벌 표준 로직을 수립합니다.
-            </p>
-          </div>
-
-          <div
-            class="bg-white p-8 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 group"
-          >
-            <div
-              class="w-12 h-12 bg-brandSub text-brandMain rounded-lg flex items-center justify-center text-xl mb-6 group-hover:bg-brandPoint group-hover:text-white transition-colors"
-            >
-              <i class="fa-solid fa-network-wired"></i>
-            </div>
-            <h3 class="font-head text-xl font-bold text-brandMain mb-3">
-              하드웨어-소프트웨어 인터페이스
-            </h3>
-            <p class="text-gray-600 text-sm leading-relaxed break-keep">
-              생산 설비(PLC), 바코드 스캐너, RFID 등 다양한 현장 디바이스와 중앙
-              MES 서버 간의 안정적인 매핑 및 소켓 통신을 완벽히 구현하여 현장
-              시그널을 유실 없이 연결합니다.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STREAMING_CHUNK: Contact Form Section -->
-    <section
-      id="contact"
-      class="py-24 bg-brandMain text-white relative w-full text-center px-6"
-    >
-      <div class="max-w-3xl mx-auto">
-        <h2
-          class="font-head text-3xl sm:text-4xl font-bold mb-6 leading-tight break-keep"
-        >
-          귀사의 제조 경쟁력을 극대화할<br />스마트팩토리 파트너를 찾으시나요?
-        </h2>
-        <p class="text-blue-100 text-base sm:text-lg mb-10 break-keep">
-          현장의 문제를 주도적으로 해결하고, 공장 전체를 하나의 똑똑한
-          시스템으로 이끌어갈 준비가 되어 있습니다.
-        </p>
-
-        <div
-          class="bg-brandDark p-2 sm:p-3 rounded-lg inline-flex flex-col sm:flex-row items-center border border-brandPoint/30 shadow-2xl max-w-full"
-        >
-          <span
-            id="email-text"
-            class="font-code text-brandPoint text-sm sm:text-base px-6 py-3 font-semibold break-all"
-          >
-            junny.coder@gmail.com
-          </span>
-          <button
-            onclick="copyToClipboard()"
-            class="w-full sm:w-auto mt-2 sm:mt-0 bg-brandPoint text-brandDark px-6 py-3 rounded font-bold hover:bg-white transition-colors flex items-center justify-center"
-          >
-            <i class="fa-regular fa-copy mr-2"></i> 복사하기
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <footer class="bg-brandDark py-8 border-t border-brandMain w-full">
-      <div
-        class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm"
-      >
-        <p>© 2026 KIM JUNHO. Smart Factory Engineer.</p>
-        <div class="flex space-x-6 mt-4 md:mt-0">
-          <a
-            href="https://github.com/JunnyCoder"
-            class="hover:text-brandPoint transition-colors"
-            ><i class="fa-brands fa-github text-lg"></i
-          ></a>
-          <a
-            href="https://www.linkedin.com/in/junho-kim-50030b1b6/"
-            class="hover:text-brandPoint transition-colors"
-            ><i class="fa-brands fa-linkedin text-lg"></i
-          ></a>
-        </div>
-      </div>
-    </footer>
-
-    <div
-      id="toast"
-      class="fixed bottom-8 right-8 z-50 bg-brandPoint text-brandDark font-bold px-6 py-3 rounded shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 flex items-center"
-    >
-      <i class="fa-solid fa-check-circle mr-2 text-lg"></i> 이메일이
-      복사되었습니다!
+    .career-list{display:grid;gap:24px}
+    .career-entry{background:#fff;border:1px solid var(--line);border-radius:12px;padding:34px 36px}
+    .career-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:22px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+    .career-period{font-size:12px;color:#637d70;letter-spacing:.06em}.career-heading h3{font-size:25px;line-height:1.4;margin:8px 0 7px;letter-spacing:-.04em}.career-heading p{margin:0;color:#50685d;font-size:13px}
+    .career-kind{font-size:11px;white-space:nowrap;color:#45685a;background:#eef3ec;border-radius:4px;padding:7px 11px;margin-top:5px}
+    .career-summary{max-width:900px;font-size:14px;color:#50665e;line-height:1.9;margin:23px 0}
+    .career-work-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-bottom:25px}.career-work-grid h4{font-size:15px;margin:0 0 10px;color:#284e42}.career-work-grid ul{padding-left:17px;margin:0;font-size:12px;color:#64776d;line-height:1.9}.career-work-grid li{margin-bottom:7px}
+    .career-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px}.career-bottom button{border:0;background:none;padding:5px 0;color:#365f55;font-size:12px}
+    .work-patterns{margin-top:52px}.patterns-heading h3{font-size:26px;letter-spacing:-.045em;margin:8px 0}.patterns-heading>p:last-child{font-size:13px;color:#64776d;margin:0 0 24px}
+    .patterns-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.patterns-grid article{border-top:2px solid #9eb9a6;padding-top:21px}.patterns-grid article>span{font-size:10px;letter-spacing:.12em;color:#6e8978;font-weight:800}.patterns-grid h4{font-size:17px;letter-spacing:-.03em;margin:11px 0}.patterns-grid p{font-size:13px;line-height:1.9;color:#64776d;margin:0}
+    @media(max-width:900px){.career-work-grid{grid-template-columns:1fr;gap:18px}.career-work-grid>div{border-bottom:1px solid #edf0e9;padding-bottom:12px}.career-work-grid>div:last-child{border:0}.patterns-grid{gap:18px}}
+    @media(max-width:760px){.career-entry{padding:24px 21px}.career-heading{flex-direction:column;gap:12px}.career-heading h3{font-size:22px}.career-kind{margin:0}.career-bottom{align-items:flex-start;flex-direction:column}.patterns-grid{grid-template-columns:1fr;gap:25px}.work-patterns{margin-top:38px}}
+  </style>
+</head>
+<body>
+  <a href="#main" class="skip-link">본문으로 이동</a>
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <a href="#home" class="brand" aria-label="JUNNY 포트폴리오 처음으로">
+        <img src="assets/img/logo.png" width= 70px>
+        <span>JUNNY<span class="brand-sub">ENGINEERING JOURNAL</span></span>
+      </a>
+      <nav class="header-nav" id="header-nav" aria-label="주요 메뉴">
+        <a href="#projects">Projects</a><a href="#devlog">Dev Log</a><a href="#experience">Experience</a><a href="#skills">Skills</a><a href="#education">Learning</a>
+      </nav>
+      <a href="#contact" class="header-contact">연락하기 <span aria-hidden="true">↗</span></a>
+      <button id="mobile-toggle" class="mobile-toggle" aria-controls="header-nav" aria-expanded="false" aria-label="메뉴 열기">☰</button>
     </div>
+  </header>
 
-    <!-- STREAMING_CHUNK: Dynamic EN/KO Resume Modal -->
-    <div
-      id="resume-modal"
-      class="fixed inset-0 z-50 overflow-y-auto hidden bg-[#040D2D]/80 backdrop-blur-md flex items-center justify-center p-4"
-    >
-      <div
-        class="bg-white text-gray-800 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl relative border border-gray-200"
-      >
-        <div
-          class="sticky top-0 bg-[#040D2D] text-white px-6 py-4 flex items-center justify-between border-b border-brandMain/30 z-30 no-print"
-        >
-          <div class="flex items-center space-x-4">
-            <span class="font-head font-bold text-base sm:text-lg tracking-wide"
-              >RESUME / 이력서</span
-            >
-
-            <div
-              class="inline-flex rounded-lg bg-[#0D2971] p-1 border border-brandPoint/20"
-            >
-              <button
-                onclick="switchLanguage('ko')"
-                id="btn-lang-ko"
-                class="px-3 py-1 rounded text-xs font-bold transition-all bg-brandPoint text-brandDark"
-              >
-                KO
-              </button>
-              <button
-                onclick="switchLanguage('en')"
-                id="btn-lang-en"
-                class="px-3 py-1 rounded text-xs font-bold transition-all text-gray-300 hover:text-white"
-              >
-                EN
-              </button>
-            </div>
-          </div>
-
-          <div class="flex items-center space-x-3">
-            <button
-              onclick="window.print()"
-              class="text-gray-400 hover:text-brandPoint p-2 transition-colors duration-200"
-              title="이력서 인스쇄 / PDF 저장"
-            >
-              <i class="fa-solid fa-print text-lg"></i>
-            </button>
-            <button
-              id="resume-close-btn"
-              class="text-gray-400 hover:text-white bg-[#0D2971] hover:bg-brandMain p-2 rounded-lg transition-colors"
-            >
-              <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-          </div>
+  <main id="main">
+    <section class="hero wrap" id="home" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> MES · SYSTEM INTEGRATION · SOFTWARE</p>
+        <h1 id="hero-title">현장을 이해하고,<br><em>코드로 개선합니다.</em></h1>
+        <p class="motto">Back to the Basics — 복잡한 문제일수록 원리부터.</p>
+        <p class="lead">안녕하세요, <strong>김준호</strong>입니다.<br>3년간의 MES 운영 경험을 바탕으로, 현장의 문제를 원리부터 분석하고 소프트웨어 구조로 옮기고 있습니다.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#automated-backup">대표 프로젝트 보기 <span aria-hidden="true">↗</span></a>
+          <a class="text-link" href="#about">나의 개발 철학 <span aria-hidden="true">→</span></a>
         </div>
-
-        <!-- Printable Paper-like Dynamic Content Area -->
-        <div
-          id="resume-modal-content"
-          class="p-6 sm:p-12 font-sans relative min-h-[400px]"
-        >
-          <!-- Dynamic Loading Spinner -->
-          <div
-            id="resume-loading-spinner"
-            class="absolute inset-0 flex flex-col justify-center items-center bg-white/95 z-20"
-          >
-            <i
-              class="fa-solid fa-gear text-4xl text-brandMain animate-spin mb-4"
-            ></i>
-            <p class="font-head text-sm text-gray-500 font-semibold">
-              이력서 데이터를 파싱 중입니다...
-            </p>
-          </div>
-
-          <!-- Dynamic Containers -->
-          <div id="lang-ko-container" class="lang-content space-y-8"></div>
-          <div
-            id="lang-en-container"
-            class="lang-content space-y-8 lang-hidden"
-          ></div>
+        <div class="hero-meta" aria-label="이력 요약"><span><strong>2023 — 2025</strong>MES 현장 운영</span><span><strong>C# · CLIENT–SERVER</strong>IPC 백업 도구 직접 개발</span><span><strong>2026 — NOW</strong>SSAFY SW·AI 학습</span></div>
+      </div>
+      <aside class="workbench" aria-label="개발 철학: Back to the Basics">
+        <div class="workbench-head"><span>FIELD NOTES / 001</span><span class="pill">FROM FIELD TO CODE</span></div>
+        <h2>Back to the Basics.</h2><p class="subtitle">본질을 이해하고, 연결된 전체를 봅니다.</p>
+        <div class="bench-steps" aria-label="접근 방법">
+          <div class="bench-step"><span>01</span><b>원리를<br>확인한다</b></div>
+          <div class="bench-step"><span>02</span><b>흐름을<br>추적한다</b></div>
+          <div class="bench-step"><span>03</span><b>예외를<br>구조화한다</b></div>
+          <div class="bench-step"><span>04</span><b>구현하고<br>개선한다</b></div>
         </div>
+        <p class="bench-quote">“기본기는 단순한 문법이 아니라,<br>부분들을 연결해 하나의 시스템으로 이해하는 능력입니다.”</p>
+        <div class="workbench-foot"><span><span class="status-dot"></span>&nbsp; UNDERSTAND → BUILD → LEARN</span><span>JUNHO KIM</span></div>
+      </aside>
+    </section>
 
-        <div
-          class="bg-gray-50 px-6 py-4 flex justify-end space-x-3 border-t border-gray-200 no-print"
-        >
-          <button
-            onclick="window.print()"
-            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold px-4 py-2 rounded text-xs"
-          >
-            <i class="fa-solid fa-file-pdf mr-1"></i> PDF/인쇄
-          </button>
-          <button
-            id="resume-close-btn-bottom"
-            class="bg-[#0D2971] text-white hover:bg-[#040D2D] font-bold px-4 py-2 rounded text-xs"
-          >
-            닫기
-          </button>
+    <div class="focus-strip"><div class="wrap focus-inner"><span>MY FOCUS</span><div><span>원리</span><i>+</i><span>현장</span><i>+</i><span>집요함</span><i>+</i><span>구조화</span></div></div></div>
+
+    <section class="section wrap" id="about" aria-labelledby="about-heading">
+      <div class="about-grid">
+        <div class="about-left"><p class="eyebrow">00 / ABOUT MY APPROACH</p><h2 id="about-heading">복잡할수록,<br><em>기본으로.</em></h2><p class="about-caption">Back to the Basics는 아버지에게서 물려받아 어린 시절부터 지켜온 좌우명입니다.</p></div>
+        <div class="about-story"><p class="about-lead">새로운 기술을 배울 때도, 문제를 해결할 때도<br>먼저 전체 흐름과 작동 원리를 이해하려 합니다.</p><p>MES를 운영할 때는 SQL의 처리 순서와 설비 신호의 시점을 함께 살폈습니다. C#을 처음 공부할 때는 문법을 익히는 데서 멈추지 않고 파일 검사부터 전송·보관까지 백업 프로그램의 전체 구조를 직접 만들었습니다.</p><p>저에게 기본기는 단순한 암기가 아닙니다. <strong>각 요소가 어떤 책임을 가지고 어떻게 연결되는지 설명할 수 있는 능력</strong>입니다. 기술이 바뀌어도 이 기준으로 배우고 개선하려 합니다.</p></div>
+      </div>
+      <div class="philosophy-grid" aria-label="핵심 키워드">
+        <article class="value-card"><span class="num">01</span><h3>원리</h3><p>단순히 오류를 대응하는 것이 아닌 그 속의 원리, 설계의 이유를 먼저 확인합니다.</p></article>
+        <article class="value-card"><span class="num">02</span><h3>현장</h3><p>코드와 데이터가 실제 작업·설비에 미치는 영향을 봅니다.</p></article>
+        <article class="value-card"><span class="num">03</span><h3>집요함</h3><p>드물게 발생하는 예외도 조건을 좁혀 이해하려 합니다.</p></article>
+        <article class="value-card"><span class="num">04</span><h3>구조화</h3><p>복잡한 요구와 흐름을 상태·책임·규칙으로 정리합니다.</p></article>
+      </div>
+    </section>
+
+    <section class="projects-section" id="projects" aria-labelledby="projects-heading"><div class="wrap section">
+      <div class="section-heading"><div><p class="eyebrow">01 / SELECTED WORK</p><h2 id="projects-heading">직접 만들고,<br>더 나은 구조를 고민한 것들<em>.</em></h2></div><p>업무와 학습에 필요했던 도구를 만들고, 사용하며 개선한 과정을 담았습니다.</p></div>
+      <div class="project-tabs" role="tablist" aria-label="프로젝트 종류">
+        <button id="tab-engineering" type="button" role="tab" aria-selected="true" aria-controls="panel-engineering" tabindex="0" data-project-tab="engineering">MES Projects <span class="count">02</span></button>
+        <button id="tab-ai-tools" type="button" role="tab" aria-selected="false" aria-controls="panel-ai-tools" tabindex="-1" data-project-tab="ai-tools">Toy Projects <span class="count">03</span></button>
+      </div>
+      <div id="panel-engineering" class="project-pane" role="tabpanel" aria-labelledby="tab-engineering" tabindex="0">
+        <p class="project-panel-intro">IPC 백업 도구와 CAN 통신 흐름을 구현한 C# 프로젝트입니다.</p>
+        <article class="project-feature" id="automated-backup">
+          <div class="project-visual"><div class="visual-top"><span>01 / JUNNYMESBACKUP</span><span class="type-chip">DIRECT BUILD → AI IMPROVEMENT</span></div>
+            <div class="visual-stage" data-image-slot="backup"><img class="visual-real" src="assets/portfolio/backup-client.jpg" alt="JunnyMESBackup 클라이언트의 백업 완료 화면">
+              <div class="visual-fallback"><div class="screen-symbol" aria-hidden="true">▣</div><strong>IPC 백업 도구</strong><p>파일 검사부터 전송·보관까지 연결한 Client–Server 프로그램입니다.</p></div>
+            </div><div class="visual-bottom"><span>IPC BACKUP / CLIENT–SERVER</span><i>클라이언트 백업 완료 화면</i></div>
+          </div>
+          <div class="project-copy"><div class="project-kicker">MES / IPC FILE BACKUP <span class="status-label">실제 현장 사용</span></div><h3>JunnyMESBackup</h3><p class="project-catch">반복되는 IPC 백업 업무를,<br>직접 설계한 프로그램으로.</p><p class="description">C#을 처음 공부하며 검색과 문서만 참고해 AI 없이 직접 만든 Client–Server 도구입니다. 파일 Hash로 변경분을 판별해 전송하고, 제조현장에서 백업에 활용했습니다. 이후 설정·저장·통신·공통 화면을 나누고 파일 버전 보관과 프리셋 편집을 보완했습니다.</p>
+            <div class="tags"><span>C#</span><span>WinForms</span><span>TCP</span><span>SHA-256</span><span>.NET Framework 4.8</span></div>
+            <div class="mini-facts"><div><span>초기 프로젝트</span><strong>전체 구조 설계·구현 직접 수행</strong></div><div><span>후속 개선</span><strong>AI/Codex 활용 · 공통 계층 분리</strong></div></div>
+            <div class="project-actions"><button class="button primary" type="button" data-detail="backup">설계와 구현 보기 ↗</button><span class="note-small" data-repository="backup">GitHub · 공개 준비 중</span></div><p class="note-small">현재 공개본은 같은 PC에서 실행하는 Client–Server 데모로 구성했습니다.</p>
+          </div>
+        </article>
+        <article class="project-feature" id="can-emulator" aria-labelledby="can-title">
+          <div class="project-visual can-visual"><div class="visual-top"><span>02 / CAN EMULATOR</span><span class="type-chip">WPF / EVENT-DRIVEN</span></div><div class="visual-stage has-image"><img class="visual-real" src="assets/portfolio/can-main.png" alt="CAN Emulator의 모듈 컨트롤, ECU 노드, 신호 상태와 프레임 로그"></div><div class="visual-bottom"><span>VIRTUAL CAN / ECU & SIGNAL</span><i>모듈 조작과 ECU 송수신 화면</i></div></div>
+          <div class="project-copy"><div class="project-kicker">C# DESKTOP / PROTOCOL STUDY <span class="status-label">개인 학습 프로젝트</span></div><h3 id="can-title">CAN Emulator</h3><p class="project-catch">신호가 프레임이 되고,<br>다른 ECU에 도달하기까지.</p><p class="description">CAN 하드웨어 없이 ECU와 모듈을 구성하고, 조작한 값이 프레임으로 전달되는 과정을 보여주는 WPF 도구입니다. ISignalBus로 가상 버스의 계약을 분리하고, 수신 Raw 값과 물리값·프레임 로그를 함께 볼 수 있도록 구성했습니다.</p><div class="tags"><span>C#</span><span>WPF</span><span>MVVM</span><span>.NET 8</span><span>CRC-15</span></div><div class="mini-facts"><div><span>직접 담당</span><strong>시스템 설계 · 핵심 로직</strong></div><div><span>AI 활용</span><strong>프로토콜 학습 · MVVM · 후속 개선</strong></div></div><div class="project-actions"><button class="button primary" type="button" data-detail="can">구조와 작동 흐름 보기 ↗</button><span class="note-small" data-repository="can">GitHub · 공개 준비 중</span></div><p class="note-small">C# 이벤트로 ECU 사이의 프레임 전달을 구현한 가상 버스입니다.</p></div>
+        </article>
+      </div>
+      <div id="panel-ai-tools" class="project-pane" role="tabpanel" aria-labelledby="tab-ai-tools" tabindex="0">
+        <p class="project-panel-intro"><strong>기능과 사용 흐름을 설계하고, AI와 함께 구현한 웹 도구입니다.</strong> 문서 작성과 학습 과정에서 직접 필요했던 기능을 하나씩 연결했습니다.</p>
+        <div class="web-grid">
+          <article class="web-card" id="markdown-editor"><div class="web-thumb"><img src="assets/portfolio/markdown-editor.jpg" alt="Markdown Editor 실제 화면"><div class="thumb-top"><span>01 / WRITE</span><span>LIVE WEB TOOL</span></div><div class="thumb-window" aria-hidden="true"><div class="bar"><i></i><i></i><i></i></div><div class="thumb-editor"><div><div class="thumb-line green medium"></div><div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-line"></div><div class="thumb-line medium"></div></div><div><strong>Preview</strong><div class="thumb-line"></div><div class="thumb-line medium"></div><div class="thumb-line short"></div></div></div></div></div><div class="web-card-body"><span class="index">AI-ASSISTED / DOCUMENT</span><h3>Markdown Editor</h3><p>작성·미리보기·HTML 가져오기·출력으로 이어지는 문서 편집 흐름을 기능 명세로 정리한 웹 도구입니다.</p><div class="tags"><span>기능 설계</span><span>AI 구현</span><span>Markdown</span></div><div class="web-actions"><a href="tools/markdown-editor.html" target="_blank" rel="noopener noreferrer">실제 도구 열기 ↗</a><button type="button" data-detail="markdown">설계 메모 +</button></div></div></article>
+          <article class="web-card" id="pdf-maker"><div class="web-thumb"><img src="assets/portfolio/pdf-maker.jpg" alt="PDF Maker 실제 화면"><div class="thumb-top"><span>02 / PUBLISH</span><span>LIVE WEB TOOL</span></div><div class="thumb-window" aria-hidden="true"><div class="bar"><i></i><i></i><i></i></div><div class="thumb-pdf"><div class="paper-sim"><b>Document</b><div class="thumb-line"></div><div class="thumb-line medium"></div><div class="thumb-line short"></div><div class="thumb-line"></div><div class="thumb-line medium"></div></div></div></div></div><div class="web-card-body"><span class="index">AI-ASSISTED / DOCUMENT</span><h3>PDF Maker</h3><p>Markdown·HTML을 불러와 표지, 목차, 페이지 구성과 인쇄까지 연결하도록 기획한 문서 제작 도구입니다.</p><div class="tags"><span>기능 설계</span><span>AI 구현</span><span>Document Workflow</span></div><div class="web-actions"><a href="tools/pdf-maker.html" target="_blank" rel="noopener noreferrer">실제 도구 열기 ↗</a><button type="button" data-detail="pdf">설계 메모 +</button></div></div></article>
+          <article class="web-card" id="quiz-bank"><div class="web-thumb"><img src="assets/portfolio/quiz-bank.jpg" alt="Self Testing Quiz Bank 실제 화면"><div class="thumb-top"><span>03 / LEARN</span><span>LIVE WEB TOOL</span></div><div class="thumb-window" aria-hidden="true"><div class="bar"><i></i><i></i><i></i></div><div class="thumb-quiz"><strong>SELF TEST / QUESTION 01</strong><span>A. 선택지 보기</span><span>B. 선택지 보기</span><span>C. 선택지 보기</span></div></div></div><div class="web-card-body"><span class="index">AI-ASSISTED / LEARNING</span><h3>Self Testing Quiz Bank</h3><p>JSON 문제집 업로드부터 문제 풀이·채점·오답 확인까지의 학습 흐름을 설계한 도구입니다.</p><div class="tags"><span>기능 설계</span><span>AI 구현</span><span>JSON</span></div><div class="web-actions"><a href="tools/self-testing-quiz-bank.html" target="_blank" rel="noopener noreferrer">실제 도구 열기 ↗</a><button type="button" data-detail="quiz">설계 메모 +</button></div></div></article>
         </div>
       </div>
-    </div>
+    </div></section>
 
-    <script src="js/main.js"></script>
-  </body>
+    <section class="log-section" id="devlog" aria-labelledby="devlog-heading"><div class="wrap section"><div class="section-heading"><div><p class="eyebrow">02 / ENGINEERING NOTES</p><h2 id="devlog-heading">무엇을 만들었는가보다,<br>왜 그렇게 생각했는가<em>.</em></h2></div><p>만들면서 마주한 실패와 설계 판단을 기록합니다. 현장 경험이 코드의 기준으로 이어지는 과정입니다.</p></div>
+      <div class="log-list">
+        <button class="log-row" type="button" data-detail="log-first"><time datetime="2026-10-11">FIELD NOTE 01</time><div><span class="log-tag">C# · SYSTEM DESIGN</span><h3>첫 C# 프로젝트를 AI 없이 설계하며 배운 것</h3><p>파일 검사부터 전송·보관까지, 백업의 전체 흐름을 직접 구현하며 배운 점.</p></div><span class="log-arrow">↗</span></button>
+        <button class="log-row" type="button" data-detail="log-socket"><time datetime="2026-10-11">FIELD NOTE 02</time><div><span class="log-tag">NETWORK · ERROR HANDLING</span><h3>소켓은 연결보다 오류 수정이 어려웠다</h3><p>정상 경로 밖의 연결 종료와 예외를 설계하면서 마주한 한계.</p></div><span class="log-arrow">↗</span></button>
+        <button class="log-row" type="button" data-detail="log-refactor"><time datetime="2026-10-11">FIELD NOTE 03</time><div><span class="log-tag">C# · REFACTORING</span><h3>기존 동작을 지키며 코드를 나누는 일</h3><p>공통 책임과 개별 책임을 구분하고 변경의 영향을 확인하는 과정.</p></div><span class="log-arrow">↗</span></button>
+        <button class="log-row" type="button" data-detail="log-ai"><time datetime="2026-10-11">FIELD NOTE 04</time><div><span class="log-tag">AI-ASSISTED · PRODUCT DESIGN</span><h3>AI에 구현을 맡기더라도, 요구사항은 먼저 정의한다</h3><p>세 웹 도구의 구조·기능 명세와 AI 활용 범위를 구분한 기록.</p></div><span class="log-arrow">↗</span></button>
+      </div>
+    </div></section>
+
+    <section class="section wrap" id="experience" aria-labelledby="experience-heading"><div class="section-heading"><div><p class="eyebrow">03 / FIELD EXPERIENCE</p><h2 id="experience-heading">제조현장의 운영부터,<br>업무 규칙을 정리하는 일까지<em>.</em></h2></div><p>MES 운영과 서비스 기획에서 맡았던 업무, 그리고 문제를 함께 확인하고 정리해 온 방식을 소개합니다.</p></div>
+      <div class="career-list">
+        <article class="career-entry">
+          <header class="career-heading"><div><span class="career-period">2023.01 — 2025.12</span><h3>MES Administrator</h3><p>브레이너 컨설턴시 소속 · 현대모비스 미국 조지아 생산법인 파견</p></div><span class="career-kind">MES 운영 · 설비 연계</span></header>
+          <p class="career-summary">자동차 모듈 생산현장에서 MES 운영과 장애 대응을 맡았습니다. 생산 흐름, SQL 데이터와 설비 동작을 함께 확인하며 오류 조건을 분석하고, 생산·설비·IT·개발 담당자와 대응 방향을 조율했습니다.</p>
+          <div class="career-work-grid">
+            <div><h4>MES 운영 · 데이터 분석</h4><ul><li>SQL, 운영 로그, 프로시저와 테이블 관계를 확인해 장애 발생 조건 분석</li><li>DB 작업의 실행 순서와 조회 시점을 비교하고 운영 제약을 고려한 개선안 협의</li><li>신규 공정 프로그램 QA와 실제 생산 흐름에 따른 운영 검증</li></ul></div>
+            <div><h4>설비 · 생산 시스템 연계</h4><ul><li>PLC, Vision, RFID, ECOS, ATLAS Tool과 MES 간 연계 지원</li><li>설비 신호와 MES 처리 순서를 대조해 재전송·진입 타이밍의 예외 조건 확인</li><li>Trolley에서 AMR로 전환하는 과정의 MES 연계 검증과 초기 운영 조율</li></ul></div>
+            <div><h4>현장 지원 · 업무 개선</h4><ul><li>PPC, Printer, Scanner, RFID 등 현장 IT 장비 지원</li><li>IP/VLAN, NAC, Firewall 관련 운영 지원과 담당자 간 기술 이슈 조율</li><li>IPC 백업 도구 개발, 자산관리 Excel 개선, 신규 입사자 OJT 3회 진행</li></ul></div>
+          </div>
+          <div class="tags"><span>MES</span><span>MS SQL Server</span><span>Equipment Integration</span><span>QA</span><span>Field Support</span></div>
+        </article>
+        <article class="career-entry">
+          <header class="career-heading"><div><span class="career-period">2022.01 — 2022.06</span><h3>서비스 기획 · QA 인턴</h3><p>케이브레인 컴퍼니 · WEVEN R&D팀</p></div><span class="career-kind">요구사항 정의 · QA</span></header>
+          <p class="career-summary">웹빌더 쇼핑몰의 업무 규칙과 사용자 요구를 정리하고 개발팀과 검토했습니다. 기능을 정의하는 단계부터 실제 사용자의 피드백을 반영하는 과정까지 참여했습니다.</p>
+          <div class="career-work-grid">
+            <div><h4>서비스 기능 · 상태 정의</h4><ul><li>주문·배송·교환·반품·취소 상태와 전이 조건 정리</li><li>구매자·관리자 액션과 예외 상황을 상태 일람표·전이 제한표로 문서화</li><li>쇼핑몰과 웹빌더 사례를 비교하고 공통 정책과 개별 설정의 범위 검토</li></ul></div>
+            <div><h4>QA · 사용성 개선</h4><ul><li>그룹웨어 테스트 케이스 작성과 BAT/QA 수행</li><li>개발팀과 기능 규칙·예외 처리 검토</li><li>설정이 복잡하다는 피드백에 따라 기본 화면을 단순화하고 고급 설정 분리</li></ul></div>
+            <div><h4>요구사항 · 협업</h4><ul><li>고객 요구사항 문서화와 개발팀 전달</li><li>PG사 제휴와 계약 관련 조율</li><li>개발 가이드라인 관련 업무 지원</li></ul></div>
+          </div>
+          <div class="career-bottom"><div class="tags"><span>Requirement Analysis</span><span>State Modeling</span><span>QA</span></div><button class="text-link" data-detail="weven" type="button">기획과 QA 경험 보기 ↗</button></div>
+        </article>
+      </div>
+      <div class="work-patterns">
+        <div class="patterns-heading"><p class="eyebrow">HOW I WORK</p><h3>여러 현장에서 반복한 일</h3><p>운영 장애를 다룰 때도, 새로운 기능을 검토할 때도 같은 순서로 문제를 좁혔습니다.</p></div>
+        <div class="patterns-grid">
+          <article><span>01 / TRACE</span><h4>로그와 실제 동작을 함께 확인</h4><p>화면의 증상만으로 판단하지 않고 발생 시간, SQL 처리 순서와 설비 동작을 대조했습니다. DB 조회 문제와 PLC·AMR 연계에서도 먼저 어떤 순서가 어긋나는지 확인했습니다.</p></article>
+          <article><span>02 / ALIGN</span><h4>같이 확인할 조건을 정리</h4><p>담당 시스템이 다른 사람들과 발생 조건과 확인 범위를 공유했습니다. 각자 정상이라고 보는 로직도 같은 상황에서 함께 관찰하며 재현 조건과 조정할 지점을 좁혔습니다.</p></article>
+          <article><span>03 / DOCUMENT</span><h4>업무 흐름과 예외를 문서로</h4><p>서비스 기획에서는 상태와 전이 규칙을, 운영 업무에서는 확인 순서와 사용 방법을 정리했습니다. OJT에서도 개별 메뉴보다 생산 흐름과 MES의 역할을 먼저 설명했습니다.</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="skills-section" id="skills" aria-labelledby="skills-heading"><div class="wrap section"><div class="section-heading"><div><p class="eyebrow">04 / SKILLS & EXPERIENCE</p><h2 id="skills-heading">기술 이름보다,<br>어디에서 어떻게 사용했는가<em>.</em></h2></div><p>직접 개발한 기술과 현장에서 운영·분석한 기술, 현재 학습 중인 분야를 함께 정리했습니다.</p></div>
+      <div class="skill-grid"><article class="skill-card"><span class="skill-cat">01 / DIRECT DEVELOPMENT</span><h3>C# · WinForms<br>TCP · Hash</h3><p>백업 도구를 초기 설계부터 직접 구현하고 실제 현장 IPC 백업에 사용했습니다.</p><span class="skill-foot">직접 설계·개발</span></article>
+        <article class="skill-card"><span class="skill-cat">02 / DESKTOP STUDY</span><h3>WPF · XAML<br>MVVM</h3><p>CAN Emulator에서 데이터 바인딩과 명령을 구성하고, ISignalBus 계약과 DI로 화면·가상 버스의 책임을 분리했습니다.</p><span class="skill-foot">개인 프로젝트를 통한 학습</span></article>
+        <article class="skill-card"><span class="skill-cat">03 / FIELD & INTEGRATION</span><h3>MS SQL Server<br>MES · PLC Interface</h3><p>프로시저와 로그를 분석하고 설비·MES 데이터 흐름, 신규 공정 연계·QA를 지원했습니다.</p><span class="skill-foot">실무 운영·분석·검증</span></article>
+        <article class="skill-card"><span class="skill-cat">04 / AI-ASSISTED & LEARNING</span><h3>Python · AI<br>HTML/CSS · JavaScript</h3><p>Python으로 데이터·AI를 실습하고, HTML/CSS·JavaScript로 기능을 기획하고 AI와 함께 웹 도구를 만들었습니다.</p><span class="skill-foot">웹 도구 제작 · 데이터·AI 실습</span></article></div>
+    </div></section>
+
+    <section class="learning-section" id="education" aria-labelledby="learning-heading"><div class="wrap section"><div class="section-heading"><div><p class="eyebrow">05 / CONTINUOUS LEARNING</p><h2 id="learning-heading">경험 위에 쌓는,<br>새로운 기본기<em>.</em></h2></div><p>현장에서 마주한 질문을 소프트웨어와 데이터의 언어로 풀기 위해 계속 공부하고 있습니다.</p></div>
+      <div class="education-grid"><article class="edu-card"><div class="edu-top"><span>2026.07 — 현재</span><span class="edu-state">교육 중</span></div><h3>삼성청년SW·AI아카데미</h3><span class="edu-en">SSAFY</span><p>Python·자료구조·알고리즘을 바탕으로 데이터 분석과 AI 기초, LLM·RAG 등의 활용을 학습하고 있습니다.</p><div class="edu-bottom">2026년 7월·8월 월간 Best Member</div></article>
+        <article class="edu-card"><div class="edu-top"><span>2023.09 — 2024.12</span><span>3개 강좌 이수</span></div><h3>Georgia Tech · Analytics</h3><span class="edu-en">ONLINE COURSE / edX</span><p>Introduction to Analytics Modeling, Computing for Data Analysis, Data Analytics in Business를 통해 R·Python·SQL과 분석 모델을 학습했습니다.</p><div class="edu-bottom">edX · Analytics MicroMasters 구성 강좌 이수</div></article>
+        <article class="edu-card"><div class="edu-top"><span>2018.01 — 2018.02</span><span>100시간</span></div><h3>홈팩토리 제조마스터</h3><span class="edu-en">DESIGN / MAKE / ITERATE</span><p>Fusion 360·3D 프린팅·Arduino를 사용해 설계부터 시제품 제작·개선까지 실습했습니다.</p><div class="edu-bottom">제조·하드웨어 메이커 교육</div></article></div>
+      <p class="academic-note"><strong>고려대학교</strong> 융합경영학부 디지털경영전공 · 학사 · 2023.02 졸업</p>
+
+    </div></section>
+
+    <section class="contact wrap section" id="contact" aria-labelledby="contact-heading"><div><p class="eyebrow">LET'S TALK</p><h2 id="contact-heading">현장의 다음 문제를,<br>함께 풀고 싶습니다.</h2><p>MES · 스마트팩토리 · SI · 소프트웨어 설계에 관한 이야기를 환영합니다.</p></div><div class="contact-links"><a class="email-link" href="mailto:junny.coder@gmail.com"><span>junny.coder@gmail.com</span><span aria-hidden="true">↗</span></a><div class="socials"><a href="https://github.com/JunnyCoder" target="_blank" rel="noopener noreferrer">GitHub ↗</a><a href="https://www.linkedin.com/in/junho-kim-50030b1b6/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a><button id="copy-email" type="button">이메일 복사</button></div><p id="copy-status" aria-live="polite" role="status"></p></div></section>
+  </main>
+  <footer class="site-footer wrap"><span>© 2026 JUNHO KIM</span><span>Back to the Basics. · Built with curiosity. Grounded in the field.</span><a href="#home">맨 위로 ↑</a></footer>
+
+  <dialog class="detail-dialog" id="detail-dialog" aria-labelledby="detail-title"><div class="dialog-header"><span>JUNNY / PROJECT & ENGINEERING NOTES</span><button class="dialog-close" id="close-detail" type="button">닫기 <span aria-hidden="true">×</span></button></div><div class="dialog-body" id="dialog-body"></div></dialog>
+  <script>
+    'use strict';
+    // 공개 후 실제 저장소 URL만 입력하세요. null이면 클릭되지 않는 준비 상태입니다.
+    const PROJECT_REPOSITORIES = { backup: 'https://github.com/JunnyCoder/JunnyMESBackup', can: 'https://github.com/JunnyCoder/CanEmulater' };
+    function repositoryLink(key){const raw=PROJECT_REPOSITORIES[key];if(!raw)return null;try{const u=new URL(raw);return u.protocol==='https:'&&u.hostname==='github.com'&&u.pathname.split('/').filter(Boolean).length>=2?u.href:null}catch{return null}}
+    document.querySelectorAll('[data-repository]').forEach(el=>{const href=repositoryLink(el.dataset.repository);if(!href)return;const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener noreferrer';a.className='text-link';a.textContent='GitHub 저장소 ↗';el.replaceWith(a)});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&siteHeader.classList.contains('menu-open'))mobileToggle.click()});
+
+    /* 프로젝트별 실제 실행 이미지가 해당 경로에 있으면 자동으로 대체합니다. 누락 시 설명용 슬롯을 유지합니다. */
+    document.querySelectorAll('[data-image-slot]').forEach(slot=>{
+      const img=slot.querySelector('img.visual-real');if(!img)return;
+      const ready=()=>{if(img.naturalWidth>0)slot.classList.add('has-image');};
+      img.addEventListener('load',ready);img.addEventListener('error',()=>slot.classList.remove('has-image'));
+      if(img.complete)ready();
+    });
+    document.querySelectorAll('.web-thumb').forEach(slot=>{
+      const img=slot.querySelector(':scope > img');if(!img)return;
+      const ready=()=>{if(img.naturalWidth>0)slot.classList.add('has-image')};
+      img.addEventListener('load',ready);img.addEventListener('error',()=>slot.classList.remove('has-image'));
+      if(img.complete)ready();
+    });
+    const siteHeader=document.getElementById('site-header'), mobileToggle=document.getElementById('mobile-toggle');
+    mobileToggle.addEventListener('click',()=>{const open=siteHeader.classList.toggle('menu-open');mobileToggle.setAttribute('aria-expanded',String(open));mobileToggle.setAttribute('aria-label',open?'메뉴 닫기':'메뉴 열기');mobileToggle.textContent=open?'×':'☰'});
+    document.querySelectorAll('.header-nav a').forEach(link=>link.addEventListener('click',()=>{siteHeader.classList.remove('menu-open');mobileToggle.setAttribute('aria-expanded','false');mobileToggle.setAttribute('aria-label','메뉴 열기');mobileToggle.textContent='☰'}));
+    const projectTabs=Array.from(document.querySelectorAll('[data-project-tab]'));
+    function activateProjectTab(tab,focus=false){
+      projectTabs.forEach(t=>{const selected=t===tab;t.setAttribute('aria-selected',String(selected));t.tabIndex=selected?0:-1;document.getElementById(t.getAttribute('aria-controls')).hidden=!selected});
+      if(focus)tab.focus();
+    }
+    projectTabs.forEach((tab,index)=>{
+      tab.addEventListener('click',()=>activateProjectTab(tab));
+      tab.addEventListener('keydown',e=>{let next;if(e.key==='ArrowRight')next=(index+1)%projectTabs.length;else if(e.key==='ArrowLeft')next=(index+projectTabs.length-1)%projectTabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=projectTabs.length-1;else return;e.preventDefault();activateProjectTab(projectTabs[next],true)});
+    });
+    // Allows internal anchor links to hidden project panes to open the correct group.
+    function applyProjectHash(){const toy=['#markdown-editor','#pdf-maker','#quiz-bank'].includes(location.hash);if(toy||['#automated-backup','#can-emulator'].includes(location.hash)){activateProjectTab(document.getElementById(toy?'tab-ai-tools':'tab-engineering'));requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView());}}
+    activateProjectTab(projectTabs[0]);window.addEventListener('hashchange',applyProjectHash);applyProjectHash();
+    const diagram=(nodes)=>'<div class="diagram" aria-label="개념적 처리 흐름">'+nodes.map((n,i)=>`${i?'<span class="diagram-arrow" aria-hidden="true">→</span>':''}<div class="diagram-node"><b>${n[0]}</b><small>${n[1]}</small></div>`).join('')+'</div>';
+    const pending=(what,path='')=>`<div class="slot-box"><span class="slot-icon" aria-hidden="true">▤</span><strong>${what} 추가 예정</strong><p>실제 자료 확보 후 이 자리를 교체합니다.${path?`<br><code>${path}</code>`:''}</p></div>`;
+    const overviewFacts=(arr)=>'<div class="detail-card-grid">'+arr.map(x=>`<div class="detail-card"><b>${x[0]}</b><p>${x[1]}</p></div>`).join('')+'</div>';
+    const DETAILS={
+      backup:{type:'C# / IPC FILE BACKUP',title:'JunnyMESBackup',intro:'MES·스마트팩토리 환경의 IPC 설정·레시피 파일을 검사하고 변경된 파일을 서버에 백업하는 WinForms 프로그램입니다.',tabs:[
+        {name:'프로젝트 개요',html:`<h3>변경된 파일을 찾고, 백업 기준을 남기다</h3><p>현장에서 반복하던 IPC 파일 백업을 줄이기 위해 C#을 배우며 Client–Server 프로그램을 만들었습니다. 초기 구조와 주요 기능을 직접 구현하고 백업에 활용했습니다. 이후 AI/Codex와 함께 기존 화면을 유지하면서 설정과 공통 로직을 분리했습니다.</p>${overviewFacts([['개발 환경','C# · WinForms · .NET Framework 4.8 · 외부 NuGet 패키지 없음'],['변경 검사','SHA-256으로 추가·수정·삭제 파일을 마지막 성공 기준과 비교'],['대상 설정','프로그램별 선택, 검사 깊이, 폴더·파일 제외 규칙'],['파일 보관','최신 백업과 교체 전·삭제 파일의 버전 보관']])}<p>현재 공개본은 같은 PC의 127.0.0.1:18080에서 실행합니다. 샘플 설정·레시피 파일로 검사부터 백업까지 확인할 수 있도록 예제 설정과 사용자 매뉴얼을 함께 정리했습니다.</p>`},
+        {name:'설계 구조',html:`<h3>두 앱의 공통 책임을 세 계층으로</h3>${overviewFacts([['IPC_Backup / IPC_Backup_Server','클라이언트 작업 흐름과 서버 수신·시스템 상태 표시'],['JunnyMES.Core','IPresetStore · IAppLogger 계약, 프리셋 모델과 입력·권한·충돌 검증'],['JunnyMES.Infrastructure','JSON 저장, SHA-256 검사, 파일 송수신·버전 보관, 예약과 로그'],['JunnyMES.WinForms','양쪽 앱이 공유하는 PresetEditorControl과 창 배치·로그 표시']])}<h4>인터페이스와 추상 클래스</h4><p>설정 저장은 IPresetStore, 로그는 IAppLogger 계약으로 분리했습니다. 클라이언트와 서버의 PresetManager는 공통 추상 클래스 PresetManagerBase를 상속하고, 각 앱의 초기화·병합을 담당합니다. 화면의 공통 부분은 PresetEditorControl로 추출하고 역할에 따라 편집 가능한 필드를 달리했습니다.</p><h4>검사와 성공 확정의 경계</h4>${diagram([['Check','선택 범위의 변경 계획'],['Update','파일 전송·삭제 반영'],['수신 서버','임시 수신 후 파일 교체'],['성공 기준','완료 확인 후 상태 저장']])}<p>Check만으로 성공 기준을 바꾸지 않습니다. 전송·삭제 확인과 로컬 성공 상태 저장을 마친 뒤 기준을 갱신합니다. 수신 중 연결이 끊긴 파일은 기존 최신 파일을 유지하고, 교체·삭제되는 파일은 versions에 보관합니다.</p>`},
+        {name:'작동 예제',html:`<h3>샘플 파일의 검사 → 백업 → 변경 반영</h3><ol><li>Release / Any CPU로 빌드한 뒤 예제 JSON을 data/config로, DemoSystem_01 샘플을 data/source로 복사합니다.</li><li>서버를 먼저 실행하고 클라이언트에서 연결과 ProgramA·ProgramB 목록을 확인합니다.</li><li>Check를 누르면 New·Modified·Deleted 건수가 표시됩니다.</li><li>Update로 변경을 반영하고 Backup successful과 저장된 파일을 확인합니다.</li><li>settings.ini를 수정한 뒤 Check → Update를 반복하면 Modified와 이전 버전 보관을 확인할 수 있습니다.</li></ol><figure><img src="assets/portfolio/backup-check.jpg" alt="Check 후 ProgramA·ProgramB 변경 내역과 Backup required 표시"><figcaption>01 · Check — 마지막 성공 기준과 비교한 변경 내역</figcaption></figure><figure><img src="assets/portfolio/backup-client.jpg" alt="Update 완료 후 Backup successful과 마지막 성공 시각 표시"><figcaption>02 · Update — 백업 완료와 마지막 성공 시각</figcaption></figure><h4>대상 선택과 프리셋 편집</h4><p>Modify → 체크 변경 → done으로 프로그램을 선택합니다. 클라이언트는 자신의 검사 경로·깊이·제외 목록을, 서버는 등록 시스템과 예약 설정까지 편집합니다. 설정이나 선택을 바꿨다면 다시 Check를 실행합니다.</p><figure><img src="assets/portfolio/backup-settings.jpg" alt="서버 프리셋의 시스템별 경로·제외 목록·예약 설정"><figcaption>03 · Preset Settings — 시스템별 설정과 공통 제외 목록</figcaption></figure><h4>예약과 재시도</h4><p>Check Only는 예약 검사만 수행합니다. 백업으로 전환할 때는 STOP 후 다시 Check → Update를 실행합니다. Auto Update는 변경이 있으면 백업하고, 직전 작업이 끝난 뒤 다음 간격을 기다립니다. 실패 시 로그와 연결·파일 상태를 확인하고 새로 검사합니다.</p><h4>서버의 백업 시점 표시</h4><p>완료 시각이 없으면 회색, 7일 미만이면 초록, 7일 이상이면 노랑으로 표시합니다. 시스템 버튼을 누르면 해당 백업 폴더가 열립니다.</p>`},
+        {name:'설계 판단과 개선',html:`<h3>실패했을 때 무엇을 남길 것인가</h3><p>초기 현장 사용에서는 자동 모드의 간헐적인 소켓 종료 문제를 해결하지 못했습니다. 이후 개선에서는 연결 상태와 백업 성공 상태를 분리하고, 실패한 작업이 다음 검사의 성공 기준이 되지 않도록 흐름을 정리했습니다.</p><h4>삭제 판단</h4><p>선택한 프로그램과 검사 정책 안에서만 삭제를 판단합니다. 원본 폴더가 없거나 파일에 접근하지 못하면 검사를 실패 처리해 정상적인 전체 삭제로 받아들이지 않도록 했습니다.</p><h4>설정 저장</h4><p>입력 검증과 편집본 병합을 거쳐 저장하고, 같은 필드가 다른 경로에서 변경되면 충돌을 알립니다. 저장에 실패하면 기존 실행 설정을 유지합니다. 예제 JSON과 실제 실행 설정도 분리했습니다.</p><h4>파일 보관과 복원</h4><p>교체 전·삭제 파일은 시스템별 versions 폴더에 보관합니다. 복원은 양쪽 앱을 종료한 뒤 필요한 파일을 별도 폴더에서 확인하고 수동으로 진행합니다. 여러 파일 중 일부가 반영된 후 실패할 수 있어 전체 작업 롤백은 다음 설계 과제로 남겨두었습니다.</p>`}
+      ],links:[['사용자 매뉴얼','https://github.com/JunnyCoder/JunnyMESBackup/blob/HEAD/MANUAL.md']]},
+      can:{type:'WPF / VIRTUAL CAN SIMULATION',title:'CAN Emulator',intro:'ECU와 모듈을 구성하고, 슬라이더·스위치의 값이 CAN 프레임으로 만들어져 다른 ECU에 전달되는 과정을 관찰하는 WPF 프로젝트입니다.',tabs:[
+        {name:'프로젝트 개요',html:`<h3>신호와 화면 상태를 함께 설계하다</h3><p>WinForms 이후 WPF와 MVVM을 익히면서 CAN 프레임 구조와 ECU 간 데이터 흐름을 직접 구현했습니다. 실제 전기 신호 대신 프로세스 내부의 이벤트 기반 가상 버스를 사용합니다.</p>${overviewFacts([['개발 환경','C# · .NET 8 · WPF · XAML · MVVM · DI'],['프레임 모델','11비트 ID · DLC 0~8바이트 · CRC-15'],['주요 화면','모듈 컨트롤 · ECU 송수신 · Signal Status · 최근 200개 Trace Log'],['개발 기여','시스템 설계·핵심 로직 직접 작성, CAN 이해·일부 MVVM 및 후속 개선에 AI/Codex 활용']])}<p>ECU 추가·삭제·숨기기와 배치 정리, 여러 ECU에 모듈 연결, 모듈 편집·삭제를 지원합니다. 한 버스의 ECU는 최대 4개, ECU별 모듈은 최대 8개이며 모듈마다 슬라이더 2개와 ON/OFF 2개를 조합할 수 있습니다.</p>`},
+        {name:'소스 구조',html:`<h3>가상 버스의 계약과 화면의 책임을 나누다</h3>${overviewFacts([['CanEmulator.Core','CanId · CanFrame과 공통 변경 알림 EventBase'],['CanEmulator.Bus · Models','ECU · Module · ISignalBus · SignalBus의 프레임 생성·연결·중계'],['CanEmulator.Bus · MVVM','ViewModel의 상태·명령, WPF Views와 재사용 컨트롤'],['실행과 공통 기능','Bus/App.xaml.cs에서 DI 구성·앱 실행, Infrastructure에서 로그 계약·구현']])}<h4>ISignalBus와 SignalBus</h4><p>ISignalBus에 ECU 연결·해제, 모듈 연결·해제와 FrameTransmitted 이벤트를 정의했습니다. SignalBus가 계약을 구현하고 ViewModel에는 DI로 주입합니다. 버스가 ECU 이벤트 구독과 프레임별 신호 등록을 관리하도록 책임을 옮겼습니다.</p>${diagram([['컨트롤 / Module','물리값을 Raw byte로 변환'],['송신 ECU','고정 모듈 슬롯으로 프레임 생성'],['SignalBus','Raw 바이트 추출·다른 ECU 전달'],['ViewModel / View','Raw 수신·물리값·로그 표시']])}<p>버스 내부에서는 Raw 값을 전달하고, Signal Status에서 Scale·Offset을 적용합니다. EventBase는 INotifyPropertyChanged의 공통 동작을 제공합니다. Application 폴더는 기존 초안으로 남겨두고 실행 구성은 Bus에 모았습니다.</p>`},
+        {name:'작동 예제',html:`<h3>두 ECU 사이에서 Speed 값 전달하기</h3><ol><li>Add Node를 두 번 눌러 Node0과 Node1을 만듭니다.</li><li>Vehicle → ADD Module에서 이름 Engine, 연결 ECU Node0을 선택합니다.</li><li>슬라이더 1개에 이름 Speed, 단위 km/h, 최대값 255를 입력합니다.</li><li>Engine_Speed를 움직이며 Node0의 연결 모듈 값과 Node1의 수신 값을 비교합니다.</li><li>Signal Status의 물리값과 Trace Log의 ID·DLC·Data를 함께 확인합니다.</li></ol><figure><img src="assets/portfolio/can-overview.png" alt="모듈 컨트롤과 ECU별 수신 데이터, 신호 상태와 프레임 로그"><figcaption>모듈 값 변경 → 다른 ECU의 Raw 수신 → 물리값·로그 표시</figcaption></figure><figure><img src="assets/portfolio/can-module.png" alt="모듈 이름·연결 ECU·슬라이더·ON/OFF 신호 설정" style="max-width:430px;margin:auto"><figcaption>모듈 설정 · 여러 ECU 연결과 신호 이름·단위·최대값 정의</figcaption></figure><h4>Raw와 물리값 읽기</h4><p>노드의 FF는 Raw 255의 16진수 표기입니다. Signal Status는 같은 Raw 값에 Scale·Offset을 적용한 물리값을 보여줍니다. 최대값 10000에서 5000을 입력하면 Raw 128로 반올림되고, 수신 물리값은 약 5019.61이 됩니다. 1바이트로 표현하면서 생기는 양자화 차이입니다.</p><h4>숨기기와 삭제</h4><p>노드를 숨겨도 연결은 유지됩니다. 삭제하면 버스에서 분리하고, 다른 ECU에도 연결된 모듈은 남깁니다. 마지막 연결 ECU가 사라진 모듈은 함께 정리합니다.</p>`},
+        {name:'개선한 점',html:`<h3>화면 조작 뒤에도 데이터 관계를 유지하기</h3><h4>ID와 모듈 슬롯</h4><p>모듈을 삭제할 때 남은 모듈의 슬롯이 이동하지 않도록 했습니다. 삭제된 ECU ID와 모듈 슬롯은 다시 사용하고, 기존 연결의 ID는 유지합니다.</p><h4>이벤트와 수신 상태 정리</h4><p>연결 해제 시 이벤트 구독과 신호 등록을 제거합니다. 다른 송신자가 더 이상 제공하지 않는 수신 신호도 정리해 화면에 이전 상태가 남지 않도록 보완했습니다.</p><h4>입력 검증과 모듈 편집</h4><p>편집 창에 연결 ECU 전체와 신호 설정·Raw 값을 복원하고, 입력을 검증한 뒤 모듈을 다시 구성합니다. 잘못된 입력 때문에 기존 모듈이 먼저 삭제되는 흐름을 고쳤습니다. 신호 변환에는 반올림과 byte 범위 제한을 적용했습니다.</p><h4>프레임과 표시</h4><p>DLC 시작 위치를 수정하고 입력 배열 복사·ID 범위 검사를 추가했습니다. ON/OFF 라벨의 변경 알림과 최근 200개 로그 유지도 반영했습니다.</p><h4>다음 과제</h4><p>주기 송신, 구성 저장·불러오기, 실제 CAN 하드웨어 연동은 다음 과제로 남겨두었습니다. 현재 구성은 실행 중에만 유지됩니다.</p>`}
+      ],links:[['사용자 매뉴얼','https://github.com/JunnyCoder/CanEmulater/blob/HEAD/MANUAL.md']]},
+      markdown:{type:'AI-ASSISTED / PRODUCT DESIGN',title:'Markdown Editor',intro:'문서 작성의 흐름을 끊지 않도록 편집·변환·미리보기·출력을 연결한 도구.',tabs:[
+        {name:'기획 의도',html:`<h3>문서를 쓰는 과정을 하나로 연결하다</h3><p>편집 중 미리보기를 확인하고, 다른 형식의 내용을 가져오며, 결과물을 출력으로 이어가는 사용 흐름을 구성했습니다. 필요한 기능과 화면 구조는 직접 기획하고 소스 코드 대부분의 구현은 AI를 활용했습니다.</p>${diagram([['입력','Markdown·HTML'],['편집','작성·탐색·변환'],['미리보기','결과 확인'],['출력','문서 활용']])}`},
+        {name:'주요 명세',html:`<h3>정의한 사용 기능</h3><ul><li>Markdown 편집과 미리보기</li><li>HTML 내용 가져오기 및 변환</li><li>찾기·바꾸기, 제목 탐색</li><li>문서 저장 및 PDF 제작 도구와의 작업 흐름 연결</li></ul><p>편집한 문서를 저장하고 PDF Maker로 이어서 출력할 수 있도록 구성했습니다.</p>`},
+        {name:'기여 범위',html:`<h3>AI가 구현하고, 저는 쓰임새를 설계했습니다</h3>${overviewFacts([['제가 맡은 부분','사용 목적과 기능 명세, 페이지 구조와 사용 시나리오 구상, 결과 확인 및 일부 수정'],['AI 활용','구현 코드의 대부분 작성']])}<p>직접 문서를 작성하며 필요한 기능을 정하고, 결과를 사용해 보며 수정했습니다.</p>`}
+      ],links:[['실제 도구 열기','tools/markdown-editor.html']]},
+      pdf:{type:'AI-ASSISTED / PRODUCT DESIGN',title:'PDF Maker',intro:'Markdown/HTML 파일을 문서 레이아웃과 인쇄 결과물로 연결하는 웹 도구.',tabs:[
+        {name:'기획 의도',html:`<h3>작성한 내용을 읽기 좋은 문서로</h3><p>문서 입력부터 페이지 구성, 표지·목차, 출력까지 한 흐름으로 제어하는 도구를 기획했습니다. 기능 요구사항과 작업 절차는 직접 정의하고, 실제 구현 코드의 대부분은 AI로 작성했습니다.</p>${diagram([['가져오기','Markdown / HTML'],['페이지','구성·나누기'],['디자인','여백·표지·목차'],['출력','인쇄 / PDF']])}`},
+        {name:'주요 명세',html:`<h3>핵심 기능의 범위</h3><ul><li>Markdown·HTML/CSS 문서 입력</li><li>페이지 편집과 레이아웃 조정</li><li>표지·목차 구성</li><li>문서 인쇄와 PDF 출력 흐름</li></ul>`},
+        {name:'기여 범위',html:`<h3>사용자 흐름을 정의하고 AI로 구현</h3>${overviewFacts([['제가 맡은 부분','기능 구성·작업 흐름·화면 구조 정의, 일부 수정'],['AI 활용','코드의 대부분 구현']])}`}
+      ],links:[['실제 도구 열기','tools/pdf-maker.html']]},
+      quiz:{type:'AI-ASSISTED / PRODUCT DESIGN',title:'Self Testing Quiz Bank',intro:'JSON 문제집과 오답 확인, 학습 자료 기반 프롬프트 생성을 연결한 자가 학습 도구.',tabs:[
+        {name:'기획 의도',html:`<h3>읽고 끝나는 학습을, 다시 풀어 확인하는 과정으로</h3><p>학습 자료를 문제로 변환하고 JSON으로 받아 풀이와 복습으로 이어지는 흐름을 구상했습니다. 문제집 입력 형식과 사용자 기능을 기획하고 AI가 구현을 주도했습니다.</p>${diagram([['문제집','JSON 업로드'],['연습','필터·섞기·풀이'],['채점','정오답 확인'],['복습','오답 재확인']])}`},
+        {name:'주요 명세',html:`<h3>기획한 기능의 경계</h3><ul><li>JSON 형식 문제 데이터 입력</li><li>선택형 문제 풀이와 채점</li><li>오답 구분·학습 데이터 재확인</li><li>키워드·학습 자료 기반 AI 문제 생성용 프롬프트 작성</li></ul>`},
+        {name:'기여 범위',html:`<h3>문제의 데이터 형식부터 사용 흐름까지</h3>${overviewFacts([['제가 맡은 부분','JSON 데이터 규칙·기능 명세·화면 및 학습 시나리오 설계, 일부 수정'],['AI 활용','코드 구현의 대부분']])}`}
+      ],links:[['실제 도구 열기','tools/self-testing-quiz-bank.html']]},
+      weven:{type:'SERVICE PLANNING / DOMAIN MODEL',title:'WEVEN · 주문 상태와 예외 설계',intro:'웹빌더 쇼핑몰 서비스에서 주문·배송·교환·반품·취소 상태와 예외 규칙을 기획하고 QA를 진행했습니다.',tabs:[
+        {name:'기획 개요',html:`<h3>복잡한 주문 처리 규칙을 개발팀과 함께 정의하다</h3><p>구매자와 관리자의 액션, 주문 이후 배송·취소·교환·반품의 상태 변화와 예외 조건을 정리했습니다. 여러 쇼핑몰 사례를 벤치마킹해 상태 일람표와 전이 제한 등을 문서화하며 개발팀과 검토했습니다.</p><p>사용자가 기능은 많지만 복잡하다고 느낀다는 피드백을 받은 뒤 기본 화면에서 보이는 설정을 줄이는 방향으로 개선했습니다.</p>`},
+        {name:'설계에서 배운 점',html:`<h3>기능이 많을수록 사용성이 좋아지는 것은 아니었다</h3><p>개발에 익숙한 사람에게 자연스러운 설정도 사용자는 어렵게 느낄 수 있다는 피드백을 받았습니다. 이후 기술을 설명하고 요구사항을 정리할 때 상대가 처음 접하는 입장에서 이해할 수 있는지 먼저 살피려 노력하고 있습니다.</p>`}
+      ],links:[]},
+      'log-first':{type:'DEVELOPMENT NOTE / 01',title:'첫 C# 프로젝트를 AI 없이 설계하며 배운 것',intro:'파일 백업이라는 작은 업무를 Client–Server 프로그램으로 만든 과정.',tabs:[{name:'읽기',html:`<h3>기능보다 먼저, 파일의 흐름을 그리다</h3><p>현장의 IPC 파일 백업 작업을 반복하며 단순히 파일을 복사하는 것에서 나아가 바뀐 파일만 선별하는 도구를 만들고 싶었습니다. C#을 처음 배우는 상황이었기 때문에 필요한 문법과 API를 검색하면서 직접 코드를 썼습니다.</p><p>백업 대상을 확인하는 Client, 파일의 변경 여부를 판단하는 과정, 통신, 파일을 보관하는 Server로 책임을 나눈 것이 첫 설계의 중심이었습니다. 만들어진 프로그램을 실제 현장에서 백업에 사용했습니다.</p><div class="detail-notice">초기 개발에는 AI를 사용하지 않았고, 후속 버그 수정과 리팩터링에서는 AI/Codex를 활용했습니다.</div>`}],links:[]},
+      'log-socket':{type:'DEVELOPMENT NOTE / 02',title:'소켓은 연결보다 오류 수정이 어려웠다',intro:'실패 경로를 설계하는 데서 만난 최초 C# 프로젝트의 한계.',tabs:[{name:'읽기',html:`<h3>정상 전송이 성공해도 모든 문제가 끝난 것은 아니었다</h3><p>Client–Server 프로그램에서는 서버가 없거나 통신이 끊기는 순간이 있습니다. 초기 개발에서 소켓 연결과 예외 처리가 가장 어려웠던 부분이었습니다.</p><p>자동 모드로 장시간 구동하면 Client 또는 Server 소켓이 간헐적으로 종료되는 문제를 겪었고, 당시 원인을 끝내 규명하지 못했습니다. 이 경험 이후 정상 동작만큼 실패 이후의 상태를 중요하게 보게 됐습니다.</p><p>이후 공개본에서는 검사와 백업 완료를 구분하고, 전송·삭제 확인과 성공 상태 저장이 끝나야 다음 검사의 기준을 갱신하도록 정리했습니다.</p>`}],links:[]},
+      'log-refactor':{type:'DEVELOPMENT NOTE / 03',title:'기존 동작을 지키며 코드를 나누는 일',intro:'AI/Codex를 활용한 기존 WinForms 프로젝트의 개선 방향과 설계 질문.',tabs:[{name:'읽기',html:`<h3>같은 모양의 코드를 합치기 전에 역할을 확인한다</h3><p>최근 백업 프로그램 개선에서 관심을 둔 것은 단순히 코드를 줄이는 일이 아니라 기존의 백업 동작을 지키면서 Client·Server·공통 로직의 책임을 명확히 하는 일이었습니다.</p><p>설정 저장과 로그는 IPresetStore·IAppLogger로, 양쪽 PresetManager의 공통 동작은 PresetManagerBase로 분리했습니다. 프리셋 편집 화면도 PresetEditorControl로 공유하되, 클라이언트와 서버의 필드 권한은 각각 적용했습니다. 같은 모양의 코드보다 같은 책임을 가진 코드를 모으는 데 집중했습니다.</p>`}],links:[]},
+      'log-ai':{type:'DEVELOPMENT NOTE / 04',title:'AI에 구현을 맡기더라도 요구사항은 먼저 정의한다',intro:'웹 도구 3개의 기획과 생성형 AI 활용을 구분한 작업 방식.',tabs:[{name:'읽기',html:`<h3>어떤 도구가 필요한지 먼저 설명할 수 있어야 한다</h3><p>문서 편집, PDF 제작, 자가 테스트는 일상에서 직접 사용하고 싶었던 도구들입니다. 기능과 페이지의 구조, 입력과 출력, 사용 순서를 먼저 정했고 구현 코드의 대부분은 AI가 작성했습니다.</p><p>AI에게 구현을 요청할 때도 입력 형식과 사용 순서, 기대하는 결과를 먼저 정리했습니다. 완성된 화면을 직접 사용하면서 필요한 기능과 불편한 흐름을 수정했습니다.</p>`}],links:[]}
+    };
+    const dialog=document.getElementById('detail-dialog'),dialogBody=document.getElementById('dialog-body');let activeKey=null,activeTab=0,triggerElement=null;
+    function detailTabs(){const item=DETAILS[activeKey];dialogBody.innerHTML=`<div class="dialog-type">${item.type}</div><h2 class="dialog-title" id="detail-title">${item.title}</h2><p class="dialog-intro">${item.intro}</p><div role="tablist" class="dialog-tabs" aria-label="상세 내용 선택">${item.tabs.map((t,i)=>`<button type="button" role="tab" id="detail-tab-${i}" aria-controls="detail-tabpanel" aria-selected="${i===activeTab}" tabindex="${i===activeTab?0:-1}" data-detail-tab="${i}">${t.name}</button>`).join('')}</div><section role="tabpanel" id="detail-tabpanel" aria-labelledby="detail-tab-${activeTab}" class="detail-content" tabindex="0">${item.tabs[activeTab].html}</section><div class="dialog-footer"><span>JUNNY ENGINEERING JOURNAL</span>${item.links.length?item.links.map(link=>`<a href="${link[1]}" target="_blank" rel="noopener noreferrer">${link[0]} ↗</a>`).join(''):''}${(activeKey==='backup'||activeKey==='can')?(repositoryLink(activeKey)?`<a href="${repositoryLink(activeKey)}" target="_blank" rel="noopener noreferrer">GitHub 저장소 ↗</a>`:'<span class="muted">GitHub · 공개 준비 중</span>'):''}</div>`;
+      const tabs=Array.from(dialogBody.querySelectorAll('[data-detail-tab]'));
+      tabs.forEach((tab,index)=>{tab.addEventListener('click',()=>selectDetailTab(index,true));tab.addEventListener('keydown',e=>{let n;if(e.key==='ArrowRight')n=(index+1)%tabs.length;else if(e.key==='ArrowLeft')n=(index+tabs.length-1)%tabs.length;else if(e.key==='Home')n=0;else if(e.key==='End')n=tabs.length-1;else return;e.preventDefault();selectDetailTab(n,true)})});
+    }
+    function selectDetailTab(i,focus=false){activeTab=i;detailTabs();if(focus)dialogBody.querySelector(`[data-detail-tab="${i}"]`)?.focus();}
+    document.querySelectorAll('[data-detail]').forEach(btn=>btn.addEventListener('click',()=>{activeKey=btn.dataset.detail;activeTab=0;triggerElement=btn;detailTabs();dialog.showModal();dialog.scrollTop=0;document.getElementById('close-detail').focus();document.body.classList.add('modal-open')}));
+    document.getElementById('close-detail').addEventListener('click',()=>dialog.close());
+    dialog.addEventListener('click',e=>{const r=dialog.getBoundingClientRect();if(e.target===dialog&&(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom))dialog.close()});
+    dialog.addEventListener('close',()=>{document.body.classList.remove('modal-open');triggerElement?.focus();triggerElement=null});
+    document.getElementById('copy-email').addEventListener('click',async()=>{const status=document.getElementById('copy-status');try{await navigator.clipboard.writeText('junny.coder@gmail.com');status.textContent='이메일 주소를 복사했습니다.';}catch(_){status.textContent='복사가 제한된 환경입니다. 이메일 링크를 이용해 주세요.';}});
+  </script>
+</body>
 </html>
