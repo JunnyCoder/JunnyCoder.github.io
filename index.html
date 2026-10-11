@@ -13,7 +13,9 @@
   <meta property="og:url" content="https://junny.dev/">
   <link rel="icon" href="assets/img/favicon_main.png">
   <style>
-    :root { color-scheme:light; --ink:#193338; --ink-2:#345458; --muted:#70817f; --paper:#f7f7f2; --white:#fff; --line:#dde2db; --line-dark:#385559; --pine:#17363a; --pine-2:#234b4d; --mint:#b8d7c0; --coral:#ec9b72; --sand:#eee9dc; --shadow:0 20px 50px rgba(20,47,47,.08); --radius:18px; --font:system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+    @import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css");
+
+    :root { color-scheme:light; --ink:#193338; --ink-2:#345458; --muted:#70817f; --paper:#f7f7f2; --white:#fff; --line:#dde2db; --line-dark:#385559; --pine:#17363a; --pine-2:#234b4d; --mint:#b8d7c0; --coral:#ec9b72; --sand:#eee9dc; --shadow:0 20px 50px rgba(20,47,47,.08); --radius:18px; --font:"Pretendard",system-ui,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
     *,*::before,*::after{box-sizing:border-box}
     html{scroll-behavior:smooth;scroll-padding-top:96px}
     body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.75;word-break:keep-all;-webkit-font-smoothing:antialiased}
@@ -331,12 +333,27 @@
     .career-period{font-size:12px;color:#637d70;letter-spacing:.06em}.career-heading h3{font-size:25px;line-height:1.4;margin:8px 0 7px;letter-spacing:-.04em}.career-heading p{margin:0;color:#50685d;font-size:13px}
     .career-kind{font-size:11px;white-space:nowrap;color:#45685a;background:#eef3ec;border-radius:4px;padding:7px 11px;margin-top:5px}
     .career-summary{max-width:900px;font-size:14px;color:#50665e;line-height:1.9;margin:23px 0}
-    .career-work-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-bottom:25px}.career-work-grid h4{font-size:15px;margin:0 0 10px;color:#284e42}.career-work-grid ul{padding-left:17px;margin:0;font-size:12px;color:#64776d;line-height:1.9}.career-work-grid li{margin-bottom:7px}
+    .career-work-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px;margin-bottom:25px}.career-work-grid h4{font-size:17px;margin:0 0 10px;color:#284e42}.career-work-grid ul{padding-left:17px;margin:0;font-size:14px;color:#64776d;line-height:1.9}.career-work-grid li{margin-bottom:7px}
     .career-bottom{display:flex;align-items:center;justify-content:space-between;gap:15px}.career-bottom button{border:0;background:none;padding:5px 0;color:#365f55;font-size:12px}
     .work-patterns{margin-top:52px}.patterns-heading h3{font-size:26px;letter-spacing:-.045em;margin:8px 0}.patterns-heading>p:last-child{font-size:13px;color:#64776d;margin:0 0 24px}
     .patterns-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:28px}.patterns-grid article{border-top:2px solid #9eb9a6;padding-top:21px}.patterns-grid article>span{font-size:10px;letter-spacing:.12em;color:#6e8978;font-weight:800}.patterns-grid h4{font-size:17px;letter-spacing:-.03em;margin:11px 0}.patterns-grid p{font-size:13px;line-height:1.9;color:#64776d;margin:0}
     @media(max-width:900px){.career-work-grid{grid-template-columns:1fr;gap:18px}.career-work-grid>div{border-bottom:1px solid #edf0e9;padding-bottom:12px}.career-work-grid>div:last-child{border:0}.patterns-grid{gap:18px}}
     @media(max-width:760px){.career-entry{padding:24px 21px}.career-heading{flex-direction:column;gap:12px}.career-heading h3{font-size:22px}.career-kind{margin:0}.career-bottom{align-items:flex-start;flex-direction:column}.patterns-grid{grid-template-columns:1fr;gap:25px}.work-patterns{margin-top:38px}}
+
+    /* Increase paragraph readability while preserving heading and label sizes. */
+    p{font-size:18px}
+    .section-heading>p{font-size:17px}
+    .hero .lead{font-size:19px}
+    .motto,.bench-quote,.about-left .about-caption,.about-story p,.project-copy .description,.academic-note,.dialog-intro,.career-heading p,.patterns-heading>p:last-child,.patterns-grid p{font-size:16px}
+    .workbench .subtitle,.project-panel-intro,.web-card-body p,.log-row p,.timeline .company,.timeline p:not(.company),.case-body p,.roadmap-item p,.edu-card p,.phase-line p,p.detail-notice,p.skill-note{font-size:15px}
+    .value-card p,.visual-fallback p,.field-note p,.skill-card p,.detail-card p,.slot-box p,p.note-small{font-size:14px}
+    .about-lead{font-size:20px}
+    .project-copy .project-catch{font-size:22px}
+    .career-summary{font-size:15px}
+    .detail-content p{font-size:16px}
+    .detail-content .detail-card p,.detail-content .slot-box p{font-size:14px}
+    .detail-content .phase-line p{font-size:15px}
+    p.eyebrow,p.tag-line,p.dialog-type{font-size:10px}
   </style>
 </head>
 <body>
