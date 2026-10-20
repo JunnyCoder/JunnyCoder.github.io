@@ -419,6 +419,7 @@
       <div class="project-tabs" role="tablist" aria-label="프로젝트 종류">
         <button id="tab-engineering" type="button" role="tab" aria-selected="true" aria-controls="panel-engineering" tabindex="0" data-project-tab="engineering">MES Projects <span class="count">02</span></button>
         <button id="tab-ai-tools" type="button" role="tab" aria-selected="false" aria-controls="panel-ai-tools" tabindex="-1" data-project-tab="ai-tools">Toy Projects <span class="count">03</span></button>
+        <button id="tab-portfolio-maker" type="button" role="tab" aria-selected="false" aria-controls="panel-portfolio-maker" tabindex="-1" data-project-tab="portfolio-maker">Portfolio Maker <span class="count">01</span></button>
       </div>
       <div id="panel-engineering" class="project-pane" role="tabpanel" aria-labelledby="tab-engineering" tabindex="0">
         <p class="project-panel-intro">IPC 백업 도구와 CAN 통신 흐름을 구현한 C# 프로젝트입니다.</p>
@@ -446,6 +447,9 @@
           <article class="web-card" id="pdf-maker"><div class="web-thumb"><img src="assets/portfolio/pdf-maker.jpg" alt="PDF Maker 실제 화면"><div class="thumb-top"><span>02 / PUBLISH</span><span>LIVE WEB TOOL</span></div><div class="thumb-window" aria-hidden="true"><div class="bar"><i></i><i></i><i></i></div><div class="thumb-pdf"><div class="paper-sim"><b>Document</b><div class="thumb-line"></div><div class="thumb-line medium"></div><div class="thumb-line short"></div><div class="thumb-line"></div><div class="thumb-line medium"></div></div></div></div></div><div class="web-card-body"><span class="index">AI-ASSISTED / DOCUMENT</span><h3>PDF Maker</h3><p>Markdown·HTML을 불러와 표지, 목차, 페이지 구성과 인쇄까지 연결하도록 기획한 문서 제작 도구입니다.</p><div class="tags"><span>기능 설계</span><span>AI 구현</span><span>Document Workflow</span></div><div class="web-actions"><a href="tools/pdf-maker.html" target="_blank" rel="noopener noreferrer">실제 도구 열기 ↗</a><button type="button" data-detail="pdf">설계 메모 +</button></div></div></article>
           <article class="web-card" id="quiz-bank"><div class="web-thumb"><img src="assets/portfolio/quiz-bank.jpg" alt="Self Testing Quiz Bank 실제 화면"><div class="thumb-top"><span>03 / LEARN</span><span>LIVE WEB TOOL</span></div><div class="thumb-window" aria-hidden="true"><div class="bar"><i></i><i></i><i></i></div><div class="thumb-quiz"><strong>SELF TEST / QUESTION 01</strong><span>A. 선택지 보기</span><span>B. 선택지 보기</span><span>C. 선택지 보기</span></div></div></div><div class="web-card-body"><span class="index">AI-ASSISTED / LEARNING</span><h3>Self Testing Quiz Bank</h3><p>JSON 문제집 업로드부터 문제 풀이·채점·오답 확인까지의 학습 흐름을 설계한 도구입니다.</p><div class="tags"><span>기능 설계</span><span>AI 구현</span><span>JSON</span></div><div class="web-actions"><a href="tools/self-testing-quiz-bank.html" target="_blank" rel="noopener noreferrer">실제 도구 열기 ↗</a><button type="button" data-detail="quiz">설계 메모 +</button></div></div></article>
         </div>
+      </div>
+      <div id="panel-portfolio-maker" class="project-pane" role="tabpanel" aria-labelledby="tab-portfolio-maker" tabindex="0" hidden>
+        <article class="web-card" id="portfolio-maker"><div class="web-card-body"><span class="status-label">WORKING_ON</span><h3>Portfolio Maker</h3><div class="web-actions"><a href="https://folio.junny.dev" target="_blank" rel="noopener noreferrer">작업중인 사이트 미리보기 ↗</a></div></div></article>
       </div>
     </div></section>
 
@@ -545,7 +549,7 @@
       tab.addEventListener('keydown',e=>{let next;if(e.key==='ArrowRight')next=(index+1)%projectTabs.length;else if(e.key==='ArrowLeft')next=(index+projectTabs.length-1)%projectTabs.length;else if(e.key==='Home')next=0;else if(e.key==='End')next=projectTabs.length-1;else return;e.preventDefault();activateProjectTab(projectTabs[next],true)});
     });
     // Allows internal anchor links to hidden project panes to open the correct group.
-    function applyProjectHash(){const toy=['#markdown-editor','#pdf-maker','#quiz-bank'].includes(location.hash);if(toy||['#automated-backup','#can-emulator'].includes(location.hash)){activateProjectTab(document.getElementById(toy?'tab-ai-tools':'tab-engineering'));requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView());}}
+    function applyProjectHash(){if(location.hash==='#portfolio-maker'){activateProjectTab(document.getElementById('tab-portfolio-maker'));requestAnimationFrame(()=>document.getElementById('portfolio-maker')?.scrollIntoView());return;}const toy=['#markdown-editor','#pdf-maker','#quiz-bank'].includes(location.hash);if(toy||['#automated-backup','#can-emulator'].includes(location.hash)){activateProjectTab(document.getElementById(toy?'tab-ai-tools':'tab-engineering'));requestAnimationFrame(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView());}}
     activateProjectTab(projectTabs[0]);window.addEventListener('hashchange',applyProjectHash);applyProjectHash();
     const diagram=(nodes)=>'<div class="diagram" aria-label="개념적 처리 흐름">'+nodes.map((n,i)=>`${i?'<span class="diagram-arrow" aria-hidden="true">→</span>':''}<div class="diagram-node"><b>${n[0]}</b><small>${n[1]}</small></div>`).join('')+'</div>';
     const pending=(what,path='')=>`<div class="slot-box"><span class="slot-icon" aria-hidden="true">▤</span><strong>${what} 추가 예정</strong><p>실제 자료 확보 후 이 자리를 교체합니다.${path?`<br><code>${path}</code>`:''}</p></div>`;
