@@ -47,26 +47,10 @@ window.HtmlImportStructures = (() => {
     return node.hasAttribute('reversed') || numbers.some((number, index) => number < 0 || number > 999999999 || (index > 0 && number !== numbers[index - 1] + 1));
   }
   function tableGrid(table, content) {
-    const rows = Array.from(table.rows).filter(row => row.closest('table') === table);
-    const grid = rows.map(() => []);
-    let slots = 0;
-    rows.forEach((row, y) => {
-      let x = 0;
-      Array.from(row.cells).forEach(cell => {
-        while (grid[y][x] !== undefined) x++;
-        // rowspan=0 extends only through its row group, as in HTML.
-        const groupRows = rows.slice(y).filter(other => other.parentElement === row.parentElement).length;
-        const height = Math.min(cell.rowSpan === 0 ? groupRows : cell.rowSpan || 1, rows.length - y);
-        const width = Math.max(1, cell.colSpan || 1);
-        if (x + width > 1000) throw new Error('표의 열이 너무 많습니다. 표를 나누어 변환해주세요.');
-        slots += height * width;
-        if (slots > 100000) throw new Error('표의 병합 구조가 너무 복잡합니다. 표를 나누어 변환해주세요.');
-        const value=content(cell);
-        for (let dy = 0; dy < height; dy++) for (let dx = 0; dx < width; dx++) grid[y + dy][x + dx] = dy === 0 && dx === 0 ? value : '';
-        x += width;
-      });
-    });
-    return grid;
+    const {grid, records} = TableModel.layout(table);
+    const values = new Map(records.map(record => [record, content(record.cell)]));
+    return grid.map((row, y) => row.map((record, x) => record.top === y && record.left === x ? values.get(record) : ''));
   }
+
   return {checkComplexity, mathmlTex, listNumbers, needsLiteralNumbers, tableGrid};
 })();

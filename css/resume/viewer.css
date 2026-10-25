@@ -1,0 +1,10 @@
+html { color-scheme:light; }
+body { margin:0; padding:12px; background:#e9ece8; color:#26332f; font:15px/1.7 -apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
+.document-pages { width:max-content; margin:0 auto; gap:24px; }
+#viewer-status { max-width:600px; margin:40px auto; text-align:center; }
+#viewer-status button { display:block; margin:16px auto; padding:8px 18px; background:white; color:inherit; border:1px solid #89968f; border-radius:4px; font:inherit; cursor:pointer; }
+@media print {
+  html, body { margin:0!important; padding:0!important; width:auto!important; height:auto!important; overflow:visible!important; }
+  #viewer-status,#resume-source { display:none!important; }
+  .document-pages { display:block!important; margin:0!important; zoom:1!important; }
+}

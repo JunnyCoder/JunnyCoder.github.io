@@ -1,0 +1,44 @@
+{
+  "format": "junny-pdf-project",
+  "version": 1,
+  "assets": [],
+  "state": {
+    "html": "<div class=\"resume-sheet\">\n<h1>Junho Kim</h1><p class=\"contacts\"><a href=\"mailto:junny.coder@gmail.com\">junny.coder@gmail.com</a> | <a href=\"https://junny.dev\">junny.dev</a> | <a href=\"https://github.com/JunnyCoder\">github.com/JunnyCoder</a></p>\n<h2>Experience</h2>\n<div class=\"entry-title\"><strong>MES Administrator / IT Engineer</strong><span>Jan 2023 – Dec 2025</span></div><p class=\"meta\"><em>Consultancy assignment to Hyundai Mobis' production facility · Georgia, USA</em></p>\n<ul><li>Supported MES operations by analyzing SQL stored procedures, application logs, and equipment behavior across automotive module production processes.</li><li>Identified a read/delete timing conflict during database backups; reviewed operational constraints with developers, who implemented selective query blocking.</li><li>Coordinated PLC–MES signal testing and validated AMR arrival/departure ordering, completion-state resets, and consecutive vehicle arrivals.</li><li>Investigated IPC freezes using Windows and network logs; coordinated antivirus scan scheduling changes with security staff.</li><li>Developed a C# client–server tool for manual IPC backups and documented troubleshooting procedures for new MES staff.</li></ul>\n<div class=\"entry-title\"><strong>Service Planning &amp; QA Intern · K-Brain Company</strong><span>Jan – Jun 2022</span></div><p class=\"meta\"><em>R&amp;D Team · WEVEN website builder</em></p>\n<ul><li>Defined e-commerce order states, transition rules, and buyer/administrator permissions; documented requirements with developers.</li><li>Simplified default settings using customer feedback; prepared test cases and supported QA activities.</li></ul>\n<h2>Projects</h2>\n<h3>Folio | Portfolio Maker <span class=\"meta\">| In development · <a href=\"https://folio.junny.dev\">folio.junny.dev</a></span></h3>\n<ul><li>Building a web tool to organize experience and supporting materials into a personal portfolio.</li><li>Iterating on question-based input and editing workflows; deployed a preview on a separate website.</li></ul>\n<h3>JunnyMESBackup <span class=\"meta\">| C#, WinForms, TCP, File Hashing</span></h3>\n<ul><li>Designed a client–server backup tool that identifies changed files using hashes and transfers them over TCP; used for manual IPC backups on site.</li><li>Wrote the initial implementation directly; used AI assistance for later bug fixes and structural improvements.</li></ul>\n<h3>CAN Emulator <span class=\"meta\">| C#, WPF, MVVM, Dependency Injection</span></h3>\n<ul><li>Built a software simulation of virtual ECU and signal flows, practicing UI state, commands, and separation of responsibilities.</li></ul>\n<h2>Technical Skills</h2>\n<p><strong>Development:</strong> C#, WinForms, TCP; WPF, MVVM, DI in personal projects<br><strong>Manufacturing IT:</strong> MS SQL Server, SQL analysis, MES, equipment interface validation<br><strong>Learning &amp; prototyping:</strong> Python, pandas, NumPy; AI-assisted HTML/CSS/JavaScript tools</p>\n<h2>Education &amp; Training</h2>\n<div class=\"entry-title\"><strong>Korea University · Bachelor's degree in Digital Management</strong><span>Feb 2023</span></div>\n<p class=\"meta\">Division of Convergence Management; coursework in information systems, operations, and supply chains.</p>\n<div class=\"entry-title\"><strong>Samsung SW·AI Academy for Youth (SSAFY)</strong><span>Jul 2026 – Present</span></div>\n<p class=\"meta\">Python, data structures, algorithms, data analysis and AI practice. Monthly Best Member: Jul/Aug 2026.</p>\n<div class=\"entry-title\"><strong>Georgia Tech · Individual online analytics courses via edX</strong><span>Sep 2023 – Dec 2024</span></div><p class=\"meta\">Completed three courses in analytics modeling, Python/SQL data analysis, and business analytics.</p>\n<h2>Languages &amp; Certifications</h2><p>Korean; English: OPIc IH (Mar 2026). DSAC Level 3 (Feb 2022); ICDL (Oct 2020).</p>\n</div>",
+    "settings": {
+      "colorTheme": "minimal",
+      "preserveHtmlCss": true,
+      "fontSize": 10.1,
+      "globalLineHeight": 1.17,
+      "enableHeaderFooter": false,
+      "headerTitleInput": "JUNHO KIM · RESUME",
+      "footerAuthorInput": "",
+      "marginTop": 13,
+      "marginBottom": 13,
+      "marginLeft": 17,
+      "marginRight": 17,
+      "coverTitleInput": "JUNHO KIM · RESUME",
+      "coverSubtitleInput": "",
+      "coverBgStyle": "template",
+      "coverBgInput": "",
+      "coverImgInput": "",
+      "coverImageFit": "cover",
+      "coverImageOpacity": 0,
+      "coverFilterColor": "#ffffff",
+      "coverFilterOpacity": 100,
+      "removeHtmlBackground": false,
+      "tocTitleInput": "목차",
+      "tocNumbering": false
+    },
+    "title": "Junho Kim Resume",
+    "importedStyles": {
+      "css": [
+        "\nbody { color:#171717; background:white; font-size:10.2pt; line-height:1.43; }\n* { box-sizing:border-box; }\nh1,h2,h3,p,ul,table { margin:0; }\na { color:inherit; text-decoration:none; }\nstrong { font-weight:700; }\np { margin:4pt 0; }\nul { padding-left:13pt; margin:4pt 0 7pt; }\nli { margin:2pt 0; }\nh2 { font-size:12pt; line-height:1.3; margin:14pt 0 7pt; padding:0 0 4pt; border:0; border-bottom:1px solid #333; }\nh3 { font-size:10.6pt; line-height:1.35; margin:9pt 0 3pt; border:0; }\ntable { width:100%; border-collapse:collapse; font-size:9.7pt; margin:5pt 0 10pt; }\nth,td { text-align:left; vertical-align:top; padding:5pt 7pt; border:0; border-bottom:1px solid #d1d5da; background:white; }\nth { background:#f0f2f4; font-weight:700; }\ntd ul { margin:0; padding-left:12pt; }\n.resume-sheet { width:100%; }\n.meta { color:#555; font-size:9.2pt; }\n.project-table td:first-child { width:22%; font-weight:600; background:#f6f7f8; }\n.project-table td { padding:5pt 7pt; }\n\nbody { font-family:\"Times New Roman\",Times,serif; font-size:10.1pt; line-height:1.17; }\nh1 { text-align:center; font-size:25pt; font-weight:normal; line-height:1.05; border:0; padding:0; margin:0 0 4pt; }\n.contacts { text-align:center; font-size:9pt; margin:0 0 10pt; }\n.contacts a { text-decoration:underline; }\nh2 { text-transform:uppercase; font-variant:small-caps; font-size:11.2pt; font-weight:normal; margin:10pt 0 4pt; padding-bottom:2pt; border-bottom:0.6pt solid black; }\nh3 { font-size:10.2pt; margin:6pt 0 2pt; }\nul { margin:3pt 0 5pt; padding-left:13pt; }\nli { margin:1.7pt 0; }\np { margin:2pt 0 4pt; }\n.meta { color:#171717; font-size:9.5pt; }\n.entry-title { display:flex; justify-content:space-between; gap:8pt; align-items:baseline; }\n.entry-title span { white-space:nowrap; font-size:9.5pt; }\n"
+      ],
+      "attributes": {
+        "lang": "en"
+      },
+      "missing": [],
+      "available": true
+    }
+  }
+}

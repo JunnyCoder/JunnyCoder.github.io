@@ -1,7 +1,7 @@
 window.MdHtmlImporter={install({editor,backup,status}){
  const $=id=>document.getElementById(id),dialog=$('htmlImportDialog');
  let mode='strict',target='replace',model=null,choices=new Map(),selection=null,result=null,insertion=null,before='',fileRequest=0,dirty=false,sourceReady=false;
- const links=Array.from(document.querySelectorAll('link[rel="stylesheet"]')).map(n=>'<link rel="stylesheet" href="'+SharedHtmlBlocks.escape(n.href)+'">').join('');
+ const links=Array.from(document.querySelectorAll('link[data-document-style],link[data-code-block-style],link[data-element-style],link[href*="katex"]')).map(n=>'<link rel="stylesheet" href="'+SharedHtmlBlocks.escape(n.href)+'">').join('');
  const frames=[$('htmlImportOriginalPreview'),$('htmlImportResultPreview')];
  const mathLinks=Array.from(document.querySelectorAll('link[href*="katex"]')).map(n=>'<link rel="stylesheet" href="'+SharedHtmlBlocks.escape(n.href)+'">').join('');
  const preview=HtmlImportPreview.create(frames);
@@ -17,8 +17,8 @@ window.MdHtmlImporter={install({editor,backup,status}){
   else if(result)$('htmlImportStatus').textContent=(result.unresolved?'변환 방식 선택 필요 '+result.unresolved+'개':'편집기에 적용할 수 있습니다.')+(model.removed?' · 실행·외부 삽입 요소 '+model.removed+'개 제외':'');
   return problems;
  }
- function renderMath(root){window.PdfMath?.render(root);if(window.renderMathInElement)renderMathInElement(root,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false},{left:'\\(',right:'\\)',display:false},{left:'\\[',right:'\\]',display:true}],ignoredClasses:['katex','katex-display','pdf-math'],throwOnError:false});}
- function frameDocument(body,css='',themed=false){return '<!doctype html><html data-ui-theme="light"><head><meta charset="UTF-8">'+(themed?links:mathLinks)+'<style>html{overflow:auto}body{height:auto!important;margin:0;padding:18px;overflow:visible!important;font:14px/1.65 sans-serif;color:#222;background:white}img{max-width:100%}pre{white-space:pre-wrap}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:6px}[data-import-selected]{outline:2px solid #246ec4!important;outline-offset:2px}'+css+'</style></head><body'+(themed?' class="preview-body"':'')+' data-import-preview="true">'+body+'</body></html>';}
+ const renderMath = DocumentContent.renderMath;
+ function frameDocument(body,css='',themed=false){return '<!doctype html><html data-ui-theme="light"><head><meta charset="UTF-8">'+(themed?links:mathLinks)+'<style>html{overflow:auto}body{height:auto!important;margin:0;padding:18px;overflow:visible!important;font:14px/1.65 sans-serif;color:#222;background:white}img{max-width:100%}pre{white-space:pre-wrap}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:6px}[data-import-selected]{outline:2px solid #246ec4!important;outline-offset:2px}'+css+'</style></head><body'+(themed?' class="preview-body" data-document-theme="light"':'')+' data-import-preview="true">'+body+'</body></html>';}
  function outputPreview(){
   const frame=$('htmlImportResultPreview'),doc=frame.contentDocument;
   // Once the frame has loaded, retain its document/fonts/scroll area and patch
@@ -30,10 +30,10 @@ window.MdHtmlImporter={install({editor,backup,status}){
    if(liveDocument!==doc){liveDocument=doc;liveRenderer=MdPreviewRenderer.create(root);}
    lastPreviewTokens=liveRenderer.update(text).tokens;
   }else if(fallbackRenderer)lastPreviewTokens=fallbackRenderer.update(text).tokens;
-  else {root.innerHTML=DOMPurify.sanitize(window.PdfMath?PdfMath.parse(text):marked.parse(text));lastPreviewTokens=null;}
+  else {root.innerHTML=DOMPurify.sanitize(DocumentMarkdown.parse(text));lastPreviewTokens=null;}
   lastRenderedText=text;
-  SharedHtmlBlocks.hydrate(root);SharedCodeBlocks.normalize(root);window.PdfTemplates?.prepareDesign?.(root);renderMath(root);
-  if(live){let style=doc.getElementById('importHtmlStyles');if(!style){style=doc.createElement('style');style.id='importHtmlStyles';doc.head.append(style);}style.textContent=SharedHtmlBlocks.exportCss();preview.scheduleRestore();}
+  DocumentContent.prepare(root);
+  if(live){let style=doc.getElementById('importHtmlStyles');if(!style){style=doc.createElement('style');style.id='importHtmlStyles';doc.head.append(style);}style.textContent=SharedHtmlBlocks.exportCss(doc);preview.scheduleRestore();}
   else preview.write(frame,frameDocument(root.innerHTML,SharedHtmlBlocks.exportCss(),true));
  }
  function regenerate(){

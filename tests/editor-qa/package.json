@@ -2,10 +2,11 @@
   "name": "junny-editor-qa",
   "private": true,
   "scripts": {
-    "test": "node correctness.cjs"
+    "test": "node run.cjs"
   },
   "devDependencies": {
+    "dompurify": "3.4.17",
     "jsdom": "26.1.0",
-    "katex": "0.16.8"
+    "katex": "0.16.9"
   }
 }

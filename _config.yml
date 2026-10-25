@@ -1,0 +1,29 @@
+title: JunnyCoder
+description: "Junho Kim's dev blog & tools"
+url: "https://junny.dev"
+baseurl: ""
+repository: JunnyCoder/JunnyCoder.github.io
+markdown: kramdown
+plugins:
+  - jekyll-sitemap
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - node_modules
+  - README.md
+  - log.md
+  - docs
+  - tests
+  - scripts
+  - .pages-qa
+  - css/document/templates/README.md
+  - assets/resume/README.md
+
+defaults:
+  - scope:
+      path: "tools/resume-viewer.html"
+    values:
+      layout: null
+      list_in_dashboard: false
+      sitemap: false

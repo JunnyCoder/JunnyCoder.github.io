@@ -1,14 +1,15 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const { JSDOM } = require('jsdom');
-const repo = require('node:path').resolve(__dirname,'../..');
+const { JSDOM, VirtualConsole } = require('jsdom');
+const repo = process.env.SITE_ROOT || require('node:path').resolve(__dirname,'../..');
 const html = fs.readFileSync(repo + '/tools/pdf-maker.html', 'utf8');
 const script = fs.readFileSync(repo + '/js/pdf-maker/script.js', 'utf8');
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
 function installLayout(window) {
   const proto = window.HTMLElement.prototype;
+  proto.scrollIntoView = function() {};
   const side = (name, page) => page?.classList.contains('cover-page-wrapper') ? 0 :
-    Math.max(parseFloat(window.document.documentElement.style.getPropertyValue('--page-margin-' + name.toLowerCase())) * 3.7795,
+    Math.max(parseFloat(page?.closest('.document-pages')?.style.getPropertyValue('--page-margin-' + name.toLowerCase()) || window.document.documentElement.style.getPropertyValue('--page-margin-' + name.toLowerCase()) || (['Top', 'Bottom'].includes(name) ? '20' : '15')) * 3.7795,
       ['Top', 'Bottom'].includes(name) && page?.classList.contains('with-header-footer') ? 19 * 3.7795 : 0);
   const pageOf = node => node.closest('.pdf-page');
   function height(node) {
@@ -45,32 +46,28 @@ function installLayout(window) {
   window.HTMLDialogElement.prototype.showModal = function() { this.open = true; };
   window.HTMLDialogElement.prototype.close = function() { this.open = false; };
 }
-async function app(draft) {
-  const dom = new JSDOM(html, { url: 'https://example.test/tools/pdf-maker.html', runScripts: 'outside-only', pretendToBeVisual: true });
+async function app(draft, options = {}) {
+  const errors = [], console = new VirtualConsole();
+  console.on('jsdomError', error => errors.push(error));
+  const dom = new JSDOM(html, { url: 'https://example.test/tools/pdf-maker.html', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole: console });
   const w = dom.window;
   installLayout(w);
   w.alert = message => { throw Error(message); };
   w.prompt = () => null;
   w.print = () => {};
   if (draft) w.localStorage.setItem('pdfmaker.draft.v1', draft);
+  options.setup?.(w);
   w.eval(fs.readFileSync(repo + '/tools/libs/marked.min.js', 'utf8'));
   w.eval(fs.readFileSync(repo + '/tools/libs/purify.min.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/shared/render-runtime.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/shared/markdown-options.js', 'utf8'));
   w.eval(fs.readFileSync(repo + '/tools/libs/highlight.min.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/shared/html-blocks.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/shared/code-blocks.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/pdf-maker/math.js','utf8'));
-  w.eval(fs.readFileSync(require.resolve('katex/dist/katex.min.js'),'utf8'));
-  w.eval(fs.readFileSync(require.resolve('katex/dist/contrib/auto-render.min.js'),'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/pdf-maker/templates.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/pdf-maker/html-styles.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/pdf-maker/document-state.js', 'utf8'));
-  w.eval(fs.readFileSync(repo + '/js/pdf-maker/page-reflow.js', 'utf8'));
+  w.eval(fs.readFileSync(repo + '/tools/libs/katex/katex.min.js', 'utf8'));
+  w.eval(fs.readFileSync(repo + '/tools/libs/katex/auto-render.min.js', 'utf8'));
+  const modules = require('./modules.cjs');
+  modules.load(w, modules.paths('pdf-maker').filter(file => file !== 'js/pdf-maker/script.js'));
   w.eval(script);
   await wait(20);
   const $ = id => w.document.getElementById(id);
-  return { w, $, dom,
+  return { w, $, dom, errors,
     pages: () => Array.from($('pdfPreviewContainer').querySelectorAll('.pdf-page')),
     async load(content, name = 'test.html') {
       Object.defineProperty($('htmlFileInput'), 'files', { configurable: true, value: [{ name, text: async () => content }] });
@@ -83,4 +80,5 @@ async function app(draft) {
   };
 }
 
+app.installLayout = installLayout;
 module.exports = app;

@@ -4,38 +4,42 @@ document.addEventListener('DOMContentLoaded', () => {
   const previewContainer = $('pdfPreviewContainer');
   const popup = $('tocActionPopup');
   const draftKey = 'pdfmaker.draft.v1';
-  const templates = window.PdfTemplates;
-  const htmlStyles = window.PdfHtmlStyles;
-  const settingIds = ['colorTheme', 'preserveHtmlCss', 'fontSize', 'globalLineHeight', 'enableHeaderFooter',
-    'headerTitleInput', 'footerAuthorInput', 'marginTop', 'marginBottom', 'marginLeft',
-    'marginRight', 'coverTitleInput', 'coverSubtitleInput', 'coverBgStyle', 'coverBgInput', 'coverImgInput',
-    'coverImageFit', 'coverImageOpacity', 'coverFilterColor', 'coverFilterOpacity', 'removeHtmlBackground', 'tocTitleInput', 'tocNumbering'];
-  const limits = { fontSize: [6, 36], globalLineHeight: [1, 3],
-    coverImageOpacity: [0, 100], coverFilterOpacity: [0, 100], marginTop: [0, 50], marginBottom: [0, 50], marginLeft: [0, 50], marginRight: [0, 50] };
+  const templates = window.DocumentDesigns;
+  const htmlStyles = window.DocumentHtmlStyles;
+  const settingIds = DocumentSettings.ids, limits = DocumentSettings.limits;
   let importedStyles = { css: [], attributes: {}, missing: [], available: false };
-  let settings = Object.fromEntries(settingIds.map(id => [id, $(id).type === 'checkbox' ? $(id).checked : $(id).value]));
+  let settings = {...DocumentSettings.defaults};
   const defaultSettings = { ...settings };
+  document.querySelectorAll('[data-open-file]').forEach(button => {
+    button.addEventListener('click', () => $(button.dataset.openFile).click());
+  });
+  const panelButtons = Array.from(document.querySelectorAll('[data-pdf-panel]'));
+  function showMobilePanel(name) {
+    if (name === 'element' && $('elementPanelBtn').disabled) return;
+    $('pdfWorkspace').dataset.mobilePanel = name;
+    panelButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.pdfPanel === name)));
+    if (name === 'document') requestAnimationFrame(applyZoom);
+  }
+  panelButtons.forEach(button => button.addEventListener('click', () => showMobilePanel(button.dataset.pdfPanel)));
+  if (window.matchMedia?.('(max-width: 760px)').matches) $('pdfZoom').value = 'fit';
   let activeCodeId = null, activeEditKind = 'block', pendingConfirmation = null;
   let history = [], redoHistory = [], inputGroup = null, selectedId = null, selectedPreset = null;
   let tocEditor = null;
   let mode = 'normal', activeTocId = null, activeEditId = null;
   let renderTimer, saveTimer, scaledCount = 0, serial = 0;
   let storageFailed = false, storageConflict = false, expectedDraft = null;
+  let draftInvalid = false;
   try { expectedDraft=localStorage.getItem(draftKey); } catch {}
   let projectBusy=false, pageIndex=0;
   let documentVersion = 0, loadRequest = 0, imageRequest = 0;
   let coverImageProbe = null;
   let committedPrint = false, printPreparing = false;
   let pendingDesign = null, deferredDesignAction = null, replayDesignAction = false;
-  let designHeadingNumbers = new Map(), designFigureNumbers = new Map();
   let activeTableId = null, tableEditCell = null;
   const uid = prefix => prefix + '-' + Date.now() + '-' + (++serial);
   const clean = html => DOMPurify.sanitize(html, { FORBID_ATTR: ['contenteditable'] });
-  const parseMarkdown = markdown => window.PdfMath ? PdfMath.parse(markdown) : marked.parse(markdown);
-  function safeDocumentHtml(html) {
-    const staging = document.createElement('div'); staging.innerHTML = html;
-    return clean(window.PdfMath ? PdfMath.sourceHtml(staging) : html);
-  }
+  const parseMarkdown = DocumentMarkdown.parse;
+  const safeDocumentHtml = DocumentContent.safeHtml;
   const localDate = () => {
     const date = new Date();
     return date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0');
@@ -47,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return node;
   };
   const sourceState = window.PdfDocumentState?.create(sourceContent);
-  const pageReflow = window.PdfPageReflow && sourceState ? PdfPageReflow.create(previewContainer,sourceState) : null;
+  const pageReflow = window.DocumentPageReflow && sourceState ? DocumentPageReflow.create(previewContainer,sourceState) : null;
   const blockIndex = window.EditorRuntime?.index(sourceContent,'data-block-id');
   const elementIndex = window.EditorRuntime?.index(sourceContent,'data-element-id');
   const blockById = id => blockIndex ? blockIndex.get(id) : Array.from(sourceContent.children).find(block => block.dataset.blockId === id);
@@ -59,17 +63,9 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (source.dataset.pdfLineHeight) source.style.removeProperty('line-height');
     delete source.dataset.pdfLineHeight;
   }
-  function hiddenInSource(node) {
-    for (let current = node; current && current !== sourceContent; current = current.parentElement) {
-      if (current.hidden || current.style.display === 'none') return true;
-    }
-    return false;
-  }
+  const hiddenInSource = node => DocumentContent.hidden(node, sourceContent);
   function documentHtml() {
-    const serialize = () => {
-    const html = window.PdfMath ? PdfMath.sourceHtml(sourceContent) : sourceContent.innerHTML;
-    return window.PdfImages ? PdfImages.snapshotHtml(html) : html;
-    };
+    const serialize = () => DocumentSerialization.html(sourceContent, {sourceOnly: true});
     return sourceState ? sourceState.html(serialize) : serialize();
   }
   const snapshot = () => ({ html: documentHtml(), settings: { ...settings }, title: document.title, importedStyles });
@@ -106,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('confirmDocumentDialog').addEventListener('cancel', event => { event.preventDefault(); finishConfirmation(false); });
   function hasDocument() { return sourceContent.children.length > 0; }
   function resetDocument() {
+    draftInvalid = false;
     pendingDesign = null;
     closeImageEditor();
     $('imageLoadNotice').hidden = true;
@@ -141,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   function persist() {
     clearTimeout(saveTimer);
+    if (draftInvalid) return false;
     try {
       const state = snapshot();
       const actual=localStorage.getItem(draftKey);
@@ -166,9 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (input.type === 'checkbox') input.checked = Boolean(settings[id]);
       else input.value = settings[id];
     });
-    ['Top', 'Bottom', 'Left', 'Right'].forEach(side => {
-      document.documentElement.style.setProperty('--page-margin-' + side.toLowerCase(), settings['margin' + side] + 'mm');
-    });
+    DocumentSettings.applyMargins(document.documentElement, settings);
     $('coverConfigPanel').hidden = !sourceContent.querySelector('.cover-page');
     const preserve = settings.preserveHtmlCss && importedStyles.available;
     $('preserveHtmlCss').disabled = !importedStyles.available;
@@ -181,66 +177,13 @@ document.addEventListener('DOMContentLoaded', () => {
       'HTML의 스타일·인라인 CSS를 지원합니다. 별도 CSS 파일은 함께 선택하세요.') +
       (importedStyles.missing?.length ? ' · 불러오지 못한 CSS: ' + importedStyles.missing.join(', ') + ' (CSS 파일을 HTML과 함께 선택하세요)' : '');
     $('templateDescription').textContent = templates.themes[settings.colorTheme].description;
-    htmlStyles.mount(importedStyles, preserve);
   }
-  function normalizeSettings(values) {
-    const next = { ...settings };
-    settingIds.forEach(id => {
-      if (!(id in values)) return;
-      if (id in limits) {
-        const value = Number(values[id]);
-        if (Number.isFinite(value) && values[id] !== '') next[id] = Math.max(limits[id][0], Math.min(limits[id][1], value));
-      } else if ($(id).type === 'checkbox') next[id] = values[id] === true;
-      else if (id === 'colorTheme') next[id] = values[id] === 'tech' ? 'dev' :
-        (values[id] in templates.themes ? values[id] : 'modern');
-      else next[id] = String(values[id]);
-    });
-    if (!('coverBgStyle' in values) && values.coverBgInput) next.coverBgStyle = 'custom';
-    if (!('coverTitleInput' in values) && 'colorTheme' in values && 'headerTitleInput' in values) next.coverTitleInput = values.headerTitleInput || document.title;
-    return next;
-  }
+  const normalizeSettings = values => DocumentSettings.normalize(values, settings, document.title);
   function normalizeContent() {
-    window.SharedHtmlBlocks?.hydrate(sourceContent);
-    SharedCodeBlocks.normalize(sourceContent);
-    sourceContent.querySelectorAll('[data-design-auto-number]').forEach(node => { delete node.dataset.designAutoNumber; delete node.dataset.designNumber; });
-    sourceContent.querySelectorAll('[data-style] > figcaption').forEach(node => { delete node.dataset.designNumber;delete node.dataset.designSource; });
-    sourceContent.querySelectorAll('[data-style]').forEach(node => {
-      if (templates.designIds.has(node.dataset.style) && !templates.validDesign(node,node.dataset.style)) templates.writeDesign(node,'default');
-    });
-    // Plain HTML text and the Markdown editor's exported article must also paginate.
-    const exported = sourceContent.querySelector(':scope > article.preview-body');
-    if (exported) exported.replaceWith(...exported.childNodes);
-    Array.from(sourceContent.childNodes).forEach(node => {
-      if (node.nodeType === Node.TEXT_NODE && node.textContent.trim()) node.replaceWith(textNode('p', node.textContent));
-    });
-    const usedIds = new Set();
-    Array.from(sourceContent.children).forEach(block => {
-      if (!block.dataset.blockId || usedIds.has(block.dataset.blockId)) block.dataset.blockId = uid('block');
-      usedIds.add(block.dataset.blockId);
-    });
-    const headingIds = new Set();
-    const elementIds = new Set();
-    sourceContent.querySelectorAll(templates.selector+",[data-html-block]").forEach(node => {
-      if(node.closest("[data-html-block]") && !node.matches("[data-html-block]")){delete node.dataset.elementId;return;}
-      if (!node.dataset.elementId || elementIds.has(node.dataset.elementId)) node.dataset.elementId = uid('element');
-      elementIds.add(node.dataset.elementId);
-    });
-    sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      if (heading.closest('.cover-page,.toc-wrapper,[data-html-block]')) return;
-      if (!heading.dataset.headingId || headingIds.has(heading.dataset.headingId)) heading.dataset.headingId = uid('heading');
-      headingIds.add(heading.dataset.headingId);
-    });
+    DocumentContent.normalizeSource(sourceContent, uid);
     if (sourceContent.querySelector('img[data-image-asset]')) restoreBodyImages();
   }
-  function renderMath(root = sourceContent) {
-    if (window.renderMathInElement) window.renderMathInElement(root, {
-      delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false },
-        { left: '\\(', right: '\\)', display: false }, { left: '\\[', right: '\\]', display: true }],
-      ignoredClasses: ['pdf-math', 'katex', 'katex-display'],
-      throwOnError: false
-    });
-    window.PdfMath?.render(sourceContent);
-  }
+  const renderMath = (root = sourceContent) => DocumentContent.renderMath(root);
   function requestPaginate() {
     clearTimeout(renderTimer);
     renderTimer = setTimeout(paginate, 100);
@@ -253,6 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
     selectedId = null;
     selectedPreset = null;
     $('rightPanel').style.display = 'none';
+    $('elementPanelBtn').disabled = true;
+    if ($('pdfWorkspace').dataset.mobilePanel === 'element') showMobilePanel('document');
     previewContainer.querySelectorAll('.selected-element').forEach(node => node.classList.remove('selected-element'));
   }
   function setMode(next) {
@@ -268,376 +213,34 @@ document.addEventListener('DOMContentLoaded', () => {
         '일반 모드: 더블클릭으로 편집 · 파일 드래그 앤 드롭';
     hidePopup();
   }
-  function createPage(cover = false, original = true) {
-    const page = document.createElement('div');
-    page.className = 'pdf-page A4' + (cover ? ' cover-page-wrapper' : '');
-    page.dataset.theme = settings.colorTheme;
-    if (settings.enableHeaderFooter && !cover) {
-      page.classList.add('with-header-footer');
-      const header = document.createElement('div');
-      header.className = 'pdf-header';
-      header.append(textNode('span', settings.headerTitleInput || document.title), textNode('span', settings.footerAuthorInput));
-      const footer = document.createElement('div');
-      footer.className = 'pdf-footer';
-      footer.append(textNode('span', localDate(), 'footer-date'), textNode('span', '', 'page-num-slot'));
-      page.append(header, footer);
-    }
-    const content = document.createElement('div');
-    content.className = 'pdf-content';
-    const preserve = settings.preserveHtmlCss && importedStyles.available && !cover && original;
-    htmlStyles.decorateRoot(content, importedStyles, preserve);
-    if (!preserve) {
-      content.style.fontSize = settings.fontSize + 'pt';
-      content.style.lineHeight = settings.globalLineHeight;
-    }
-    content.style.setProperty('--document-font-size', settings.fontSize + 'pt');
-    content.style.setProperty('--document-line-height', settings.globalLineHeight);
-    page.append(content);
-    previewContainer.append(page);
-    if (preserve) htmlStyles.pageBackground(page, content, settings.removeHtmlBackground);
-    const style = getComputedStyle(page);
-    const capacity = page.getBoundingClientRect().height - parseFloat(style.paddingTop) - parseFloat(style.paddingBottom);
-    content.style.setProperty('height', Math.max(1, capacity) + 'px', 'important');
-    content.style.setProperty('--page-content-height', Math.max(1, capacity) + 'px');
-    return { page, content };
-  }
-  const fits = content => content.scrollHeight <= content.clientHeight + 1 && content.scrollWidth <= content.clientWidth + 1;
-  function openDetails(node) {
-    if (node.tagName === 'DETAILS') node.open = true;
-    node.querySelectorAll('details').forEach(detail => { detail.open = true; });
-    return node;
-  }
-  function preparePreview(node) {
-    if(node.matches('[data-html-block]'))return node;
-    node = htmlStyles.prepare(node, settings.preserveHtmlCss && importedStyles.available);
-    window.PdfImages?.decorate(node);
-    if (pendingDesign && !committedPrint) [node, ...node.querySelectorAll('[data-element-id]')].forEach(element => {
-      if (element.dataset.elementId !== pendingDesign.id) return;
-      ['style-preset-default', 'style-preset-highlight', 'style-preset-bordered', 'style-preset-card'].forEach(name => element.classList.remove(name));
-      templates.writeDesign(element, pendingDesign.preset, pendingDesign.options);
-    });
-    [node, ...node.querySelectorAll('[data-style]')].forEach(element => {
-      if (['heading-chapter','heading-index'].includes(element.dataset.style) && !element.dataset.designNumber)
-        element.dataset.designNumber = designHeadingNumbers.get(element.dataset.elementId) || '';
-      if (element.dataset.style === 'figure-book' && !element.dataset.designNumber)
-        element.dataset.designNumber = designFigureNumbers.get(element.dataset.elementId) || '';
-      if (element.dataset.style === 'figure-side') element.dataset.designNarrow = String(794 - 3.7795 * (Number(settings.marginLeft) + Number(settings.marginRight)) < 420);
-    });
-    templates.prepareDesign(node);
-    return node;
-  }
-  function sliceBlock(block, start, end, total) {
-    const range = document.createRange();
-    range.selectNodeContents(block);
-    let offset = 0;
-    const walker = document.createTreeWalker(block, NodeFilter.SHOW_TEXT);
-    let node;
-    while ((node = walker.nextNode())) {
-      const next = offset + node.textContent.length;
-      if (start > 0 && start >= offset && start < next) range.setStart(node, start - offset);
-      if (end < total && end > offset && end <= next) { range.setEnd(node, end - offset); break; }
-      offset = next;
-    }
-    const fragment = block.cloneNode(false);
-    let contents = range.cloneContents();
-    let ancestor = range.commonAncestorContainer.nodeType === Node.ELEMENT_NODE ?
-      range.commonAncestorContainer : range.commonAncestorContainer.parentElement;
-    // A range wholly inside one text/span omits its ancestors. Retain code and
-    // syntax spans in middle page fragments, including multiline strings/comments.
-    while (ancestor && ancestor !== block && block.contains(ancestor)) {
-      const shell = ancestor.cloneNode(false);
-      shell.append(contents);
-      contents = shell;
-      ancestor = ancestor.parentElement;
-    }
-    fragment.append(contents);
-    fragment.classList.remove('page-break-before');
-    fragment.dataset.fragment = 'true';
-    fragment.dataset.designContinuation = String(start > 0);
-    if (fragment.tagName === 'PRE') fragment.dataset.codeLineOffset = String((block.textContent.slice(0,start).match(/\n/g) || []).length);
-    fragment.dataset.manualBreak = String(start === 0 && block.classList.contains('page-break-before'));
-    if (fragment.tagName === 'OL') {
-      const first = fragment.querySelector(':scope > li');
-      if (first?.dataset.listIndex) fragment.start = Number(block.getAttribute('start') || (block.reversed ? block.children.length : 1)) + (block.reversed ? -1 : 1) * Number(first.dataset.listIndex);
-    }
-    return openDetails(preparePreview(fragment));
-  }
-  function tableChunk(table, rows, first) {
-    const clone = table.cloneNode(false);
-    clone.classList.remove('page-break-before');
-    clone.dataset.fragment = 'true';
-    Array.from(table.children).filter(node => ['COLGROUP', 'THEAD'].includes(node.tagName) || (first && node.tagName === 'CAPTION'))
-      .forEach(node => clone.append(node.cloneNode(true)));
-    const body = document.createElement('tbody');
-    rows.forEach(row => body.append(row.cloneNode(true)));
-    clone.append(body);
-    return preparePreview(clone);
-  }
-  function paginate(changedId = null) {
-    // Removing every page temporarily collapses the scroll area. Restore after
-    // rebuilding and applying screen zoom so style edits keep the current view.
-    const scrollPanel=$('dropZone');
-    const scrollPosition={top:scrollPanel.scrollTop,left:scrollPanel.scrollLeft};
-    const restoreScroll=()=>{scrollPanel.scrollTop=scrollPosition.top;scrollPanel.scrollLeft=scrollPosition.left;};
-    clearTimeout(renderTimer);
-    hidePopup();
-    // Measure A4 paper at its real size; zoom is only a screen presentation.
-    previewContainer.style.zoom='1';
-    synchronizeToc();
-    designHeadingNumbers = new Map(); designFigureNumbers = new Map();
-    const designCounters = [0,0,0,0,0,0];
-    const tocNumbers = new Map(Array.from(sourceContent.querySelectorAll('.toc-item[data-heading-target]')).map(item => [item.dataset.headingTarget,item.querySelector('.toc-number')?.textContent.trim()]));
-    sourceContent.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(heading => {
-      if (heading.closest('.cover-page,.toc-wrapper,[data-html-block]') || hiddenInSource(heading)) return;
-      const level = Number(heading.tagName.slice(1)); designCounters[level-1]++; designCounters.fill(0,level);
-      const first = designCounters.findIndex(n => n > 0);
-      designHeadingNumbers.set(heading.dataset.elementId,templates.hasHeadingNumber(heading) ? '' : tocNumbers.get(heading.dataset.headingId) || designCounters.slice(first,level).map(n=>n || 1).join('.'));
-    });
-    let figureNumber = 0;
-    sourceContent.querySelectorAll('figure').forEach(figure => { if (!hiddenInSource(figure) && !figure.closest('.cover-page')) designFigureNumbers.set(figure.dataset.elementId,String(++figureNumber)); });
-    scaledCount = 0;
-    $('discardDocumentBtn').disabled = !hasDocument();
-    $('saveProjectBtn').disabled=!hasDocument() || projectBusy;
-    const visible = Array.from(sourceContent.children).filter(block => !hiddenInSource(block));
-    const reflow=pageReflow?.begin(visible,JSON.stringify([settings,importedStyles,committedPrint,document.title,localDate()]),typeof changedId==='string' && !printPreparing && !committedPrint?changedId:null,pendingDesign);
-    if (!reflow) previewContainer.replaceChildren();
-    scaledCount=reflow?.scaled || 0;
-    if (!visible.length) {
-      previewContainer.append(textNode('p', '문서가 비어 있습니다. .md 또는 .html 파일을 열어주세요.', 'placeholder-box'));
-      $('downloadPdfBtn').disabled = true;
-      $('documentStatus').textContent = '빈 문서';
-      updatePageNavigator();applyZoom();restoreScroll();scheduleSave();
-      return;
-    }
-    $('downloadPdfBtn').disabled = printPreparing;
-    let current = null, inToc = false;
-    const newPage = () => (current = createPage(false, !inToc));
-    const ensurePage = () => current || newPage();
-    const tryAppend = node => {
-      if (!node.classList.contains('cover-page')) preparePreview(node);
-      ensurePage().content.append(openDetails(node));
-      if (fits(current.content)) return true;
-      node.remove();
-      return false;
-    };
-    function fitAtomic(node) {
-      if (!node.classList.contains('cover-page')) preparePreview(node);
-      const content = ensurePage().content;
-      content.append(node);
-      const style = getComputedStyle(node);
-      openDetails(node);
-      const rect = node.getBoundingClientRect();
-      const height = Math.max(rect.height, node.scrollHeight) +
-        (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
-      const width = Math.max(rect.width, node.scrollWidth);
-      const scale = Math.min(1, content.clientHeight / Math.max(1, height + 2), content.clientWidth / Math.max(1, width));
-      node.remove();
-      const wrapper = document.createElement('div');
-      wrapper.className = 'scaled-block';
-      wrapper.dataset.blockId = node.dataset.blockId;
-      wrapper.dataset.fragment = 'true';
-      wrapper.style.height = Math.ceil(height * scale) + 'px';
-      node.style.width = rect.width + 'px';
-      node.style.transform = 'scale(' + scale + ')';
-      node.style.transformOrigin = 'top left';
-      wrapper.append(node);
-      content.append(wrapper);
-      scaledCount++;
-    }
-    function splitText(block) {
-      const total = block.textContent.length;
-      // Keep formula and figure geometry intact, including the image's caption.
-      if (!total || block.matches('.katex,img,svg,figure,video,canvas,iframe,[data-html-block]') || block.querySelector('.katex')) {
-        fitAtomic(block.cloneNode(true));
-        return;
-      }
-      const prepared = block.cloneNode(true);
-      if (prepared.tagName === 'OL') Array.from(prepared.children).forEach((li, i) => { li.dataset.listIndex = String(i); });
-      let start = 0;
-      while (start < total) {
-        let low = start, high = total;
-        while (low < high) {
-          const mid = Math.ceil((low + high) / 2);
-          const candidate = sliceBlock(prepared, start, mid, total);
-          ensurePage().content.append(candidate);
-          const ok = fits(current.content);
-          candidate.remove();
-          if (ok) low = mid;
-          else high = mid - 1;
-        }
-        if (low === start && current.content.children.length) { newPage(); continue; }
-        if (low === start) {
-          fitAtomic(sliceBlock(prepared, start, total, total));
-          return;
-        }
-        let end = low;
-        if (end < total) {
-          const chunk = prepared.textContent.slice(start, end);
-          const boundary = Math.max(chunk.lastIndexOf('\n'), chunk.lastIndexOf(' '));
-          if (boundary > chunk.length * 0.6) end = start + boundary + 1;
-          const code = prepared.textContent.charCodeAt(end);
-          if (code >= 0xDC00 && code <= 0xDFFF) end--;
-          if (end <= start) { fitAtomic(sliceBlock(prepared, start, total, total)); return; }
-        }
-        current.content.append(sliceBlock(prepared, start, end, total));
-        start = end;
-        if (start < total) newPage();
-      }
-    }
-    function splitTable(table) {
-      const rows = Array.from(table.tBodies).flatMap(body => Array.from(body.rows));
-      if (!rows.length || Array.from(table.querySelectorAll('td,th')).some(cell => cell.rowSpan > 1)) {
-        fitAtomic(table.cloneNode(true));
-        return;
-      }
-      let chunk = [], first = true;
-      rows.forEach(row => {
-        const candidate = tableChunk(table, [...chunk, row], first);
-        const previous = current.content.lastElementChild;
-        if (chunk.length) previous.remove();
-        current.content.append(candidate);
-        if (fits(current.content)) { chunk.push(row); return; }
-        candidate.remove();
-        if (chunk.length) {
-          current.content.append(tableChunk(table, chunk, first));
-          newPage();
-          first = false;
-        }
-        chunk = [row];
-        const single = tableChunk(table, chunk, first);
-        if (!tryAppend(single)) {
-          if (current.content.children.length) newPage();
-          if (tryAppend(single)) return;
-          fitAtomic(single);
-          chunk = [];
-          current = null;
-          first = false;
-        }
-        ensurePage();
-      });
-      if (table.tFoot) {
-        const foot = table.cloneNode(false);
-        foot.dataset.fragment = 'true';
-        foot.append(table.tFoot.cloneNode(true));
-        if (!tryAppend(foot)) { newPage(); if (!tryAppend(foot)) fitAtomic(foot); }
-      }
-    }
-    function splitToc(toc) {
-      const entries = Array.from(toc.querySelectorAll(':scope > .toc-item')).filter(item => !item.hidden);
-      if (!entries.length) { splitText(toc); return; }
-      const heading = toc.querySelector(':scope > h2');
-      const makeChunk = items => {
-        const fragment = toc.cloneNode(false);
-        fragment.classList.remove('page-break-before');
-        fragment.dataset.fragment = 'true';
-        if (heading) fragment.append(heading.cloneNode(true));
-        items.forEach(item => fragment.append(item.cloneNode(true)));
-        return fragment;
-      };
-      let chunk = [];
-      entries.forEach(item => {
-        if (chunk.length) current.content.lastElementChild.remove();
-        const candidate = makeChunk([...chunk, item]);
-        current.content.append(candidate);
-        if (fits(current.content)) { chunk.push(item); return; }
-        candidate.remove();
-        if (chunk.length) {
-          current.content.append(makeChunk(chunk));
-          newPage();
-        }
-        chunk = [item];
-        const single = makeChunk(chunk);
-        if (!tryAppend(single)) {
-          fitAtomic(single);
-          chunk = [];
-          current = null;
-        }
-        ensurePage();
-      });
-    }
-    visible.slice(reflow?.start || 0).forEach(block => {
-      if (block.classList.contains('cover-page')) {
-        current = createPage(true);
-        const cover = block.cloneNode(true);
-        if (!tryAppend(cover)) fitAtomic(cover);
-        current = null;
-        return;
-      }
-      const section = block.classList.contains('toc-wrapper');
-      inToc = section;
-      if ((section || block.classList.contains('page-break-before')) && current?.content.children.length) current = null;
-      const clone = block.cloneNode(true);
-      clone.dataset.manualBreak = String(block.classList.contains('page-break-before'));
-      clone.classList.remove('page-break-before');
-      if (!tryAppend(clone)) {
-        // Measure the whole block in the same width/typography as its destination.
-        current.content.append(clone);
-        const style = getComputedStyle(clone);
-        const height = Math.max(clone.getBoundingClientRect().height, clone.scrollHeight) +
-          (parseFloat(style.marginTop) || 0) + (parseFloat(style.marginBottom) || 0);
-        clone.remove();
-        const splittable = !section && Boolean(block.textContent.length) &&
-          !block.matches('img,svg,figure,video,canvas,iframe,[data-html-block]') && !block.querySelector('.katex') &&
-          (block.tagName !== 'TABLE' || !Array.from(block.querySelectorAll('td,th')).some(cell => cell.rowSpan > 1));
-        const large = height >= current.content.clientHeight * .3;
-        if (current.content.children.length && (!large || !splittable)) newPage();
-        const retry = block.cloneNode(true);
-        retry.classList.remove('page-break-before');
-        if (!tryAppend(retry)) {
-          if (section) splitToc(block);
-          else if (block.tagName === 'TABLE') splitTable(block);
-          else splitText(block);
-        }
-      }
-      if (section) current = null;
-    });
-    // A split row may leave an unused working page.
-    previewContainer.querySelectorAll('.pdf-page').forEach(page => {
-      if (!page.querySelector('.pdf-content').children.length) page.remove();
-    });
-    const pages = Array.from(previewContainer.querySelectorAll('.pdf-page'));
-    const headingPages = new Map();
-    const headingAnchors = new Set();
-    const anchorByHeading = new Map();
-    pages.forEach((page, index) => {
-      const slot = page.querySelector('.page-num-slot');
-      if (slot) slot.textContent = (index + 1) + ' / ' + pages.length;
-      page.querySelectorAll('[data-heading-id]').forEach(heading => {
-        const id = heading.id || 'pdf-heading-' + heading.dataset.headingId;
-        if (!anchorByHeading.has(heading.dataset.headingId)) {
-          heading.id = headingAnchors.has(id) ? 'pdf-heading-' + heading.dataset.headingId : id;
-          headingAnchors.add(heading.id);
-          anchorByHeading.set(heading.dataset.headingId, heading.id);
-        } else heading.removeAttribute('id');
-        if (heading.textContent.trim() && !headingPages.has(heading.dataset.headingId)) headingPages.set(heading.dataset.headingId, index + 1);
-      });
-    });
-    [sourceContent, previewContainer].forEach(root => {
-      root.querySelectorAll('.toc-item').forEach(item => {
-        const page = item.querySelector('.toc-page-number,.toc-page');
-        const number = headingPages.get(item.dataset.headingTarget) || item.dataset.manualPage || '';
-        if (page) page.textContent = number || '—';
-        if (root === previewContainer) {
-          if (item.dataset.headingTarget && headingPages.has(item.dataset.headingTarget)) item.href = '#' + anchorByHeading.get(item.dataset.headingTarget);
-          else if (number && pages[Number(number) - 1]) {
-            pages[Number(number) - 1].id = 'pdf-page-' + number;
-            item.href = '#pdf-page-' + number;
-          } else item.removeAttribute('href');
-        }
-      });
-    });
-    SharedCodeBlocks.decorate(previewContainer, (pre, language) => {
-      const source = elementById(pre.dataset.elementId);
-      if (!source || source.tagName !== 'PRE') return;
-      saveHistory();
-      SharedCodeBlocks.setLanguage(source, language);
-      if (!templates.validDesign(source,source.dataset.style || 'default')) templates.writeDesign(source,'default');
+  const codeEditing = PdfCodeEditing.create({
+    findSource: elementById, beforeChange: saveHistory,
+    afterChange(source) {
       paginate(source.closest('[data-block-id]')?.dataset.blockId);
       if (selectedId === source.dataset.elementId) renderStyleChoices(source);
-    });
-    highlightSelection();updatePageNavigator();applyZoom();restoreScroll();
-    if (!storageFailed && !storageConflict) $('documentStatus').textContent = pages.length + '페이지 · 자동 저장' +
-      (scaledCount ? ' · 큰 요소 ' + scaledCount + '개 축소' : '');
+    }
+  });
+  function paginate(changedId = null) {
+    const scrollPanel = $('dropZone'), scroll = {top: scrollPanel.scrollTop, left: scrollPanel.scrollLeft};
+    clearTimeout(renderTimer); hidePopup();
+    previewContainer.style.zoom = '1';
+    const result = DocumentRenderer.render({source: sourceContent, container: previewContainer,
+      settings, importedStyles, title: document.title, date: localDate(), pageReflow,
+      changedId: typeof changedId === 'string' && !printPreparing && !committedPrint ? changedId : null,
+      pendingDesign: committedPrint ? null : pendingDesign});
+    scaledCount = result.scaled;
+    $('discardDocumentBtn').disabled = !hasDocument();
+    $('saveProjectBtn').disabled = !hasDocument() || projectBusy;
+    $('downloadPdfBtn').disabled = !result.pages.length || printPreparing;
+    if (!result.pages.length) {
+      previewContainer.append(textNode('p', '문서가 비어 있습니다. .md 또는 .html 파일을 열어주세요.', 'placeholder-box'));
+      $('documentStatus').textContent = '빈 문서';
+    } else if (!storageFailed && !storageConflict) {
+      $('documentStatus').textContent = result.pages.length + '페이지 · 자동 저장' + (scaledCount ? ' · 큰 요소 ' + scaledCount + '개 축소' : '');
+    }
+    if (!committedPrint) CodeControls.attach(previewContainer, (pre, language) => DocumentCommands.setCodeLanguage(pre, language, codeEditing));
+    highlightSelection(); updatePageNavigator(); applyZoom();
+    scrollPanel.scrollTop = scroll.top; scrollPanel.scrollLeft = scroll.left;
     scheduleSave();
   }
   function highlightSelection() {
@@ -668,9 +271,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!file) return;
     const extension = file.name.split('.').pop().toLowerCase();
     if (!['md', 'html', 'htm'].includes(extension)) { alert('.md 또는 .html 파일을 선택해주세요.'); return; }
+    if (file.size > 10*1024*1024 || companions.reduce((size, item) => size + (item.size || 0), 0) > 20*1024*1024) {
+      $('projectStatus').textContent = '문서는 10MB, 함께 여는 파일은 총 20MB 이하로 선택해주세요.'; return;
+    }
     if (hasDocument() && !await confirmDocument('새 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
-    const request = ++loadRequest, version = documentVersion;
-    const current = () => request === loadRequest && version === documentVersion;
+    const request = ++loadRequest, version = documentVersion, before = JSON.stringify(snapshot());
+    const current = () => {
+      if (request !== loadRequest || version !== documentVersion) return false;
+      if (JSON.stringify(snapshot()) === before) return true;
+      $('projectStatus').textContent = '파일을 읽는 동안 문서가 변경됐습니다. 현재 내용을 유지합니다. 다시 열어주세요.';
+      return false;
+    };
     try {
       const content = await file.text();
       if (!current()) return;
@@ -722,6 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
     input.addEventListener('blur', () => { inputGroup = null; applySettings(); });
   });
   function restoreSnapshot(state) {
+    state = DocumentProject.normalizeState(state);
     documentVersion++;loadRequest++;imageRequest++;
     closeImageEditor();if ($('blockEditDialog').open) $('blockEditDialog').close();activeEditId=activeCodeId=null;
     if ($('tocEditDialog').open) $('tocEditDialog').close();tocEditor=null;pendingDesign=null;
@@ -906,30 +518,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return Array.from(sourceContent.querySelectorAll('.toc-item')).find(item => item.dataset.tocId === activeTocId);
   }
   const findHeading = id => Array.from(sourceContent.querySelectorAll('[data-heading-id]')).find(node => node.dataset.headingId === id);
-  function synchronizeToc() {
-    const counters = [0, 0, 0, 0, 0, 0];
-    sourceContent.querySelectorAll('.toc-item').forEach(item => {
-      const heading = findHeading(item.dataset.headingTarget);
-      item.hidden = Boolean(item.dataset.headingTarget && (!heading || hiddenInSource(heading)));
-      if (item.hidden) return;
-      if (heading) {
-        const level = Number(heading.tagName.slice(1));
-        item.dataset.level = level;
-        if (!item.dataset.customTitle) item.querySelector('.toc-title').textContent = heading.textContent.trim();
-      }
-      const level = Math.max(1, Math.min(6, Number(item.dataset.level || 1)));
-      for (let i = 1; i <= 6; i++) item.classList.toggle('toc-level-' + i, i === level);
-      counters[level - 1]++;
-      counters.fill(0, level);
-      let number = item.querySelector('.toc-number');
-      if (!number) { number = textNode('span', '', 'toc-number'); item.prepend(number); }
-      // For documents starting at H2/H3, do not invent empty leading parents.
-      const first = counters.findIndex(value => value > 0);
-      const parts = counters.slice(first, level).map(value => value || 1);
-      number.textContent = settings.tocNumbering ? parts.join('.') + ' ' : '';
-      number.hidden = !settings.tocNumbering;
-    });
-  }
   function openTocEditor(kind, item = null) {
     tocEditor = { kind, id: item?.dataset.tocId || null };
     const titleOnly = kind === 'title';
@@ -1045,6 +633,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('selectedTagType').textContent = '<' + source.tagName.toLowerCase() + '>';
     $('elementLineHeight').value = source.style.lineHeight || '';
     $('rightPanel').style.display = 'block';
+    $('elementPanelBtn').disabled = false;
     const heading = /^H[1-6]$/.test(source.tagName) && !source.closest('.cover-page,.toc-wrapper');
     $('headingLevelControls').hidden = !heading;
     $('headingPromoteBtn').disabled = source.tagName === 'H1';
@@ -1110,10 +699,10 @@ document.addEventListener('DOMContentLoaded', () => {
       edited.querySelectorAll('[contenteditable]').forEach(node => node.removeAttribute('contenteditable'));
       htmlStyles.restoreInline(edited);
       const shell = edited.cloneNode(false);
-      shell.innerHTML = window.PdfMath ? PdfMath.sourceHtml(edited) : edited.innerHTML;
+      shell.innerHTML = window.DocumentMath ? DocumentMath.sourceHtml(edited) : edited.innerHTML;
       const safe = document.createElement('div'); safe.innerHTML = clean(shell.outerHTML);
       const html = safe.querySelector('table')?.innerHTML || '';
-      const old = window.PdfMath ? PdfMath.sourceHtml(tableSource) : tableSource.innerHTML;
+      const old = window.DocumentMath ? DocumentMath.sourceHtml(tableSource) : tableSource.innerHTML;
       if (html !== old) { saveHistory(); tableSource.innerHTML = html; renderMath(tableSource); normalizeContent(); }
     } else if (save && source && edited && activeEditKind === 'cover-meta') {
       const meta = source.querySelector('.cover-meta-group');
@@ -1122,8 +711,8 @@ document.addEventListener('DOMContentLoaded', () => {
     } else if (save && source && edited) {
       edited.querySelectorAll('.code-block-controls').forEach(node => node.remove());
       htmlStyles.restoreInline(edited);
-      const html = clean(window.PdfMath ? PdfMath.sourceHtml(edited) : edited.innerHTML);
-      const previousHtml = window.PdfMath ? PdfMath.sourceHtml(source) : source.innerHTML;
+      const html = clean(window.DocumentMath ? DocumentMath.sourceHtml(edited) : edited.innerHTML);
+      const previousHtml = window.DocumentMath ? DocumentMath.sourceHtml(source) : source.innerHTML;
       if (html !== previousHtml) {
         saveHistory();
         source.innerHTML = html;
@@ -1175,7 +764,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeEditKind === 'cover-meta' && !event.target.closest('.cover-meta-group')) { activeEditId = null; return; }
     const copy = htmlStyles.prepare((activeTableId ? elementById(activeTableId) : activeEditKind === 'cover-meta' ? source.querySelector('.cover-meta-group') : source).cloneNode(true), settings.preserveHtmlCss && importedStyles.available);
     copy.classList.remove('page-break-before');
-    window.PdfMath?.editable(copy);
+    window.DocumentMath?.editable(copy);
     window.PdfImages?.decorate(copy);
     if (activeTableId) {
       copy.contentEditable = 'false';
@@ -1226,22 +815,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function editableTableCell(tag, text = '') {
     const cell = textNode(tag, text); cell.contentEditable = 'true'; return cell;
   }
-  function tableGrid(table) {
-    const rows = Array.from(table.rows), grid = rows.map(() => []), records = [];
-    rows.forEach((row, ri) => {
-      let column = 0;
-      Array.from(row.cells).forEach(cell => {
-        while (grid[ri][column]) column++;
-        const groupEnd = rows.findLastIndex(item => item.parentElement === row.parentElement);
-        const bottom = Math.min(groupEnd, cell.rowSpan === 0 ? groupEnd : ri + cell.rowSpan - 1);
-        const record = { cell, top: ri, bottom, left: column, right: column + cell.colSpan - 1, group: row.parentElement };
-        records.push(record);
-        for (let r = ri; r <= bottom; r++) for (let c = record.left; c <= record.right; c++) grid[r][c] = record;
-        column = record.right + 1;
-      });
-    });
-    return { rows, grid, records, width: Math.max(1, ...grid.map(row => row.length)) };
-  }
+  const tableGrid = TableModel.layout;
   $('tableAddRowBtn').addEventListener('click', () => {
     const table = $('blockEditContent').firstElementChild;
     if (!activeTableId || table?.tagName !== 'TABLE') return;
@@ -1341,7 +915,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('commitDesignAllBtn').addEventListener('click', () => finishPendingDesign('all'));
   $('pendingDesignDialog').addEventListener('cancel', event => { event.preventDefault(); deferredDesignAction = null; $('pendingDesignDialog').close(); });
   function guardDesign(event) {
-    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#elementDesignOptions,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle,.pdf-navigation,#pageNavigator')) return;
+    if (!pendingDesign || replayDesignAction || event.target.closest('#pendingDesignDialog,#stylePreviewGrid,#elementDesignOptions,#applyToSelectedBtn,#applyToAllBtn,#uiThemeToggle,.pdf-navigation,.pdf-panel-switcher,#pageNavigator')) return;
     if (event.target.closest('#pdfPreviewContainer') && event.type === 'click' && event.target.closest('[data-element-id]')?.dataset.elementId === selectedId && mode === 'normal') return;
     if (!event.target.closest('button,input,select,label,#pdfPreviewContainer,#dropZone')) return;
     event.preventDefault(); event.stopImmediatePropagation();
@@ -1621,12 +1195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('retryImagesBtn').disabled = false; if (version === documentVersion) { updateImageLoadNotice(); paginate(); }
   });
 
-  function getMarkdownHistory() {
-    try {
-      const entries = JSON.parse(localStorage.getItem('mdeditor.history.v1') || '[]');
-      return Array.isArray(entries) ? entries.filter(item => typeof item.content === 'string') : [];
-    } catch { return []; }
-  }
+  const getMarkdownHistory = EditorTransfer.history;
   function refreshHistory() {
     const select = $('mdHistorySelect');
     const entries = getMarkdownHistory();
@@ -1646,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderDocument(parseMarkdown(item.content));
     }
   });
-  window.addEventListener('storage', event => { if (event.key === 'mdeditor.history.v1') refreshHistory(); });
+  window.addEventListener('storage', event => { if (EditorTransfer.historyChanged(event)) refreshHistory(); });
   sourceContent.addEventListener('load', event => { if (event.target.tagName === 'IMG') { delete event.target.dataset.imageFailed; updateImageLoadNotice(); } requestPaginate(); }, true);
   sourceContent.addEventListener('error', event => { if (event.target.tagName === 'IMG') { event.target.dataset.imageFailed = 'true'; updateImageLoadNotice(); } requestPaginate(); }, true);
   sourceContent.addEventListener('toggle', requestPaginate, true);
@@ -1667,17 +1236,9 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       await window.PdfImages?.restore(sourceContent);
       if (version !== documentVersion) return;
-      const images = Array.from(sourceContent.querySelectorAll('img')).filter(image => !hiddenInSource(image) && !image.complete);
-      await Promise.all(images.map(image => new Promise(resolve => {
-        const done = () => { clearTimeout(timer); image.removeEventListener('load', done); image.removeEventListener('error', done); resolve(); };
-        const timer = setTimeout(done, 10000);
-        image.addEventListener('load', done, { once: true });
-        image.addEventListener('error', done, { once: true });
-        if (image.complete) done();
-      })));
+      const {failed} = await DocumentResources.ready(sourceContent);
       if (version !== documentVersion) return;
-      const failed = Array.from(sourceContent.querySelectorAll('img')).filter(image => !hiddenInSource(image) && (!image.complete || !image.naturalWidth));
-      failed.forEach(image => { image.dataset.imageFailed = 'true'; }); updateImageLoadNotice();
+      updateImageLoadNotice();
       if (failed.length && !await confirmDocument('이미지 ' + failed.length + '개를 불러오지 못했습니다. 해당 이미지가 표시되지 않은 상태로 출력하시겠습니까?')) return;
       if (version !== documentVersion) return;
       paginate();
@@ -1704,25 +1265,20 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       if (activeEditId) closeEditor(true);
       const state=snapshot();const assets=await PdfImages.exportAssets(state.html);
-      const blob=new Blob([JSON.stringify({format:'junny-pdf-project',version:1,state,assets})],{type:'application/json'});
-      if(blob.size>150*1024*1024)throw Error('작업 파일은 150MB까지 저장할 수 있습니다. 이미지나 문서 크기를 줄여주세요.');
-      const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;
-      link.download=(state.title || 'document').replace(/[\/:*?"<>|]/g,'_')+'.jpdf.json';document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      const blob = DocumentProject.serialize(state, assets);
+      FileDownload.save((state.title || 'document').replace(/[\/:*?"<>|]/g, '_') + '.jpdf.json', blob);
       $('projectStatus').textContent='작업 파일 저장 완료 · 업로드 이미지 포함, URL 이미지는 주소 유지';
     } catch(error) {$('projectStatus').textContent=error.message || '작업 파일 저장에 실패했습니다.';}
     finally {projectBusy=false;$('saveProjectBtn').disabled=!hasDocument();}
   }
   async function openProject(file) {
     if (!file || projectBusy) return;
-    if (file.size>150*1024*1024) {$('projectStatus').textContent='150MB 이하의 작업 파일을 선택해주세요.';return;}
+    if (file.size > DocumentProject.maxBytes) {$('projectStatus').textContent='150MB 이하의 작업 파일을 선택해주세요.';return;}
     projectBusy=true;$('saveProjectBtn').disabled=true;
     let mapping=null,applied=false;
     const before=JSON.stringify(snapshot()),request=++loadRequest;
     try {
-      const project=JSON.parse(await file.text());
-      if (project.format!=='junny-pdf-project' || project.version!==1 || typeof project.state?.html!=='string' || !project.state.settings || typeof project.state.settings!=='object' || Array.isArray(project.state.settings)) throw Error('지원하는 PDF Maker 작업 파일이 아닙니다.');
-      const styles=project.state.importedStyles;
-      if (styles && (typeof styles!=='object' || !Array.isArray(styles.css) || styles.css.some(css=>typeof css!=='string') || (styles.attributes && (typeof styles.attributes!=='object' || Object.values(styles.attributes).some(value=>typeof value!=='string'))) || (styles.missing && (!Array.isArray(styles.missing) || styles.missing.some(value=>typeof value!=='string'))))) throw Error('작업 파일의 문서 스타일 정보가 올바르지 않습니다.');
+      const project = DocumentProject.parse(await file.text());
       if (request!==loadRequest || JSON.stringify(snapshot())!==before) throw Error('파일을 읽는 동안 문서가 변경됐습니다. 다시 열어주세요.');
       if (hasDocument() && !await confirmDocument('작업 파일을 열면 현재 내용과 설정이 교체됩니다. 계속할까요?')) return;
       $('projectStatus').textContent='문서와 이미지를 불러오는 중…';
@@ -1752,6 +1308,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if(window.ResizeObserver)new ResizeObserver(()=>{if($('pdfZoom').value==='fit')applyZoom();}).observe($('dropZone'));
   function jumpPage(index) {
     const pages=Array.from(previewContainer.querySelectorAll('.pdf-page'));if(!pages.length)return;
+    showMobilePanel('document');
     pageIndex=Math.max(0,Math.min(pages.length-1,index));pages[pageIndex].scrollIntoView({block:'start',behavior:'smooth'});$('pageJump').value=pageIndex+1;
     $('pageNavigator').querySelectorAll('button').forEach((button,i)=>button.setAttribute('aria-current',String(i===pageIndex)));
   }
@@ -1779,7 +1336,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('pdfKeepLocal').addEventListener('click',async()=>{if(!await confirmDocument('다른 탭에서 저장한 내용을 현재 내용으로 덮어씁니다. 계속할까요?'))return;try{expectedDraft=localStorage.getItem(draftKey);storageConflict=false;$('pdfConflict').hidden=true;persist();}catch{$('documentStatus').textContent='저장소를 사용할 수 없습니다.';}});
   $('pdfLoadRemote').addEventListener('click',async()=>{
     if(!await confirmDocument('다른 탭의 내용을 불러오면 현재 내용이 교체됩니다. 계속할까요?'))return;
-    try{const raw=localStorage.getItem(draftKey),state=JSON.parse(raw);if(typeof state?.html!=='string')throw Error();expectedDraft=raw;storageConflict=false;$('pdfConflict').hidden=true;history=[];redoHistory=[];restoreSnapshot(state);}
+    try{const raw=localStorage.getItem(draftKey),state=DocumentProject.normalizeState(JSON.parse(raw));expectedDraft=raw;storageConflict=false;draftInvalid=false;$('pdfConflict').hidden=true;history=[];redoHistory=[];restoreSnapshot(state);}
     catch{$('documentStatus').textContent='다른 탭의 저장 내용을 읽지 못했습니다.';}
   });
   document.addEventListener('keydown',event=>{
@@ -1789,9 +1346,17 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   refreshHistory();
   applySettings();
+  let transferred = null, draft = null;
+  try { transferred = EditorTransfer.peek(); }
+  catch (_) { $('projectStatus').textContent = '브라우저 저장소를 사용할 수 없습니다. 파일을 직접 열어주세요.'; }
   try {
-    const transferred = localStorage.getItem('pdfMakerTransfer');
-    const draft = JSON.parse(localStorage.getItem(draftKey) || 'null');
+    const raw = localStorage.getItem(draftKey);
+    if (raw !== null) draft = DocumentProject.normalizeState(JSON.parse(raw));
+  } catch (_) {
+    draftInvalid = true;
+    $('projectStatus').textContent = '저장된 문서를 읽지 못했습니다. 기존 저장 데이터는 유지됩니다. 파일을 다시 열어주세요.';
+  }
+  try {
     if (draft && typeof draft.html === 'string') {
       sourceContent.innerHTML = safeDocumentHtml(draft.html);
       importedStyles = draft.importedStyles || { css: [], attributes: {}, missing: [], available: false };
@@ -1807,9 +1372,11 @@ document.addEventListener('DOMContentLoaded', () => {
     paginate();
     if (transferred !== null) {
       (async () => {
-        if (hasDocument() && !await confirmDocument('편집기 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
-        renderDocument(parseMarkdown(transferred));
-        if (persist()) localStorage.removeItem('pdfMakerTransfer');
+        try {
+          if (hasDocument() && !await confirmDocument('편집기 문서를 불러오면 작업 중이던 내용과 설정이 사라집니다. 계속하시겠습니까?')) return;
+          renderDocument(parseMarkdown(transferred));
+          if (persist()) EditorTransfer.acknowledge(transferred);
+        } catch (error) { $('projectStatus').textContent = '전달된 문서를 읽지 못했습니다. 원본 Markdown 파일을 다시 열어주세요.'; }
       })();
     }
   } catch (error) {

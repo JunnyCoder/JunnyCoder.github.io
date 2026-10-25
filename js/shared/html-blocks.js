@@ -32,6 +32,7 @@ window.SharedHtmlBlocks=(()=>{
   const originals = new WeakMap();
   let styleSerial=0;
   function hydrate(root){
+    const document=root.ownerDocument;
     const blocks=[...(root.matches?.('[data-html-block]')?[root]:[]),...root.querySelectorAll('[data-html-block]')];
     blocks.forEach(block=>{
       let source;try{source=decodeURIComponent(block.dataset.htmlSource||'');}catch{source='';}
@@ -57,6 +58,6 @@ window.SharedHtmlBlocks=(()=>{
   }
   function sourceOf(block){try{return decodeURIComponent(block.dataset.htmlSource||'');}catch{return '';}}
   function update(block,source){block.dataset.htmlSource=encodeURIComponent(source);delete block.dataset.htmlRendered;hydrate(block);}
-  function exportCss(){return Array.from(document.querySelectorAll('style[data-html-block-style]')).map(n=>n.textContent).join('\n');}
+  function exportCss(document=window.document){return Array.from(document.querySelectorAll('style[data-html-block-style]')).map(n=>n.textContent).join('\n');}
   return {escape,sanitize,parse,renderFence,hydrate,sourceOf,update,exportCss};
 })();

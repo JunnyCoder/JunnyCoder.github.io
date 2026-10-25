@@ -138,7 +138,7 @@
     </style>
 
     <div class="header">
-        <input type="text" class="title-input" placeholder="[이곳을 클릭해 페이지 타이틀을 입력하세요]" value="My {{ display_name }}">
+        <input type="text" class="title-input" aria-label="페이지 타이틀" placeholder="[이곳을 클릭해 페이지 타이틀을 입력하세요]" value="My {{ display_name }}">
         <p class="subtitle">원하는 도구를 선택해주세요.</p>
     </div>
 
@@ -162,7 +162,7 @@
         <!-- 2. front matter(--- ---)가 선언되어 site.pages로 잡히는 html 파일들 -->
         {% for page in site.pages %}
             {% assign expected_url = directory_path | append: page.name %}
-            {% if page.name != "index.html" and page.name contains ".html" and page.url == expected_url %}
+            {% if page.name != "index.html" and page.name contains ".html" and page.url == expected_url and page.list_in_dashboard != false %}
             {% assign found_count = found_count | plus: 1 %}
             <a href="{{ page.name }}" class="card-btn">
                 <div class="card-icon">✨</div>
@@ -175,4 +175,3 @@
         <p class="empty-state">{{ display_name }} 폴더에 표시할 html 파일이 없습니다.</p>
         {% endif %}
     </div>
-</div>

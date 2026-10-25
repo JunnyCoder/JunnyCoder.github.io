@@ -1,27 +1,12 @@
-/* ==========================================================================
-   0. 페이지 여백 변수 (기본값)
-   ========================================================================== */
-:root {
-  --page-margin-top: 20mm;
-  --page-margin-bottom: 20mm;
-  --page-margin-left: 15mm;
-  --page-margin-right: 15mm;
-}
-
-/* App layout, colors and toolbar controls: ../shared/editor-ui.css */
-/* ==========================================================================
-   2. 툴바 보조 텍스트 (공통 버튼/툴바: shared/editor-ui.css)
-   ========================================================================== */
+/* PDF authoring controls. Paper layout: ../document/paper.css. */
 .help-text {
   font-size: 12px;
   color: var(--text-mute);
   margin-left: auto;
 }
 
-/* ==========================================================================
-   3. 패널 및 폼 제어
-   ========================================================================== */
 .workspace { display: flex; flex: 1 1 auto; min-height: 0; }
+.pdf-panel-switcher { display: none !important; }
 
 .panel {
   width: 320px;
@@ -30,13 +15,17 @@
   overflow-y: auto;
   box-sizing: border-box;
 }
+
 .left-panel { border-right: 1px solid var(--border); }
+
 .right-panel { border-left: 1px solid var(--border); }
 
 .panel details { margin-bottom: 15px; background: var(--bg-elevated); padding: 12px; border-radius: 6px; }
+
 .panel summary { cursor: pointer; font-weight: bold; margin-bottom: 10px; color: var(--text); }
 
 .setting-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+
 .setting-group input, .setting-group select {
   padding: 8px;
   background: var(--bg-input);
@@ -46,16 +35,15 @@
 }
 
 .action-group { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+
 .panel-divider { margin: 15px 0; border: none; border-top: 1px solid var(--border); }
 
-/* 여백 조절 UI 그리드 */
 .margin-control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
+
 .margin-input-item { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--text); }
+
 .margin-input-item input { width: 50px; padding: 4px; background: var(--bg-input); color: var(--text); border: 1px solid var(--border-strong); border-radius: 4px; }
 
-/* ==========================================================================
-   4. 미리보기 영역 & 용지(Paper) 렌더링
-   ========================================================================== */
 .preview-panel {
   flex: 1;
   background: var(--bg-app);
@@ -68,129 +56,34 @@
   padding: 40px;
   transition: background 0.2s;
 }
+
 .preview-panel.drag-over { background: var(--border); border: 3px dashed var(--blue); }
 
-#pdfPreviewContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-}
 
-/* 본문 그림자/테두리 제거 및 실시간 여백 반영 */
-.pdf-page, .paper {
-  background-color: #ffffff !important;
-  color: #111111 !important;
-  border: none !important;
-  box-sizing: border-box;
-}
-
-.pdf-page {
-  position: relative;
-  width: 210mm;
-  height: 297mm;
-  padding-top: var(--page-margin-top, 20mm) !important;
-  padding-bottom: var(--page-margin-bottom, 20mm) !important;
-  padding-left: var(--page-margin-left, 15mm) !important;
-  padding-right: var(--page-margin-right, 15mm) !important;
-  overflow: hidden;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3) !important; /* 미리보기 용지 외곽선만 표현 */
-}
-
-/* ==========================================================================
-   5. 헤더/푸터 격리 및 제목/코드 블록 스타일
-   ========================================================================== */
-.pdf-header {
-  position: absolute;
-  top: 10mm;
-  left: var(--page-margin-left, 15mm) !important;
-  right: var(--page-margin-right, 15mm) !important;
-  display: flex;
-  justify-content: space-between;
-  font-size: 9pt;
-  color: #666;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 4px;
-}
-
-.pdf-footer {
-  position: absolute;
-  bottom: 10mm;
-  left: var(--page-margin-left, 15mm) !important;
-  right: var(--page-margin-right, 15mm) !important;
-  display: flex;
-  justify-content: space-between;
-  font-size: 9pt;
-  color: #666;
-  border-top: 1px solid #eee;
-  padding-top: 4px;
-}
-
-.pdf-content h1, .pdf-content h2 {
-  display: block;
-  width: auto;
-  max-width: 100%;
-}
-
-.pdf-content pre, .pdf-content code {
-  overflow-wrap: anywhere;
-}
-
-/* ==========================================================================
-   6. 목차(TOC) & 템플릿 Grid & 편집 모드
-   ========================================================================== */
-.toc-container, .toc-wrapper {
-  display: block !important;
-  position: relative !important;
-  clear: both !important;
-  page-break-inside: avoid;
-  break-inside: auto;
-}
-
-.toc-item {
-  display: flex !important;
-  justify-content: space-between !important;
-  align-items: baseline !important;
-  position: relative !important;
-  line-height: 1.6 !important;
-  margin-bottom: 6px !important;
-  page-break-inside: avoid;
-}
 
 .preview-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+
 .preview-item {
   background: var(--bg-input); color: var(--text); padding: 8px; text-align: center;
   border: 2px solid var(--border-strong); cursor: pointer; border-radius: 6px;
   height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-size: 11px; transition: all 0.15s ease;
 }
+
 .preview-item:hover { border-color: var(--blue); background: var(--hover); }
+
 .preview-item.active { border-color: var(--blue); background: var(--blue-soft); font-weight: bold; }
 
-.style-preset-default { background: transparent; border: none; padding: 0; }
-.style-preset-highlight { background: #e0f2fe; border-left: 4px solid #0284c7; padding: 10px 14px; border-radius: 4px; }
-.style-preset-bordered { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 14px; background: #f8fafc; }
-.style-preset-card { background: #ffffff; border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; }
-
-.pdf-content > :first-child,
-.pdf-page:first-child {
-  page-break-before: avoid !important;
-  break-before: avoid !important;
-  margin-top: 0 !important;
-}
-
-.page-break-before {
-  page-break-before: always !important;
-  break-before: page !important;
-  border-top: none !important;
-}
-
 .edit-break-mode .pdf-content > * { cursor: row-resize !important; }
+
 .edit-break-mode .pdf-content > *:hover { outline: 2px dashed #ffa500; background: rgba(255, 165, 0, 0.1); }
+
 .edit-break-mode .page-break-before {
   border-top: 2px dashed #ffb703 !important;
   margin-top: 15px !important;
   position: relative;
 }
+
 .edit-break-mode .page-break-before::before {
   content: '✂️ 페이지 자르기 위치';
   position: absolute;
@@ -205,165 +98,184 @@
 }
 
 .edit-delete-mode .pdf-content > * { cursor: no-drop !important; }
+
 .edit-delete-mode .pdf-content > *:hover { outline: 2px solid #ff4444; background: rgba(255, 0, 0, 0.1); }
+
 .selected-element { outline: 2px solid var(--blue) !important; }
 
-/* ==========================================================================
-   7. 인쇄 미디어 쿼리
-   ========================================================================== */
-[hidden] { display: none !important; }
 #documentStatus { color: var(--text-dim); font-size: 12px; }
-.pdf-content { display: flow-root; overflow-wrap: anywhere; }
-.pdf-header { gap: 12px; }
-.pdf-header span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pdf-header span:first-child { flex: 1; }
-.pdf-header span:last-child { max-width: 40%; }
-.pdf-content > * { max-width: 100%; box-sizing: border-box; }
-.pdf-content img, .pdf-content svg:not(.katex *) {
-  max-width: 100%; max-height: var(--page-content-height); object-fit: contain;
-}
-.pdf-content table { max-width: 100%; overflow-wrap: anywhere; }
-.pdf-content .toc-heading { margin-top: 0; }
-.pdf-page.with-header-footer {
-  padding-top: max(var(--page-margin-top), 19mm) !important;
-  padding-bottom: max(var(--page-margin-bottom), 19mm) !important;
-}
-.scaled-block { position: relative; overflow: visible; }
-.toc-level-2 { padding-left: 16px; }
-.toc-level-3 { padding-left: 32px; }
-.toc-page-number { min-width: 2em; text-align: right; }
+
 .toc-action-popup {
   position: fixed; z-index: 50; display: flex; flex-wrap: wrap; gap: 4px;
   max-width: calc(100vw - 16px); padding: 7px;
   background: var(--bg-panel); border: 1px solid var(--border-strong); border-radius: 8px;
   box-shadow: 0 6px 20px #0006;
 }
+
 .toc-action-popup button {
   background: var(--bg-elevated); color: var(--text); border: 0; border-radius: 4px; padding: 7px; cursor: pointer;
 }
+
 #blockEditDialog {
   width: min(820px, calc(100vw - 40px)); max-height: 90vh; box-sizing: border-box;
   background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px;
 }
+
 #blockEditDialog::backdrop { background: #0009; }
+
 .block-edit-heading h2 { font-size: 18px; margin: 0 0 8px; color: var(--text); }
+
 .block-edit-heading p { color: var(--text-dim); font-size: 13px; }
+
 .block-edit-content {
   max-height: 60vh; overflow: auto; padding: 18px; border-radius: 6px;
   background: white; color: #111; font: 11pt/1.6 var(--font-family, sans-serif); overflow-wrap: anywhere;
 }
+
 .block-edit-content > [contenteditable] { outline: none; min-height: 80px; }
+
 .block-edit-content .cover-page { height: auto; padding: 24px; }
+
 .block-edit-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px; }
+
 @media (max-width: 1000px) {
   .toolbar, .sub-toolbar { flex-wrap: wrap; gap: 8px; }
   .panel { width: 250px; flex-shrink: 0; }
   .preview-panel { align-items: flex-start; padding: 20px; }
 }
+
+@media screen and (max-width: 760px) {
+  .pdf-panel-switcher { display: flex !important; }
+  .pdf-panel-switcher [aria-pressed="true"] { background: var(--blue-soft); border-color: var(--blue); }
+  #pdfWorkspace { position: relative; overflow: hidden; }
+  #pdfWorkspace > .panel { width: 100%; border: 0; }
+  #pdfWorkspace > .left-panel, #pdfWorkspace > .right-panel { display: none !important; }
+  #pdfWorkspace[data-mobile-panel="settings"] > .left-panel,
+  #pdfWorkspace[data-mobile-panel="element"] > .right-panel { display: block !important; }
+  #pdfWorkspace > .preview-panel { width: 100%; box-sizing: border-box; padding: 12px; }
+  /* Keep the paper measurable while settings are open: pagination needs real
+     dimensions even when the preview is not the visible mobile panel. */
+  #pdfWorkspace:not([data-mobile-panel="document"]) > .preview-panel {
+    position: absolute; inset: 0; visibility: hidden; pointer-events: none;
+  }
+}
+
 @media print {
-  @page { size: A4 portrait; margin: 0; }
-  body { background: white !important; }
-  .toolbar, .sub-toolbar, .panel, .toc-action-popup, #blockEditDialog, #documentStatus, #sourceContent {
+.toolbar, .sub-toolbar, .panel, .toc-action-popup, #blockEditDialog, #documentStatus, #sourceContent {
     display: none !important;
   }
-  #app, .workspace, .preview-panel, #pdfPreviewContainer {
+#app, .workspace, .preview-panel, #pdfPreviewContainer {
     display: block !important; position: static !important; width: 100% !important;
     height: auto !important; margin: 0 !important; padding: 0 !important;
     overflow: visible !important; background: transparent !important;
   }
-  .pdf-page.A4 {
-    width: 210mm; height: 297mm; box-shadow: none !important; margin: 0 !important;
-    break-inside: avoid; page-break-after: always; break-after: page;
-    print-color-adjust: exact; -webkit-print-color-adjust: exact;
-  }
-  .pdf-page.A4:last-child { page-break-after: auto; break-after: auto; }
-  .selected-element { outline: none !important; }
-  .page-break-before { break-before: auto !important; page-break-before: auto !important; border-top: none !important; margin-top: 0 !important; }
-  .edit-break-mode .page-break-before::before { display: none !important; }
+.selected-element { outline: none !important; }
+.edit-break-mode .page-break-before::before { display: none !important; }
 }
 
-/* Tag samples contain actual typography rather than generic decorated boxes. */
 .checkbox-label { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+
 .checkbox-label input { width: auto; }
+
 .setting-hint { color: var(--text-dim); font-size: 12px; line-height: 1.5; margin: 0; }
+
 .preview-item { height: auto; min-height: 115px; gap: 8px; text-align: left; }
+
 .tag-style-sample { width: 100%; padding: 8px; box-sizing: border-box; background: #fff; color: #20252b; font-size: 10px; line-height: 1.4; }
+
 .tag-style-sample > :first-child { margin: 0; }
+
 .tag-style-sample .sample-image { height: 35px; background: #edf0f3; color: #4b5663; display: grid; place-items: center; }
+
 #resetElementStyleBtn { margin-top: 12px; width: 100%; font-size: 12px; }
-.pdf-content[data-imported-css="true"] {
-  display: flow-root !important; position: relative !important;
-  width: 100% !important; min-width: 0 !important; max-width: 100% !important;
-  min-height: 0 !important; max-height: none !important;
-  margin: 0 !important; padding: 0 !important; transform: none !important;
-  box-sizing: border-box !important;
-}
 
 #confirmDocumentDialog, #tocEditDialog {
   width: min(480px, calc(100vw - 40px)); box-sizing: border-box;
   background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px;
 }
+
 #confirmDocumentDialog::backdrop, #tocEditDialog::backdrop { background: #0009; }
+
 #confirmDocumentDialog h2, #tocEditDialog h2 { font-size: 18px; }
+
 #confirmDocumentMessage { line-height: 1.7; }
+
 #codeEditInput { width: 100%; min-height: 45vh; box-sizing: border-box; resize: vertical;
   background: #fff; color: #172033; padding: 16px; font: 14px/1.6 Consolas, monospace; tab-size: 4; white-space: pre; }
-@media print { #confirmDocumentDialog, #tocEditDialog { display: none !important; } }
 
-.pdf-document-background { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
-.pdf-page > .pdf-content, .pdf-header, .pdf-footer { position: relative; z-index: 1; }
-.pdf-header, .pdf-footer { position: absolute; }
-@media print { .pdf-document-background { print-color-adjust: exact; -webkit-print-color-adjust: exact; } }
+@media print {
+#confirmDocumentDialog, #tocEditDialog { display: none !important; }
+}
 
 #pendingDesignDialog { width: min(600px, calc(100vw - 40px)); background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: 12px; padding: 20px; }
+
 #pendingDesignDialog::backdrop { background: #0009; }
+
 #pendingDesignDialog h2 { font-size: 18px; }
+
 #pendingDesignDialog .block-edit-actions { flex-wrap: wrap; }
+
 .table-edit-toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+
 .block-edit-content td[contenteditable], .block-edit-content th[contenteditable] { min-width: 40px; cursor: text; }
+
 .block-edit-content [contenteditable]:focus { outline: 2px solid #0284c7; }
+
 .edit-break-mode [data-manual-break="true"] { outline: 2px dashed #ffb703; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="disc"] { list-style-type: disc !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="circle"] { list-style-type: circle !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="square"] { list-style-type: square !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="none"] { list-style-type: none !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="decimal"] { list-style-type: decimal !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="decimal-leading-zero"] { list-style-type: decimal-leading-zero !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="lower-alpha"] { list-style-type: lower-alpha !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="upper-alpha"] { list-style-type: upper-alpha !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="lower-roman"] { list-style-type: lower-roman !important; }
-:is(.pdf-content,.block-edit-content) [data-list-marker="upper-roman"] { list-style-type: upper-roman !important; }
-@media print { #pendingDesignDialog, .table-edit-toolbar { display: none !important; } .edit-break-mode [data-manual-break] { outline: none; } }
+
+@media print {
+#pendingDesignDialog, .table-edit-toolbar { display: none !important; }
+.edit-break-mode [data-manual-break] { outline: none; }
+}
 
 #imageDialog { width: min(500px, calc(100vw - 32px)); max-height: 90vh; overflow: auto; box-sizing: border-box; padding: 20px; }
+
 #imageDialog::backdrop { background: #0009; }
+
 #imageDialog h2 { font-size: 18px; margin-top: 0; }
+
 #imageDialog input[type="file"] { max-width: 100%; }
+
 .image-load-notice { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 12px; background: var(--bg-panel); color: var(--text); border: 1px solid var(--border-strong); border-radius: var(--radius); font-size: 13px; }
-:is(.pdf-content,.block-edit-content) img[data-pdf-image] { display: block !important; width: var(--pdf-image-width, 100%) !important; height: auto !important; max-width: 100% !important; object-fit: contain; }
-:is(.pdf-content,.block-edit-content) img[data-image-align="left"] { margin-left: 0 !important; margin-right: auto !important; }
-:is(.pdf-content,.block-edit-content) img[data-image-align="center"] { margin-left: auto !important; margin-right: auto !important; }
-:is(.pdf-content,.block-edit-content) img[data-image-align="right"] { margin-left: auto !important; margin-right: 0 !important; }
-:is(.pdf-content,.block-edit-content) img[data-image-failed="true"] { min-height: 64px; border: 1px dashed #b64242; color: #942e2e; background: #fff3f3; }
-@media print { #imageDialog, .image-load-notice { display: none !important; } }
+
+@media print {
+#imageDialog, .image-load-notice { display: none !important; }
+}
 
 .preview-item .design-description { color:var(--text-dim); font-size:11px; font-weight:400; line-height:1.45; }
-#elementDesignOptions { margin-top:14px; padding-top:10px; border-top:1px solid var(--border); }
-#elementDesignOptions input { width:100%; box-sizing:border-box; }
-.tag-style-sample { overflow-wrap:anywhere; }
-.tag-style-sample pre.shared-code-block { font-size:9px; }
-.tag-style-sample .code-display-line { font-size:inherit; }
-.tag-style-sample [data-style="text-dropcap"] { min-height:4em; }
-.tag-style-sample [data-style="figure-side"] { gap:.4em; }
-.pdf-navigation { font-size:12px; }
-.pdf-navigation #pageJump { width:65px; padding:4px 6px; }
-.pdf-navigation select { padding:4px 8px; }
-.page-navigator { display:grid; gap:6px; margin-top:8px; }
-.page-nav-item { text-align:left; display:grid; gap:4px; padding:9px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); border-radius:7px; cursor:pointer; font:12px/1.4 var(--sans); }
-.page-nav-item span { color:var(--text-dim); overflow-wrap:anywhere; }
-.page-nav-item[aria-current="true"] { border-color:var(--blue); background:var(--blue-soft); }
-#pdfConflict { flex:0 0 auto; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 14px; background:var(--bg-panel); color:var(--text); font-size:12px; }
-#pdfConflict[hidden] { display:none; }
-@media print { .pdf-navigation,#pdfConflict { display:none !important; } #pdfPreviewContainer { zoom:1 !important; } }
 
-.shared-html-block { contain:layout style; display:flow-root; position:relative; max-width:100%; margin:1em 0; color:#222; background:#fff; overflow-wrap:anywhere; }
+#elementDesignOptions { margin-top:14px; padding-top:10px; border-top:1px solid var(--border); }
+
+#elementDesignOptions input { width:100%; box-sizing:border-box; }
+
+.tag-style-sample { overflow-wrap:anywhere; }
+
+.tag-style-sample pre.shared-code-block { font-size:9px; }
+
+.tag-style-sample .code-display-line { font-size:inherit; }
+
+.tag-style-sample [data-style="text-dropcap"] { min-height:4em; }
+
+.tag-style-sample [data-style="figure-side"] { gap:.4em; }
+
+.pdf-navigation { font-size:12px; }
+
+.pdf-navigation #pageJump { width:65px; padding:4px 6px; }
+
+.pdf-navigation select { padding:4px 8px; }
+
+.page-navigator { display:grid; gap:6px; margin-top:8px; }
+
+.page-nav-item { text-align:left; display:grid; gap:4px; padding:9px; background:var(--bg-input); color:var(--text); border:1px solid var(--border); border-radius:7px; cursor:pointer; font:12px/1.4 var(--sans); }
+
+.page-nav-item span { color:var(--text-dim); overflow-wrap:anywhere; }
+
+.page-nav-item[aria-current="true"] { border-color:var(--blue); background:var(--blue-soft); }
+
+#pdfConflict { flex:0 0 auto; display:flex; flex-wrap:wrap; gap:8px; align-items:center; padding:8px 14px; background:var(--bg-panel); color:var(--text); font-size:12px; }
+
+#pdfConflict[hidden] { display:none; }
+
+@media print {
+.pdf-navigation,#pdfConflict { display:none !important; }
+}

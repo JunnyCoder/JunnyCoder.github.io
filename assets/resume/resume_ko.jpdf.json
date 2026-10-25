@@ -1,0 +1,44 @@
+{
+  "format": "junny-pdf-project",
+  "version": 1,
+  "assets": [],
+  "state": {
+    "html": "<div class=\"resume-sheet\">\n<div class=\"resume-top\"><div><h1>김준호</h1><p class=\"resume-title\">MES · 제조 IT · 소프트웨어 개발</p></div><div class=\"contacts\"><a href=\"mailto:junny.coder@gmail.com\">junny.coder@gmail.com</a><br><a href=\"https://junny.dev\">junny.dev</a><br><a href=\"https://github.com/JunnyCoder\">github.com/JunnyCoder</a></div></div>\n<h2>소개 / About Me</h2>\n<ul class=\"intro-list\"><li>자동차 모듈 생산현장에서 MES를 운영하며 DB·설비 신호·로그를 함께 분석했습니다.</li><li>반복 업무를 개선하기 위해 C# 백업 도구를 직접 개발하고 현장 수동 백업에 활용했습니다.</li><li>운영에서 확인한 예외조건을 소프트웨어 구현과 검증에 반영하는 역량을 키우고 있습니다.</li></ul>\n<h2>기술스택 / Skill Set</h2>\n<table class=\"skill-table\"><thead><tr><th>구분</th><th>기술 및 활용 경험</th></tr></thead><tbody>\n<tr><td>직접 개발</td><td>C# · WinForms · TCP · 파일 Hash 비교 / IPC 백업 도구</td></tr>\n<tr><td>데이터 분석·운영</td><td>MS SQL Server · SQL / 테이블·저장 프로시저·조회 순서 분석</td></tr>\n<tr><td>설비·시스템 연계</td><td>MES · PLC · RFID / 신호 대조, 인터페이스·파일럿 검증</td></tr>\n<tr><td>개인 개발·학습</td><td>WPF · MVVM · DI / 화면 상태·명령·책임 분리</td></tr>\n<tr><td>교육·실습 및 도구 제작</td><td>Python · pandas · NumPy / 알고리즘·분석 실습<br>HTML · CSS · JavaScript / AI 활용 웹 도구 제작</td></tr>\n</tbody></table>\n<h2>경력 사항 / Work Experience</h2>\n<table class=\"career-table\"><thead><tr><th>기간</th><th>소속·근무지</th><th>직무·담당 업무</th></tr></thead><tbody>\n<tr><td>2023.01–2025.12</td><td><strong>브레이너 컨설턴시</strong><br>현대모비스 미국<br>조지아 생산법인 파견</td><td><strong>MES Administrator / IT Engineer</strong><br>MES 운영·장애 분석, DB·설비 연계 확인,<br>신규 공정·AMR 검증, 현장 IT 지원</td></tr>\n<tr><td>2022.01–2022.06</td><td><strong>케이브레인 컴퍼니</strong><br>R&D팀 · WEVEN</td><td><strong>서비스 기획·QA 인턴</strong><br>주문 상태·예외 정책 정의, 고객 요구사항 정리,<br>테스트 케이스 작성·BAT/QA</td></tr>\n</tbody></table>\n<h3>현장 운영과 협업</h3><ul><li>생산·보전·IT·개발 담당자와 발생 시점과 재현 조건을 공유하며 대응 방향 조율.</li><li>신규 MES 담당자 OJT, 장애 확인 순서 문서화, IPC·PPC 및 현장 장비 지원.</li></ul>\n</div>\n<div class=\"resume-sheet page-break-before\">\n<h2 class=\"section-start\">주요 프로젝트 / Projects</h2>\n<h3>01. Folio · Portfolio Maker <span class=\"meta\">| 개인 프로젝트 · 개발 중</span></h3>\n<table class=\"project-table\"><tbody>\n<tr><td>프로젝트 개요</td><td>경험과 자료를 정리해 개인 포트폴리오를 구성하는 웹 도구</td></tr>\n<tr><td>수행 내용</td><td>질문 기반의 정보 입력과 편집 흐름 구성·개선<br>사용 목적과 요구사항을 정리하고 실제 동작을 검토하며 반복 개선</td></tr>\n<tr><td>현재 상태·자료</td><td>별도 사이트 배포 · 개발 진행 중<br><a href=\"https://folio.junny.dev\">https://folio.junny.dev</a></td></tr>\n</tbody></table>\n<h3>02. JunnyMESBackup <span class=\"meta\">| 현장 업무 개선 · 직접 개발</span></h3>\n<table class=\"project-table\"><tbody>\n<tr><td>사용 기술</td><td>C# · WinForms · TCP · 파일 Hash</td></tr>\n<tr><td>주요 역할</td><td>Client–Server 구조 설계, 파일 변경 비교·선별, TCP 전송 및 수동 백업 UI 구현</td></tr>\n<tr><td>결과·개선</td><td>현장 IPC 수동 백업에 활용. 초기 코드는 직접 작성했으며 후속 오류 수정·구조 개선에 AI 활용. 초기 자동 모드의 소켓 종료 문제를 바탕으로 예외 처리·로그·재연결 개선 진행</td></tr>\n<tr><td>참고자료</td><td><a href=\"https://github.com/JunnyCoder/JunnyMESBackup\">github.com/JunnyCoder/JunnyMESBackup</a></td></tr>\n</tbody></table>\n<h3>03. CAN Emulator <span class=\"meta\">| 개인 개발 · 구조 학습</span></h3>\n<table class=\"project-table\"><tbody>\n<tr><td>사용 기술</td><td>C# · WPF · MVVM · Dependency Injection</td></tr>\n<tr><td>주요 역할</td><td>가상 ECU·신호 흐름 구성, UI 상태·명령 처리와 책임 분리 학습·구현</td></tr>\n<tr><td>구현 범위·자료</td><td>소프트웨어 가상 버스 기반 학습 도구<br><a href=\"https://github.com/JunnyCoder/CanEmulater\">github.com/JunnyCoder/CanEmulater</a></td></tr>\n</tbody></table>\n<h3>기타 웹 도구</h3><p>Markdown Editor · PDF Maker · Self Testing Quiz Bank</p><p class=\"meta\">사용 목적·기능 명세 정의, AI 생성 구현의 결과 검토 및 반복 개선. 실행 링크: <a href=\"https://junny.dev\">junny.dev</a></p>\n</div>\n<div class=\"resume-sheet page-break-before\">\n<h2 class=\"section-start\">주요 업무 사례 / Selected Contributions</h2>\n<h3>DB 백업 시간대 데이터 정합성 분석</h3><ul><li>장애 시점과 저장 프로시저·백업 순서를 비교해 순차 삭제 사이 조회가 실행되는 조건 확인.</li><li>연쇄 삭제 적용 가능성과 운영 제약을 개발 담당자와 검토. 최종 조회 차단 기능은 개발 담당자가 구현.</li></ul>\n<h3>PLC–MES 신호 동기화 및 AMR 연계 검증</h3><ul><li>차종별 배출 시간과 MES 재전송 로그를 대조하고 보전팀과 신호를 동시에 확인하는 재현 조건 조율.</li><li>AMR 연속 진입·정지·간격 변화 조건에서 도착·출발 처리 순서와 완료 상태 초기화 검증 참여.</li></ul>\n<h3>IPC 멈춤 현상 분석</h3><ul><li>Windows 이벤트·네트워크 오류와 발생 시간 패턴을 분석해 백신 스캔과의 시간적 연관성 확인.</li><li>보안 담당자와 스캔 시간·주기를 조정한 뒤 관찰 기간 동안 동일 현상 미재발 확인.</li></ul>\n<h2>학력 / Education</h2>\n<p><strong>고려대학교 융합경영학부 디지털경영전공</strong> <span class=\"meta\">| 2017–2023.02 · 졸업</span></p><p class=\"meta\">경영정보시스템, 생산운영관리, 공급망관리, 시스템 분석·설계</p>\n<h2>교육 및 활동 / Training &amp; Activities</h2>\n<table><tbody>\n<tr><td style=\"width:25%\">2026.07–현재</td><td><strong>삼성청년SW·AI아카데미(SSAFY) · 교육 중</strong><br>Python·자료구조·알고리즘·데이터 분석·AI 실습<br>2026년 7·8월 월간 Best Member</td></tr>\n<tr><td>2023.09–2024.12</td><td><strong>Georgia Tech Analytics · edX 개별 강좌 3개 이수</strong><br>분석 모델링, Python·SQL 데이터 분석, 비즈니스 분석</td></tr>\n<tr><td>2018.06–2018.08</td><td><strong>월드프렌즈코리아 · 베트남 박리우대학교</strong><br>Arduino 교육자료 제작 및 통역</td></tr>\n<tr><td>2018.01–2018.02</td><td><strong>세종창조경제혁신센터 제조창업 집중교육</strong><br>Fusion 360·3D 프린팅·Arduino 시제품 제작 실습</td></tr>\n</tbody></table>\n<h2>어학 및 자격 / Certifications</h2><p>OPIc IH <span class=\"meta\">(2026.03)</span> · DSAC 3급(프로그래머) <span class=\"meta\">(2022.02)</span> · ICDL <span class=\"meta\">(2020.10)</span></p>\n</div>",
+    "settings": {
+      "colorTheme": "minimal",
+      "preserveHtmlCss": true,
+      "fontSize": 10.3,
+      "globalLineHeight": 1.5,
+      "enableHeaderFooter": false,
+      "headerTitleInput": "김준호 · 이력서",
+      "footerAuthorInput": "",
+      "marginTop": 17,
+      "marginBottom": 17,
+      "marginLeft": 17,
+      "marginRight": 17,
+      "coverTitleInput": "김준호 · 이력서",
+      "coverSubtitleInput": "",
+      "coverBgStyle": "template",
+      "coverBgInput": "",
+      "coverImgInput": "",
+      "coverImageFit": "cover",
+      "coverImageOpacity": 0,
+      "coverFilterColor": "#ffffff",
+      "coverFilterOpacity": 100,
+      "removeHtmlBackground": false,
+      "tocTitleInput": "목차",
+      "tocNumbering": false
+    },
+    "title": "김준호 이력서",
+    "importedStyles": {
+      "css": [
+        "\nbody { color:#171717; background:white; font-size:10.2pt; line-height:1.43; }\n* { box-sizing:border-box; }\nh1,h2,h3,p,ul,table { margin:0; }\na { color:inherit; text-decoration:none; }\nstrong { font-weight:700; }\np { margin:4pt 0; }\nul { padding-left:13pt; margin:4pt 0 7pt; }\nli { margin:2pt 0; }\nh2 { font-size:12pt; line-height:1.3; margin:14pt 0 7pt; padding:0 0 4pt; border:0; border-bottom:1px solid #333; }\nh3 { font-size:10.6pt; line-height:1.35; margin:9pt 0 3pt; border:0; }\ntable { width:100%; border-collapse:collapse; font-size:9.7pt; margin:5pt 0 10pt; }\nth,td { text-align:left; vertical-align:top; padding:5pt 7pt; border:0; border-bottom:1px solid #d1d5da; background:white; }\nth { background:#f0f2f4; font-weight:700; }\ntd ul { margin:0; padding-left:12pt; }\n.resume-sheet { width:100%; }\n.meta { color:#555; font-size:9.2pt; }\n.project-table td:first-child { width:22%; font-weight:600; background:#f6f7f8; }\n.project-table td { padding:5pt 7pt; }\n\nbody { font-family:\"Apple SD Gothic Neo\",\"Malgun Gothic\",sans-serif; font-size:10.3pt; line-height:1.5; }\nh1 { font-size:29pt; line-height:1.15; margin:0 0 7pt; border:0; padding:0; }\nh2 { color:#233d52; font-size:12.4pt; margin-top:15pt; }\n.resume-top { display:flex; justify-content:space-between; gap:18pt; align-items:flex-start; margin-bottom:17pt; }\n.resume-title { font-size:12pt; font-weight:600; color:#404b56; }\n.contacts { font-size:9.2pt; line-height:1.65; text-align:right; }\n.intro-list { margin-top:5pt; }\n.skill-table td:first-child { width:26%; font-weight:600; }\n.career-table { font-size:9.5pt; }\n.career-table th:nth-child(1) { width:21%; }\n.career-table th:nth-child(2) { width:29%; }\n.section-start { margin-top:0; }\n"
+      ],
+      "attributes": {
+        "lang": "ko"
+      },
+      "missing": [],
+      "available": true
+    }
+  }
+}

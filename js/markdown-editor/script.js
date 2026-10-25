@@ -384,50 +384,6 @@
 ]);
   var exampleMarkdown = exampleLines.join('\n');
 
-  /* ================= Export CSS ================= */
-  var EXPORT_CSS = [
-    'body{margin:0;background:#111217;color:#d8dadf;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Malgun Gothic",Roboto,sans-serif;}',
-    '.preview-body{max-width:820px;margin:0 auto;padding:40px 24px 80px;font-size:16px;line-height:1.75;}',
-    '.preview-body h1,.preview-body h2,.preview-body h3,.preview-body h4{color:#f4f5f7;font-weight:700;line-height:1.35;margin:1.4em 0 .6em;}',
-    '.preview-body h1{font-size:2em;padding-bottom:.35em;border-bottom:1px solid #2a2b32;margin-top:0;}',
-    '.preview-body h2{font-size:1.5em;padding-bottom:.3em;border-bottom:1px solid #2a2b32;}',
-    '.preview-body h3{font-size:1.2em;}',
-    '.preview-body p{margin:.7em 0;}',
-    '.preview-body strong{color:#fff;}',
-    '.preview-body a{color:#5aa2ef;text-decoration:none;}',
-    '.preview-body a:hover{text-decoration:underline;}',
-    '.preview-body ul,.preview-body ol{padding-left:1.5em;margin:.6em 0;}',
-    '.preview-body li{margin:.25em 0;}',
-    '.preview-body li.task-list-item{list-style:none;margin-left:-1.5em;padding-left:1.5em;}',
-    '.preview-body input[type="checkbox"]{accent-color:#5aa2ef;margin-right:.5em;}',
-    '.preview-body blockquote{margin:.9em 0;padding:.4em 1em;border-left:3px solid #5aa2ef;background:rgba(90,162,239,.14);color:#9a9da6;border-radius:0 6px 6px 0;}',
-    '.preview-body hr{border:none;border-top:1px solid #2a2b32;margin:1.8em 0;}',
-    '.preview-body table{border-collapse:collapse;margin:1em 0;width:100%;font-size:.92em;}',
-    '.preview-body th,.preview-body td{border:1px solid #2a2b32;padding:.5em .8em;text-align:left;}',
-    '.preview-body th{background:#212228;color:#f0f1f3;}',
-    '.preview-body code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#26272e;color:#ffb27a;border-radius:4px;padding:.15em .4em;font-size:.88em;}',
-    '.preview-body pre{background:#16171c;border:1px solid #2a2b32;border-radius:8px;padding:14px 16px;overflow:auto;margin:1em 0;}',
-    '.preview-body pre code{background:none;color:inherit;padding:0;font-size:.88em;line-height:1.6;display:block;}'
-  ].join('\n');
-
-  /* ================= Marked + highlight.js setup ================= */
-  var renderer = new marked.Renderer();
-  SharedCodeBlocks.configureRenderer(renderer);
-  renderer.link = function(href, title, text){
-    var titleAttr = title ? ' title="' + title + '"' : '';
-    return '<a href="' + href + '"' + titleAttr + ' target="_blank" rel="noopener noreferrer">' + text + '</a>';
-  };
-
-  marked.setOptions({
-    renderer: renderer,
-    gfm: true,
-    breaks: false,
-    headerIds: false,
-    mangle: false,
-    langPrefix: 'hljs language-',
-    highlight: null
-  });
-
   /* ================= Elements ================= */
   var editorHost = document.getElementById('editorHost');
   var previewHost = document.getElementById('previewHost');
@@ -453,7 +409,7 @@
 
   /* ================= localStorage persistence ================= */
   var LS_AUTOSAVE_KEY = 'mdeditor.autosave.v1';
-  var LS_HISTORY_KEY = 'mdeditor.history.v1';
+  var LS_HISTORY_KEY = EditorTransfer.historyKey;
   var HISTORY_LIMIT = 30;
   var HISTORY_MIN_INTERVAL_MS = 60000;
 
@@ -481,12 +437,7 @@
   }
 
   function loadHistory(){
-    var raw = lsGet(LS_HISTORY_KEY);
-    if (!raw) return [];
-    try{
-      var arr = JSON.parse(raw);
-      return Array.isArray(arr) ? arr : [];
-    }catch(e){ return []; }
+    return EditorTransfer.history();
   }
   function saveHistoryList(arr){ return lsSet(LS_HISTORY_KEY, JSON.stringify(arr)); }
 
@@ -575,7 +526,7 @@
         e.stopPropagation();
         if (confirm('이 저장 기록을 삭제할까요?')){
           var history = loadHistory();
-          history = history.filter(function(h) { return h.ts !== item.ts; });
+          history = history.filter(function(h) { return item.id ? h.id !== item.id : h.ts !== item.ts; });
           saveHistoryList(history);
           renderHistoryList();
         }
@@ -586,13 +537,13 @@
       btnGroup.appendChild(deleteBtn);
       head.appendChild(btnGroup);
 
-      var previewEl = document.createElement('div');
+      var previewEl = document.createElement('button'); previewEl.type = 'button';
       previewEl.className = 'history-item-preview';
       previewEl.textContent = item.content.slice(0, 90).replace(/\n/g, ' ');
 
       row.appendChild(head);
       row.appendChild(previewEl);
-      row.addEventListener('click', function(){
+      previewEl.addEventListener('click', function(){
         if (confirm('이 시점으로 복원할까요? 현재 편집기 내용은 덮어써집니다.')){
           maybeTakeSnapshot(true);
           editor.setValue(item.content);
@@ -606,10 +557,10 @@
 
   function openHistoryModal(){
     renderHistoryList();
-    historyOverlay.hidden = false;
+    historyOverlay.showModal(); historyCloseBtn.focus();
   }
   function closeHistoryModal(){
-    historyOverlay.hidden = true;
+    historyOverlay.close(); historyBtn.focus();
   }
 
   tempSaveBtn.addEventListener('click', function(){
@@ -629,9 +580,7 @@
       renderHistoryList();
     }
   });
-  document.addEventListener('keydown', function(e){
-    if (e.key === 'Escape' && !historyOverlay.hidden) closeHistoryModal();
-  });
+  historyOverlay.addEventListener('cancel', function(e){ e.preventDefault(); closeHistoryModal(); });
 
   window.addEventListener('beforeunload', function(){
     saveAutosave(editor.getValue());
@@ -796,6 +745,7 @@
   var languagePreviewScroll = null;
   var previewRenderer = window.MdPreviewRenderer?.create(previewHost);
   var previewTokens = null;
+  var codeEditing = MarkdownCodeEditing.create(editor);
   function renderPreview(){
     var raw = editor.getValue();
     if (!raw.trim()){
@@ -806,68 +756,20 @@
     }
 
     var rendered = previewRenderer?.update(raw);
-    var tokens = rendered ? rendered.tokens : marked.lexer(raw);
+    var tokens = rendered ? rendered.tokens : DocumentMarkdown.lexer(raw);
     previewTokens = {raw: raw, tokens: tokens};
     if (!rendered) {
-      var html = window.PdfMath ? PdfMath.parse(raw) : marked.parser(tokens);
+      var html = DocumentMarkdown.parse(raw);
       previewHost.innerHTML = window.DOMPurify ? DOMPurify.sanitize(html) : html;
     }
-    window.SharedHtmlBlocks?.hydrate(previewHost);
-    window.PdfMath?.render(previewHost);
-    SharedCodeBlocks.normalize(previewHost);
-    // Optional design enhancements must tolerate a cached older template script.
-    window.PdfTemplates?.prepareDesign?.(previewHost);
-    var locations = SharedCodeBlocks.markdownLocations(raw, tokens);
-    previewHost.querySelectorAll('pre[data-code-origin="markdown"]').forEach(function(pre, index){
-      var location = locations[index];
-      if (!location) return;
-      pre.codeLocation = location;
-      pre.codeLineHandle = editor.getLineHandle(location.line);
-    });
-    var htmlLocations = SharedCodeBlocks.htmlLocations(tokens, raw);
-    previewHost.querySelectorAll('pre[data-code-origin="html"]').forEach(function(pre, index){
-      var location = htmlLocations[index];
-      if (!location) return;
-      pre.htmlCodeLocation = location;
-      pre.codeLineHandle = editor.getLineHandle(location.from.line);
-      pre.codeEndHandle = editor.getLineHandle(location.to.line);
-    });
-    SharedCodeBlocks.decorate(previewHost, function(pre, language){
+    DocumentContent.prepare(previewHost);
+    codeEditing.bind(previewHost, raw, tokens);
+    CodeControls.attach(previewHost, function(pre, language){
       var scroll = previewHost.scrollTop;
-      if (!pre.codeLineHandle) { renderPreview(); return; }
-      var line = editor.getLineNumber(pre.codeLineHandle);
-      if (line == null) { renderPreview(); return; }
-      if (pre.codeLocation) {
-        var current = editor.getLine(line);
-        var beginning = pre.codeLocation.prefix + pre.codeLocation.marker;
-        if (current.slice(0, beginning.length) !== beginning) { renderPreview(); return; }
-        var extra = current.slice(beginning.length).trim().replace(/^\S+/, '');
-        editor.replaceRange(beginning + (language === 'xml' ? 'html' : language) + extra,
-          { line: line, ch: 0 }, { line: line, ch: current.length }, '+code-language');
-      } else if (pre.htmlCodeLocation) {
-        var location = pre.htmlCodeLocation;
-        var endLine = editor.getLineNumber(pre.codeEndHandle);
-        if (endLine == null) { renderPreview(); return; }
-        var from = { line: line, ch: location.from.ch }, to = { line: endLine, ch: location.to.ch };
-        if (editor.getRange(from, to) !== location.opening) { renderPreview(); return; }
-        var opening = location.opening.replace(/\sdata-code-language\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '');
-        opening = opening.replace(/>$/, ' data-code-language="' + language + '">');
-        editor.replaceRange(opening, from, to, '+code-language');
-      } else { renderPreview(); return; }
-      languagePreviewScroll = scroll;
+      if (DocumentCommands.setCodeLanguage(pre, language, codeEditing)) languagePreviewScroll = scroll;
       renderPreview();
       previewHost.scrollTop = scroll;
     });
-
-    if (window.renderMathInElement) {
-      window.renderMathInElement(previewHost, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '$', right: '$', display: false}
-        ],
-        throwOnError: false
-      });
-    }
 
     if (rendered) previewBlocks = rendered.blocks;
     else {
@@ -1023,10 +925,15 @@
   renderPreview();
 
   /* ================= View mode tabs ================= */
-  var currentMode = 'split';
+  var currentMode = window.matchMedia?.('(max-width: 760px)').matches ? 'editor' : 'split';
   var splitRatio = 50;
 
   function applyLayout(){
+    Array.prototype.forEach.call(viewSegment.querySelectorAll('.seg-btn'), function(b){
+      var active = b.getAttribute('data-mode') === currentMode;
+      b.classList.toggle('active', active);
+      b.setAttribute('aria-pressed', String(active));
+    });
     if (currentMode === 'editor'){
       panePreview.style.display = 'none';
       divider.style.display = 'none';
@@ -1052,9 +959,6 @@
     var btn = e.target.closest('.seg-btn');
     if (!btn) return;
     currentMode = btn.getAttribute('data-mode');
-    Array.prototype.forEach.call(viewSegment.querySelectorAll('.seg-btn'), function(b){
-      b.classList.toggle('active', b === btn);
-    });
     applyLayout();
   });
 
@@ -1108,34 +1012,16 @@
     return deriveTitle(editor.getValue()) + '.' + ext;
   }
 
-  function downloadFile(filename, content, mime){
-    var blob = new Blob([content], { type: mime });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
-  }
+  var downloadFile = FileDownload.save;
 
   downloadMdBtn.addEventListener('click', function(){
     downloadFile(deriveFilename('md'), editor.getValue(), 'text/markdown;charset=utf-8');
   });
 
-  /* ================= 🛠️ 수정한 부분: HTML 다운로드 파일에 KaTeX CSS 추가 ================= */
   downloadHtmlBtn.addEventListener('click', function(){
-    var doc = '<!DOCTYPE html>\n' +
-      '<html lang="ko">\n<head>\n<meta charset="UTF-8">\n' +
-      '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-      '<title>Markdown Export</title>\n' +
-      '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">\n' +
-      '<style>\n' + EXPORT_CSS + '\n' + SharedCodeBlocks.exportCss() + '\n' + (window.PdfTemplates?.exportCss?.() || '') + '\n</style>\n</head>\n<body>\n' +
-      '<article class="preview-body">\n' + SharedCodeBlocks.exportHtml(previewHost) + '\n</article>\n</body>\n</html>';
-    downloadFile(deriveFilename('html'), doc, 'text/html;charset=utf-8');
+    renderPreview();
+    downloadFile(deriveFilename('html'), DocumentSerialization.document(previewHost), 'text/html;charset=utf-8');
   });
-  /* ====================================================================================== */
 
   function fallbackCopy(text){
     var ta = document.createElement('textarea');
@@ -1159,7 +1045,8 @@
   }
 
   copyHtmlBtn.addEventListener('click', function(){
-    var html = SharedCodeBlocks.exportHtml(previewHost);
+    renderPreview();
+    var html = DocumentSerialization.html(previewHost);
     if (navigator.clipboard && window.isSecureContext){
       navigator.clipboard.writeText(html).then(showCopied).catch(function(){
         fallbackCopy(html);
@@ -1199,7 +1086,7 @@
   var sendToPdfBtn = document.getElementById('sendToPdfBtn');
   if(sendToPdfBtn) {
     sendToPdfBtn.addEventListener('click', function() {
-      try { localStorage.setItem('pdfMakerTransfer',editor.getValue());window.open('pdf-maker.html','_blank'); }
+      try { EditorTransfer.send(editor.getValue());window.open('pdf-maker.html','_blank'); }
       catch (_) { mdStatus('PDF 편집기로 전달하지 못했습니다. .md 파일을 저장한 뒤 PDF Maker에서 열어주세요.',true); }
     });
   }
@@ -1241,7 +1128,7 @@
   function updateOutline(){
     if (document.getElementById('mdOutline').hidden) return;
     var raw=editor.getValue();
-    var outlineTokens=previewTokens?.raw===raw ? previewTokens.tokens : marked.lexer(raw);
+    var outlineTokens=previewTokens?.raw===raw ? previewTokens.tokens : DocumentMarkdown.lexer(raw);
     // Include source line positions: inserting body text can shift heading targets.
     if (outlineSignature===raw) return;
     outlineSignature=raw;

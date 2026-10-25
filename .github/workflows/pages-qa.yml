@@ -1,0 +1,39 @@
+name: Pages QA
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-artifact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/editor-qa/package-lock.json
+      - name: Install QA dependencies
+        run: npm ci --prefix tests/editor-qa --no-audit --no-fund
+      - name: Build and verify the GitHub Pages artifact
+        run: python3 scripts/pages.py qa
+      - name: Keep build and audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-qa-evidence
+          path: |
+            .pages-qa/build.log
+            .pages-qa/build.json
+            .pages-qa/source-manifest.json
+            .pages-qa/site-manifest.json
+            .pages-qa/audit.json
+            .pages-qa/test.log
+          retention-days: 14

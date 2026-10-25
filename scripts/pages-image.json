@@ -1,0 +1,7 @@
+{
+  "image": "ghcr.io/actions/jekyll-build-pages:v1.0.13@sha256:6791ebfd912185ed59bfb5fb102664fa872496b79f87ff8b9cfba292a7345041",
+  "platform": "linux/amd64",
+  "repository": "JunnyCoder/JunnyCoder.github.io",
+  "evidence": "https://github.com/JunnyCoder/JunnyCoder.github.io/actions/runs/38148363188",
+  "verified": "2026-10-16"
+}

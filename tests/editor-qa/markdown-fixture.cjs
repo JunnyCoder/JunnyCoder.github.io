@@ -1,5 +1,27 @@
-const assert=require('node:assert/strict'),fs=require('node:fs');const {JSDOM,VirtualConsole}=require('jsdom');
-const repo=require('node:path').resolve(__dirname,'../..'),wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function markdown(draft){const errors=[];const vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e));const dom=new JSDOM(fs.readFileSync(repo+'/tools/markdown-editor.html','utf8'),{url:'https://example.test/tools/markdown-editor.html',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});const w=dom.window;w.TextEncoder=TextEncoder;w.focus=()=>{};w.confirm=()=>true;w.alert=()=>{throw Error('Unexpected alert')};w.Range.prototype.getBoundingClientRect=()=>({top:0,bottom:20,left:0,right:10,width:10,height:20});w.Range.prototype.getClientRects=()=>[{top:0,bottom:20,left:0,right:10,width:10,height:20}];if(draft!==undefined)w.localStorage.setItem('mdeditor.autosave.v1',draft);w.eval(fs.readFileSync(require.resolve('katex/dist/katex.min.js'),'utf8'));w.eval(fs.readFileSync(require.resolve('katex/dist/contrib/auto-render.min.js'),'utf8'));for(const p of ['tools/libs/codemirror.min.js','tools/libs/marked.min.js','tools/libs/highlight.min.js','tools/libs/purify.min.js','js/shared/render-runtime.js','js/shared/markdown-options.js','js/pdf-maker/math.js','js/pdf-maker/document-state.js','js/pdf-maker/page-reflow.js','js/shared/html-blocks.js','js/shared/html-import-structures.js','js/shared/html-to-markdown.js','js/shared/code-blocks.js','js/pdf-maker/templates.js','js/markdown-editor/preview-renderer.js','js/markdown-editor/import-preview.js','js/markdown-editor/html-import.js','js/markdown-editor/script.js'])w.eval(fs.readFileSync(repo+'/'+p,'utf8'));await wait(260);return {w,dom,errors,cm:w.document.querySelector('.CodeMirror').CodeMirror,$:id=>w.document.getElementById(id)};}
-
+const fs = require('node:fs');
+const {JSDOM, VirtualConsole} = require('jsdom');
+const repo = process.env.SITE_ROOT || require('node:path').resolve(__dirname, '../..');
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function markdown(draft, options = {}) {
+  const errors = [], vc = new VirtualConsole(); vc.on('jsdomError', error => errors.push(error));
+  const dom = new JSDOM(fs.readFileSync(repo + '/tools/markdown-editor.html', 'utf8'), {
+    url:'https://example.test/tools/markdown-editor.html', runScripts:'outside-only', pretendToBeVisual:true, virtualConsole:vc
+  });
+  const w = dom.window;
+  w.TextEncoder = TextEncoder; w.focus = () => {}; w.confirm = () => true;
+  w.alert = () => {throw Error('Unexpected alert');};
+  w.Range.prototype.getBoundingClientRect = () => ({top:0,bottom:20,left:0,right:10,width:10,height:20});
+  w.Range.prototype.getClientRects = () => [{top:0,bottom:20,left:0,right:10,width:10,height:20}];
+  w.HTMLElement.prototype.scrollIntoView = () => {};
+  w.HTMLDialogElement.prototype.showModal = function(){this.open=true;};
+  w.HTMLDialogElement.prototype.close = function(){this.open=false;this.dispatchEvent(new w.Event('close'));};
+  if (draft !== undefined) w.localStorage.setItem('mdeditor.autosave.v1', draft);
+  options.setup?.(w);
+  for (const file of ['katex/katex.min.js','katex/auto-render.min.js','codemirror.min.js','marked.min.js','highlight.min.js','purify.min.js']) {
+    w.eval(fs.readFileSync(repo + '/tools/libs/' + file, 'utf8'));
+  }
+  const modules = require('./modules.cjs'); modules.load(w, modules.paths('markdown-editor'));
+  await wait(260);
+  return {w,dom,errors,cm:w.document.querySelector('.CodeMirror').CodeMirror,$:id=>w.document.getElementById(id)};
+}
 module.exports = markdown;

@@ -1,10 +1,11 @@
 // Keep unchanged top-level nodes alive. Source offsets belong to this renderer,
 // so scrolling and code editing do not need a second DOM parse per token.
 window.MdPreviewRenderer = {create(host) {
+  const document = host.ownerDocument;
   let records = [], previous = null, linksKey = '', tokens = [], fallbackBlocks = null;
   function update(raw) {
     if (raw === previous) return {tokens, blocks: fallbackBlocks || positions(raw), changed: false};
-    tokens = marked.lexer(raw);
+    tokens = DocumentMarkdown.lexer(raw);
     const nextLinks = JSON.stringify(tokens.links || {});
     const next = tokens.map(token => ({raw: token.raw, type: token.type, token, nodes: null}));
     let prefix = 0, suffix = 0;
@@ -20,7 +21,7 @@ window.MdPreviewRenderer = {create(host) {
       const spans = sourceSpans(raw, tokens);
       const html = tokens.map((token,index) => {
         const single=[token];single.links=tokens.links;
-        const part=window.PdfMath?PdfMath.parse(token.raw,tokens.links):marked.parser(single);
+        const part=DocumentMarkdown.parse(token.raw,tokens.links);
         return part.replace(/<([a-z][\w:-]*)(?=\s|>)/i,'<$1 data-md-source-token="'+index+'"');
       }).join('');
       host.innerHTML = DOMPurify.sanitize(html);
@@ -40,7 +41,7 @@ window.MdPreviewRenderer = {create(host) {
     fallbackBlocks=null;
     for (let i = prefix; i < next.length - suffix; i++) {
       const record = next[i], single = [record.token]; single.links = tokens.links;
-      const html = window.PdfMath ? PdfMath.parse(record.raw, tokens.links) : marked.parser(single);
+      const html = DocumentMarkdown.parse(record.raw, tokens.links);
       const box = document.createElement('div');
       box.innerHTML = DOMPurify.sanitize(html);
       record.nodes = Array.from(box.childNodes);

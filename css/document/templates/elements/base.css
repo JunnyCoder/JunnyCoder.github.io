@@ -1,0 +1,6 @@
+/* Paper size and print fragmentation are owned by document/paper.css. */
+.pdf-content {
+  font-family: var(--font-family, sans-serif);
+  color: var(--text-main, #1a1a1a);
+  word-break: keep-all;
+}
